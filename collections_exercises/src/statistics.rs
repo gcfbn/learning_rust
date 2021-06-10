@@ -1,21 +1,22 @@
 use std::collections::HashMap;
+use std::cmp::Ordering;
 
 pub fn mean(list: &[i32]) -> f32 {
     let mut sum = 0;
     for i in list {
         sum += i;
     }
-    return sum as f32 / list.len() as f32;
+    sum as f32 / list.len() as f32
 }
 
 pub fn median(list: &mut [i32]) -> f32 {
-    list.sort();
+    list.sort_unstable();
 
-    return if list.len() % 2 == 1 {
+    if list.len() % 2 == 1 {
         list[list.len() / 2] as f32
     } else {
-        (list[list.len() / 2] + list[list.len() / 2 - 1]) as f32 / 2 as f32
-    };
+        (list[list.len() / 2] + list[list.len() / 2 - 1]) as f32 / 2.0
+    }
 }
 
 pub fn mode(list: &[i32]) -> Vec<i32> {
@@ -29,12 +30,14 @@ pub fn mode(list: &[i32]) -> Vec<i32> {
     let mut result: Vec<i32> = Vec::new();
 
     for (key, value) in map {
-        if value > max_occurrences {
-            max_occurrences = value;
-            result.clear();
-            result.push(*key);
-        } else if value == max_occurrences {
-            result.push(*key);
+        match value.cmp(&max_occurrences) {
+            Ordering::Greater => {
+                max_occurrences = value;
+                result.clear();
+                result.push(*key)
+            }
+            Ordering::Equal => result.push(*key),
+            Ordering::Less => ()
         }
     }
 
