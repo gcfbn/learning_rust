@@ -1,0 +1,64 @@
+POLISH:
+Na urodziny Jasia, tato postanowił zainstalować lampiony w ogrodzie. Zatrudniona ekipa
+montażowa przygotowała projekt rozmieszczenia lampionów. Dwa sąsiednie lampiony łączył
+kabel o podanej długości w centymetrach. Ze względu na ukształtowanie terenu nie wszystkie
+lampiony były połączone ze sobą. Przed montażem, tato Jasia przeglądnął projekt, pomyślał i
+doszedł do wniosku, że lampiony można połączyć kablem wielożyłowym. Wtedy niektóre
+połączenia są zbędne. Poskreślał je tak, aby zminimalizować długość kabla łączącego
+wszystkie lampiony. Jaka będzie długość kabla potrzebna do połączenia lampionów?
+Napisz program, który:
+- czyta dane ze standardowego wejścia;
+- symuluje układ lampionów w ogrodzie i wylicza minimalną długość kabla potrzebną do
+ich połączenia;
+- drukuje na standardowe wyjście długość kabla w centymetrach.
+Dane
+Pierwszy wiersz zawiera dwie liczby: liczbę n (1<=n<=20) – liczbę lampionów, oraz liczbę m
+(0<=m<=190) – liczbę połączeń. Kolejne wiersze zawierają trzy liczby i, j ,k (1 <= i,j <= n; 1 <= k
+<= 500): dwie pierwsze oznaczają numery lampionów połączonych kablem, trzecia oznacza
+długość kabla w centymetrach łączącego te lampiony.
+Wynik
+Liczba całkowita oznaczająca minimalną długość kabla w centymetrach potrzebnego do
+połączenia wszystkich lampionów.
+Input
+5 8
+1 2 50
+1 3 70
+1 5 100
+2 3 100
+2 4 70
+3 4 60
+3 5 100
+4 5 160
+Output
+280
+
+ENGLISH:
+John's dad decided to set lanterns in their garden for his son's birthday party. Installation team
+prepared a lantern placement design. Two adjacent lanterns were connected with cable with length
+given in centimeters. Because of the construction of the terrain, not all of the lanterns are connected.
+Before installation, John's dad run through the project and concluded that lanterns could be connected
+using multi-wire cable. In this case, some of the connections aren't necessary. He crossed out some of them
+to minimalize length of the cable connecting all lanterns. How long cable do they need?
+Write a programm, that:
+- reads data from standard input;
+- simulates system of lanterns and calculates minimum cable length needed for connecting lanterns
+- prints to standard output cable length in centimeters 
+Data
+First line contains two numbers: n (1<=n<=20) - number of lanterns and m (0<=m<=190) - number of connections.
+Every next line contains three numbers: i, j, k (1 <= i,j <= n; 1 <= k <= 500): i,j - connected lanterns
+indicies; k - cable length between them
+Result
+Integer denoting minimum cable length in centimeters needed to connect all the lanterns.
+Example
+Input
+5 8
+1 2 50
+1 3 70
+1 5 100
+2 3 100
+2 4 70
+3 4 60
+3 5 100
+4 5 160
+Output
+280
