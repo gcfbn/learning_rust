@@ -5,10 +5,5 @@ fn main() {
         eprintln!("An error happened: {}", error);
         process::exit(1);
     });
-
-    println!("nodes_count: {}", result.nodes_count);
-
-    for e in result.edges {
-        println!("{:?}", e);
-    }
+    println!("{}", result);
 }

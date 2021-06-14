@@ -2,9 +2,9 @@ use std::error::Error;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Edge {
-    from_index: u32,
-    to_index: u32,
-    weight: i32,
+    pub from_index: u32,
+    pub to_index: u32,
+    pub weight: i32,
 }
 
 impl Edge {
