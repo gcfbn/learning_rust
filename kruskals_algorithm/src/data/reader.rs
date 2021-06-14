@@ -36,7 +36,7 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    fn new<'a>(input: &'a Vec<String>) -> Result<Parameters, Box<dyn Error>> {
+    fn new(input: &Vec<String>) -> Result<Parameters, Box<dyn Error>> {
         // i am not sure how it works, but it works
         // probably, that's how error boxing should be used
         // Box::from(err: &str) returns Box<dyn Error> and that's what I need here

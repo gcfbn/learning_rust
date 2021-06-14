@@ -13,7 +13,7 @@ impl Edge {
         let parsed_to_index = to_index.parse::<u32>()?;
         let parsed_weight = weight.parse::<i32>()?;
 
-        return Ok(Edge::new_using_i32(parsed_from_index, parsed_to_index, parsed_weight));
+        Ok(Edge::new_using_i32(parsed_from_index, parsed_to_index, parsed_weight))
     }
 
     pub fn new_using_i32(from_index: u32, to_index: u32, weight: i32) -> Edge {
