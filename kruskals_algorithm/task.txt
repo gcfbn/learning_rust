@@ -7,7 +7,7 @@ doszedł do wniosku, że lampiony można połączyć kablem wielożyłowym. Wted
 połączenia są zbędne. Poskreślał je tak, aby zminimalizować długość kabla łączącego
 wszystkie lampiony. Jaka będzie długość kabla potrzebna do połączenia lampionów?
 Napisz program, który:
-- czyta dane ze standardowego wejścia;
+- czyta dane z pliku teskstowego;
 - symuluje układ lampionów w ogrodzie i wylicza minimalną długość kabla potrzebną do
 ich połączenia;
 - drukuje na standardowe wyjście długość kabla w centymetrach.
@@ -40,7 +40,7 @@ Before installation, John's dad run through the project and concluded that lante
 using multi-wire cable. In this case, some of the connections aren't necessary. He crossed out some of them
 to minimalize length of the cable connecting all lanterns. How long cable do they need?
 Write a programm, that:
-- reads data from standard input;
+- reads data from .txt file;
 - simulates system of lanterns and calculates minimum cable length needed for connecting lanterns
 - prints to standard output cable length in centimeters 
 Data
