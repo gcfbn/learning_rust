@@ -2,7 +2,7 @@ use super::structures;
 use std::fs;
 use std::error::Error;
 
-pub fn read_graph_data(filename: &str) -> Result<Parameters, Box<dyn Error>> {
+pub fn read_graph_data(filename: &str) -> Result<structures::Graph, Box<dyn Error>> {
     // println!("In file {}", filename);
 
     let input = fs::read_to_string(filename)?;
@@ -11,7 +11,24 @@ pub fn read_graph_data(filename: &str) -> Result<Parameters, Box<dyn Error>> {
 
     let splitted_input = input.split_whitespace().map(|s| s.to_string()).collect();
 
-    Parameters::new(&splitted_input)
+    let parameters = Parameters::new(&splitted_input)?;
+    let mut edges: Vec<structures::Edge> = Vec::new();
+
+    let mut index = 2;
+    let mut edge: structures::Edge;
+
+    for i in 0..parameters.m {
+        edge = structures::Edge::new(
+            // TODO check if index is in bounds
+            &splitted_input[index],
+            &splitted_input[index + 1],
+            &splitted_input[index + 2])?;
+
+        edges.push(edge.clone());
+        index = index + 3;
+    }
+
+    Ok(structures::Graph::new(parameters.n, edges))
 }
 
 pub struct Parameters {
