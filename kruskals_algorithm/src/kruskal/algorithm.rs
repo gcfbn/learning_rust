@@ -13,7 +13,7 @@ pub fn calculate_min_total_weight(graph: structures::Graph) -> i32 {
     }
 
     // copy all edges from the graph to result vector of edges
-    let mut result_edges = graph.edges.clone();
+    let mut result_edges = graph.edges;
 
     // sort result_edges by ascending weight
     result_edges.sort_by(|a, b| a.weight.cmp(&b.weight));
@@ -31,6 +31,6 @@ pub fn calculate_min_total_weight(graph: structures::Graph) -> i32 {
     result_edges.iter().map(|&e| e.weight as i32).sum()
 }
 
-fn find_parent(parents: &Vec<u32>, index: u32) -> u32 {
+fn find_parent(parents: &[u32], index: u32) -> u32 {
     if parents[index as usize] != index { find_parent(parents, parents[index as usize]) } else { index }
 }

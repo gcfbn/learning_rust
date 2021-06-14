@@ -1,9 +1,9 @@
 use std::error::Error;
 
 mod data;
-mod algorithm;
+mod kruskal;
 
 pub fn run(filename: &str) -> Result<i32, Box<dyn Error>> {
     let graph = data::reader::build_graph_from_input(filename)?;
-    Ok(algorithm::algorithm::calculate_min_total_weight(graph))
+    Ok(kruskal::algorithm::calculate_min_total_weight(graph))
 }
