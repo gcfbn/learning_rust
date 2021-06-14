@@ -2,7 +2,7 @@ use super::structures;
 use std::fs;
 use std::error::Error;
 
-pub fn read_graph_data(filename: &str) -> Result<structures::Graph, Box<dyn Error>> {
+pub fn build_graph_from_input(filename: &str) -> Result<structures::Graph, Box<dyn Error>> {
     // println!("In file {}", filename);
 
     let input = fs::read_to_string(filename)?;
