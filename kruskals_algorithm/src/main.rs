@@ -1,7 +1,5 @@
 use std::process;
 
-// TODO use clippy and check warnings
-
 fn main() {
     let result = kruskals_algorithm::run("input.txt").unwrap_or_else(|error| {
         eprintln!("An error happened: {}", error);
