@@ -12,20 +12,19 @@ pub fn read_graph_data(filename: &str) -> Result<structures::Graph, Box<dyn Erro
     let splitted_input = input.split_whitespace().map(|s| s.to_string()).collect();
 
     let parameters = Parameters::new(&splitted_input)?;
+
+    // input should contain n, m and 3 numbers for every of m lines
+    if splitted_input.len() as u32 != parameters.m * 3 + 2 {
+        return Err(Box::from("Input does not match declared number of edges"));
+    }
+
     let mut edges: Vec<structures::Edge> = Vec::new();
 
-    let mut index = 2;
-    let mut edge: structures::Edge;
-
-    for i in 0..parameters.m {
-        edge = structures::Edge::new(
-            // TODO check if index is in bounds
-            &splitted_input[index],
-            &splitted_input[index + 1],
-            &splitted_input[index + 2])?;
-
-        edges.push(edge.clone());
-        index = index + 3;
+    for i in (0..2 + parameters.m * 3).step_by(3) {
+        edges.push(structures::Edge::new(
+            &splitted_input[i as usize],
+            &splitted_input[(i + 1) as usize],
+            &splitted_input[(i + 2) as usize])?);
     }
 
     Ok(structures::Graph::new(parameters.n, edges))
