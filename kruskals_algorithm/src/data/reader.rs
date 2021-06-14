@@ -32,8 +32,8 @@ pub fn read_graph_data(filename: &str) -> Result<structures::Graph, Box<dyn Erro
 }
 
 pub struct Parameters {
-    n: i32,
-    m: i32,
+    n: u32,
+    m: u32,
 }
 
 impl Parameters {
@@ -47,8 +47,8 @@ impl Parameters {
         //     return Err(error);
         // }
 
-        let n = input[0].parse::<i32>()?;
-        let m = input[1].parse::<i32>()?;
+        let n: u32 = input[0].parse::<u32>()?;
+        let m: u32 = input[1].parse::<u32>()?;
 
         Ok(Parameters {
             n,
