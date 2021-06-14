@@ -20,7 +20,7 @@ pub fn read_graph_data(filename: &str) -> Result<structures::Graph, Box<dyn Erro
 
     let mut edges: Vec<structures::Edge> = Vec::new();
 
-    for i in (0..2 + parameters.m * 3).step_by(3) {
+    for i in (2..2 + parameters.m * 3).step_by(3) {
         edges.push(structures::Edge::new(
             &splitted_input[i as usize],
             &splitted_input[(i + 1) as usize],
