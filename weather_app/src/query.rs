@@ -4,6 +4,16 @@ pub struct Query{
     pub units: Units,
 }
 
+impl Query{
+    pub fn new(city: &str, language: Language, units: Units) -> Query {
+        Query{
+            city: String::from(city),
+            language,
+            units,
+        }
+    }
+}
+
 pub enum Language{
     English,
     Polish,

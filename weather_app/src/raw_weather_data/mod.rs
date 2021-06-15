@@ -5,6 +5,8 @@ use restson::RestPath;
 
 use crate::query::Query;
 
+pub static API_KEY :&str = "&appid=a52958f9ad25d7d64c67d97957bc6119";
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WeatherData{
     pub coord: inner::Coord,
@@ -24,13 +26,14 @@ pub struct WeatherData{
 
 impl RestPath<&str> for WeatherData {
     fn get_path(city: &str) -> Result<String, restson::Error> {
-        Ok(format!("?q={}&appid=a52958f9ad25d7d64c67d97957bc6119", city))
+        Ok(format!("?q={}{}", city, API_KEY))
     }
 }
 
 impl RestPath<&Query> for WeatherData {
     fn get_path(query: &Query) -> Result<String, restson::Error> {
-        Ok(format!("?q={}&units={}&lang={}", query.city, query.units.to_string(), query.language.to_string()))
+        Ok(format!("?q={}&units={}&lang={}{}",
+                   query.city, query.units.to_string(), query.language.to_string(), API_KEY))
     }
 }
 
