@@ -33,7 +33,7 @@ impl RestPath<&str> for WeatherData {
 impl RestPath<&Query> for WeatherData {
     fn get_path(query: &Query) -> Result<String, restson::Error> {
         Ok(format!("?q={}&units={}&lang={}{}",
-                   query.city, query.units.to_string(), query.language.to_string(), API_KEY))
+                   query.city, query.units, query.language, API_KEY))
     }
 }
 

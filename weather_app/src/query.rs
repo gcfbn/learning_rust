@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub struct Query{
     pub city: String,
     pub language: Language,
@@ -19,11 +21,11 @@ pub enum Language{
     Polish,
 }
 
-impl Language {
-    pub fn to_string(&self) -> String {
+impl fmt::Display for Language{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self{
-            Language::English => String::from("en"),
-            Language::Polish => String::from("pl"),
+            Language::English => write!(f, "en"),
+            Language::Polish => write!(f, "pl"),
         }
     }
 }
@@ -33,11 +35,11 @@ pub enum Units{
     Imperial,
 }
 
-impl Units {
-    pub fn to_string(&self) -> String {
+impl fmt::Display for Units{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self{
-            Units::Metric => String::from("metric"),
-            Units::Imperial => String::from("imperial"),
+            Units::Metric => write!(f, "metrics"),
+            Units::Imperial => write!(f, "imperial"),
         }
     }
 }
