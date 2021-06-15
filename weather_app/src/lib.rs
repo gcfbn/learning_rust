@@ -1,4 +1,5 @@
 #[macro_use]
 extern crate serde_derive;
 
-mod raw_weather_data;
+pub mod raw_weather_data;
+pub mod query;

@@ -3,6 +3,8 @@ pub mod inner;
 use serde::{Serialize, Deserialize};
 use restson::RestPath;
 
+use crate::query::Query;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WeatherData{
     pub coord: inner::Coord,
@@ -20,9 +22,15 @@ pub struct WeatherData{
     pub cod: i32,
 }
 
-impl RestPath<String> for WeatherData {
-    fn get_path(city: String) -> Result<String, restson::Error> {
+impl RestPath<&str> for WeatherData {
+    fn get_path(city: &str) -> Result<String, restson::Error> {
         Ok(format!("?q={}&appid=a52958f9ad25d7d64c67d97957bc6119", city))
+    }
+}
+
+impl RestPath<&Query> for WeatherData {
+    fn get_path(query: &Query) -> Result<String, restson::Error> {
+        Ok(format!("?q={}&units={}&lang={}", query.city, query.units.to_string(), query.language.to_string()))
     }
 }
 
