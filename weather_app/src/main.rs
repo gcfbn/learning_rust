@@ -34,6 +34,6 @@ fn main() {
 
     match result {
         Ok(data) => println!("{:#?}", data),
-        Err(error) => println!("An error has occured: \n{:#?}", error),
+        Err(error) => println!("An error has occurred: \n{:#?}", error),
     }
 }
