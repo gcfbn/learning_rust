@@ -1,4 +1,7 @@
 use clap::clap_app;
+use restson::{RestClient, Error};
+
+mod raw_weather_data;
 
 fn main() {
     let matches = clap_app!(weather_app =>
@@ -11,5 +14,9 @@ fn main() {
     )
         .get_matches();
 
-    println!("Hello, world!");
+    let mut client = RestClient::new("https://api.openweathermap.org/data/2.5/weather").unwrap();
+
+    let data: Result<raw_weather_data::WeatherData, Error> = client.get(String::from("Krakow"));
+
+    println!("{:#?}", data);
 }

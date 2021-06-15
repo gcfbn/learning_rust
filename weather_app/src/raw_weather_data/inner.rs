@@ -1,3 +1,5 @@
+use serde::{Serialize, Deserialize};
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Coord {
     pub lon: f32,
@@ -26,7 +28,6 @@ pub struct Main {
 pub struct Wind {
     pub speed: f32,
     pub deg: i32,
-    pub gust: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
