@@ -1,7 +1,5 @@
 use clap::clap_app;
-use restson::{RestClient, Error};
 
-use weather_app::raw_weather_data;
 use weather_app::query;
 
 fn main() {
