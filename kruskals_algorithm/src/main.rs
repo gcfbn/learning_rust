@@ -1,7 +1,8 @@
 #[macro_use]
 extern crate clap;
 
-use std::process;
+use std::process::exit;
+use std::path::Path;
 
 fn main() {
     // generate menu using Clap
@@ -14,10 +15,10 @@ fn main() {
         )
         .get_matches();
 
-    if let Some(r) = matches.value_of("RUN") {
-        let result = kruskals_algorithm::run(r).unwrap_or_else(|error| {
+    if let Some(file_name) = matches.value_of("RUN") {
+        let result = kruskals_algorithm::run(Path::new(file_name)).unwrap_or_else(|error| {
             eprintln!("An error happened: {}", error);
-            process::exit(1);
+            exit(1);
         });
         println!("{}", result);
     }

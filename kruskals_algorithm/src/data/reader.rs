@@ -1,8 +1,9 @@
 use super::structures;
 use std::fs;
 use anyhow::{anyhow, Error};
+use std::path::Path;
 
-pub fn build_graph_from_input(filename: &str) -> Result<structures::Graph, Error> {
+pub fn build_graph_from_input(filename: &Path) -> Result<structures::Graph, Error> {
     // println!("In file {}", filename);
 
     let input = fs::read_to_string(filename)?;
