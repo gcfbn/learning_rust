@@ -2,11 +2,8 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 pub fn mean(list: &[i32]) -> f32 {
-    let mut sum = 0;
-    for i in list {
-        sum += i;
-    }
-    sum as f32 / list.len() as f32
+    let sum = list.iter().sum::<i32>() as f32;
+    sum / list.len() as f32
 }
 
 pub fn median(list: &mut [i32]) -> f32 {
@@ -42,4 +39,15 @@ pub fn mode(list: &[i32]) -> Vec<i32> {
     }
 
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mean() {
+        let list = [-2, 2, 10, 0];
+        assert_eq!(mean(&list), 2.5 );
+    }
 }
