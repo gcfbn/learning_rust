@@ -1,7 +1,6 @@
-use crate::data::structures;
+use crate::Graph;
 
-pub fn calculate_min_total_weight(mut graph: structures::Graph) -> i32 {
-
+pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
     // create array of parental nodes
     // on initialization, all nodes have themself as their parental nodes
     // in this task, nodes are indexed from one, so index 0 of this array won't be used
@@ -37,5 +36,9 @@ pub fn calculate_min_total_weight(mut graph: structures::Graph) -> i32 {
 }
 
 fn find_parent(parents: &[u32], index: u32) -> u32 {
-    if parents[index as usize] != index { find_parent(parents, parents[index as usize]) } else { index }
+    if parents[index as usize] != index {
+        find_parent(parents, parents[index as usize])
+    } else {
+        index
+    }
 }
