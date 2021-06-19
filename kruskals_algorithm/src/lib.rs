@@ -1,16 +1,17 @@
+mod algorithm;
 mod data;
-mod kruskal;
 
-use anyhow::Error;
+use anyhow::Result as aResult;
 use std::path::Path;
 
+use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
 use crate::data::Graph;
 
-pub fn run<P>(filename: P) -> Result<i32, Error>
+pub fn run<P>(filename: P) -> aResult<i32>
 where
     P: AsRef<Path>,
 {
     let graph = build_graph_from_file(filename)?;
-    Ok(kruskal::algorithm::calculate_min_total_weight(graph))
+    Ok(calculate_min_total_weight(graph))
 }
