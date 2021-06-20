@@ -56,6 +56,7 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
     }
 }
 
+#[derive(Debug)]
 pub struct Graph {
     pub nodes_count: u32,
     pub edges: Vec<Edge>,
@@ -145,5 +146,110 @@ impl GraphParameters {
             nodes_count,
             max_edges_count,
         }
+    }
+}
+
+#[cfg(test)]
+#[macro_use]
+mod tests {
+    use crate::data::structures::{EdgeDescription, Edge, GraphParameters, GraphBuilder};
+    use std::convert::TryFrom;
+    use assert_matches::assert_matches;
+    use anyhow::{anyhow, Result as aResult};
+    use crate::data::Graph;
+
+    #[test]
+    fn create_edge_ok() {
+        let edge_description = EdgeDescription {
+            from_index: "1",
+            to_index: "5",
+            weight: "200",
+        };
+        let expected = Edge::new(1, 5, 200);
+        let actual = Edge::try_from(edge_description).unwrap();
+        assert_matches!(expected, actual);
+    }
+
+    #[test]
+    fn create_edge_err() {
+        let edge_description = EdgeDescription {
+            from_index: "1",
+            to_index: "a",
+            weight: "130",
+        };
+        let expected: Result<Edge, String> = Err(format!("creating graph edge from description `{:?}` has failed: \
+        to_index=a is not an integer !", edge_description));
+
+        let actual = Edge::try_from(edge_description);
+        assert_matches!(expected,actual );
+    }
+
+    fn create_test_graph_builder() -> GraphBuilder {
+        let graph_parameters = GraphParameters {
+            nodes_count: 3,
+            max_edges_count: 2,
+        };
+        GraphBuilder::new(graph_parameters)
+    }
+
+    #[test]
+    fn too_many_edges() {
+        let mut graph_builder = create_test_graph_builder();
+        graph_builder.add_edge(Edge { from_index: 1, to_index: 3, weight: 200 });
+        graph_builder.add_edge(Edge { from_index: 2, to_index: 1, weight: 50 });
+
+        let third_edge = Edge { from_index: 3, to_index: 4, weight: 170 };
+        let expected: aResult<()> =
+            Err(anyhow!("max allowed count of edges is 2 but you are trying to add a new edge {:?}",
+                third_edge));
+        let actual = graph_builder.add_edge(third_edge);
+        assert_matches!(expected,actual );
+    }
+
+    #[test]
+    fn invalid_from_index() {
+        let mut graph_builder = create_test_graph_builder();
+        let invalid_edge = Edge { from_index: 10, to_index: 3, weight: 120 };
+
+        let expected: aResult<()> =
+            Err(anyhow!("add_edge has failed for edge number: 1 - from_index 10 is greater than 5 !"));
+        let actual = graph_builder.add_edge(invalid_edge);
+        assert_matches!(expected,actual );
+    }
+
+    #[test]
+    fn invalid_to_index() {
+        let mut graph_builder = create_test_graph_builder();
+        let invalid_edge = Edge { from_index: 2, to_index: 7, weight: 120 };
+
+        let expected: aResult<()> =
+            Err(anyhow!("add_edge has failed for edge number: 1 - to_index 7 is greater than 5 !"));
+        let actual = graph_builder.add_edge(invalid_edge);
+        assert_matches!(expected,actual );
+    }
+
+    #[test]
+    fn build_graph_too_few_edges() {
+        let mut graph_builder = create_test_graph_builder();
+        let first_edge = Edge { from_index: 1, to_index: 3, weight: 100 };
+        graph_builder.add_edge(first_edge);
+        let expected: aResult<()> = Err(anyhow!("current count of edges 1 is less than declared 2"));
+        let actual = graph_builder.build();
+        assert_matches!(expected,actual );
+    }
+
+    #[test]
+    fn build_graph_ok() {
+        let mut graph_builder = create_test_graph_builder();
+        let first_edge = Edge { from_index: 1, to_index: 3, weight: 100 };
+        let second_edge = Edge { from_index: 2, to_index: 3, weight: 130 };
+        graph_builder.add_edge(first_edge);
+        graph_builder.add_edge(second_edge);
+        let expected = Graph {
+            nodes_count: 3,
+            edges: vec![first_edge, second_edge],
+        };
+        let actual = graph_builder.build().unwrap();
+        assert_matches!(expected,actual );
     }
 }
