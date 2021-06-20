@@ -1,4 +1,9 @@
+// extern these crates only when running tests
+#[cfg(test)]
 extern crate assert_matches;
+
+#[cfg(test)]
+extern crate test_case;
 
 mod algorithm;
 mod data;
