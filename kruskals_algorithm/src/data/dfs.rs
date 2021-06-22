@@ -25,3 +25,31 @@ fn dfs(index: usize, adjacency_list: &[Vec<usize>], visited: &mut Vec<bool>) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::data::structures::Edge;
+    use crate::data::dfs::is_connected;
+
+    #[test]
+    fn graph_not_connected() {
+        let nodes_count = 5;
+        let mut edges: Vec<Edge> = Vec::new();
+        edges.push(Edge { from_index: 1, to_index: 2, weight: 100 });
+        edges.push(Edge { from_index: 3, to_index: 4, weight: 100 });
+        edges.push(Edge { from_index: 4, to_index: 5, weight: 100 });
+        edges.push(Edge { from_index: 5, to_index: 3, weight: 100 });
+        assert_eq!(false, is_connected(&edges, nodes_count));
+    }
+
+    #[test]
+    fn graph_connected() {
+        let nodes_count = 5;
+        let mut edges: Vec<Edge> = Vec::new();
+        edges.push(Edge { from_index: 1, to_index: 2, weight: 100 });
+        edges.push(Edge { from_index: 4, to_index: 5, weight: 100 });
+        edges.push(Edge { from_index: 3, to_index: 5, weight: 100 });
+        edges.push(Edge { from_index: 1, to_index: 4, weight: 100 });
+        assert_eq!(true, is_connected(&edges, nodes_count));
+    }
+}
