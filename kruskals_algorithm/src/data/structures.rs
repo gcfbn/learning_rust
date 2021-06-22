@@ -119,6 +119,11 @@ impl GraphBuilder {
         }
     }
 
+    // checks if there is a path from any node to any other node
+    fn is_connected(&self) -> bool {
+        true
+    }
+
     pub fn build(self) -> aResult<Graph> {
         if self.edges.len() < self.max_edges_count {
             Err(anyhow!(
@@ -126,6 +131,8 @@ impl GraphBuilder {
                 self.edges.len(),
                 self.max_edges_count
             ))
+        } else if !self.is_connected() {
+            Err(anyhow!("graph is not connected!"))
         } else {
             Ok(Graph::new(self.nodes_count, self.edges))
         }
@@ -226,6 +233,28 @@ mod tests {
             Err(anyhow!("add_edge has failed for edge number: 1 - to_index 7 is greater than 5 !"));
         let actual = graph_builder.add_edge(invalid_edge);
         assert_matches!(expected,actual );
+    }
+
+    #[test]
+    fn graph_not_connected() {
+        let graph_parameters = GraphParameters::new(5, 4);
+        let mut graph_builder = GraphBuilder::new(graph_parameters);
+        graph_builder.add_edge(Edge { from_index: 1, to_index: 2, weight: 100 });
+        graph_builder.add_edge(Edge { from_index: 3, to_index: 4, weight: 100 });
+        graph_builder.add_edge(Edge { from_index: 4, to_index: 5, weight: 100 });
+        graph_builder.add_edge(Edge { from_index: 5, to_index: 3, weight: 100 });
+        assert_eq!(false, graph_builder.is_connected());
+    }
+
+    #[test]
+    fn graph_connected() {
+        let graph_parameters = GraphParameters::new(5, 4);
+        let mut graph_builder = GraphBuilder::new(graph_parameters);
+        graph_builder.add_edge(Edge { from_index: 1, to_index: 2, weight: 100 });
+        graph_builder.add_edge(Edge { from_index: 4, to_index: 5, weight: 100 });
+        graph_builder.add_edge(Edge { from_index: 3, to_index: 5, weight: 100 });
+        graph_builder.add_edge(Edge { from_index: 1, to_index: 4, weight: 100 });
+        assert_eq!(true, graph_builder.is_connected());
     }
 
     #[test]
