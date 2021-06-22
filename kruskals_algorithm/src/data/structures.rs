@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result as aResult};
 use std::convert::TryFrom;
+use crate::data::dfs::is_connected as dfs_is_connected;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Edge {
@@ -121,7 +122,7 @@ impl GraphBuilder {
 
     // checks if there is a path from any node to any other node
     fn is_connected(&self) -> bool {
-        true
+        dfs_is_connected(&self.edges, self.nodes_count)
     }
 
     pub fn build(self) -> aResult<Graph> {
