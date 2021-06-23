@@ -1,6 +1,6 @@
-use anyhow::{anyhow, Result as aResult};
 use std::convert::TryFrom;
 use crate::data::dfs::is_connected as dfs_is_connected;
+use crate::KruskalsAlgorithmError;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Edge {
@@ -27,31 +27,31 @@ pub struct EdgeDescription<'a> {
 }
 
 impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
-    type Error = String;
+    type Error = KruskalsAlgorithmError<'a>;
 
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
-        fn build_error<'a>(
-            edge_description: &EdgeDescription<'a>,
-            field_name: &str,
-            field_value: &str,
-        ) -> String {
-            format!(
-                "creating graph edge from description `{:?}` has failed: {}={} is not an integer !",
-                edge_description, field_name, field_value
-            )
-        }
 
-        let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
-            build_error(&edge_description, "from_index", edge_description.from_index)
-        })?;
-        let parsed_to_index = edge_description
-            .to_index
-            .parse::<u32>()
-            .map_err(|_| build_error(&edge_description, "to_index", edge_description.to_index))?;
-        let parsed_weight = edge_description
-            .weight
-            .parse::<i32>()
-            .map_err(|_| build_error(&edge_description, "weight", edge_description.weight))?;
+        // compiler errors: every |_| in closure may outlive borrowed value 'edge_description'
+        let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_|
+            KruskalsAlgorithmError::CreatingEdgeError {
+                edge_description: &edge_description,
+                field_name: "from_index",
+                field_value: edge_description.from_index,
+            })?;
+
+        let parsed_to_index = edge_description.to_index.parse::<u32>().map_err(|_|
+            KruskalsAlgorithmError::CreatingEdgeError {
+                edge_description: &edge_description,
+                field_name: "to_index",
+                field_value: edge_description.to_index,
+            })?;
+
+        let parsed_weight = edge_description.weight.parse::<i32>().map_err(|_|
+            KruskalsAlgorithmError::CreatingEdgeError {
+                edge_description: &edge_description,
+                field_name: "weight",
+                field_value: edge_description.weight,
+            })?;
 
         Ok(Edge::new(parsed_from_index, parsed_to_index, parsed_weight))
     }
@@ -89,34 +89,31 @@ impl GraphBuilder {
         }
     }
 
-    pub fn add_edge(&mut self, edge: Edge) -> aResult<()> {
+    pub fn add_edge(&mut self, edge: Edge) -> Result<(), KruskalsAlgorithmError<'static>> {
         if self.edges.len() < self.max_edges_count {
             if edge.from_index > self.nodes_count {
-                return Err(anyhow!(
-                    "add_edge has failed for edge number: {} - from_index {} is greater than {} !",
-                    self.edges.len() + 1,
-                    edge.from_index,
-                    self.nodes_count
-                ));
+                return Err(KruskalsAlgorithmError::WrongFromIndex {
+                    edge_number: self.edges.len() + 1,
+                    from_index: edge.from_index,
+                    nodes_count: self.nodes_count,
+                });
             }
 
             if edge.to_index > self.nodes_count {
-                return Err(anyhow!(
-                    "add_edge has failed for edge number: {} - to_index {} is greater than {} !",
-                    self.edges.len() + 1,
-                    edge.to_index,
-                    self.nodes_count
-                ));
+                return Err(KruskalsAlgorithmError::WrongToIndex {
+                    edge_number: self.edges.len() + 1,
+                    to_index: edge.to_index,
+                    nodes_count: self.nodes_count,
+                });
             }
 
             self.edges.push(edge);
             Ok(())
         } else {
-            Err(anyhow!(
-                "max allowed count of edges is {} but you are trying to add a new edge {:?}",
-                self.max_edges_count,
-                edge
-            ))
+            Err(KruskalsAlgorithmError::TooManyEdges {
+                max_edges_count: self.max_edges_count,
+                edge,
+            })
         }
     }
 
@@ -125,15 +122,14 @@ impl GraphBuilder {
         dfs_is_connected(&self.edges, self.nodes_count)
     }
 
-    pub fn build(self) -> aResult<Graph> {
+    pub fn build(self) -> Result<Graph, KruskalsAlgorithmError<'static>> {
         if self.edges.len() < self.max_edges_count {
-            Err(anyhow!(
-                "current count of edges {} is less than declared {}",
-                self.edges.len(),
-                self.max_edges_count
-            ))
+            Err(KruskalsAlgorithmError::TooFewEdges {
+                current_count: self.edges.len(),
+                declared: self.max_edges_count,
+            })
         } else if !self.is_connected() {
-            Err(anyhow!("graph is not connected!"))
+            Err(KruskalsAlgorithmError::GraphNotConnected)
         } else {
             Ok(Graph::new(self.nodes_count, self.edges))
         }
