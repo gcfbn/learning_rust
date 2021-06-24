@@ -1,6 +1,8 @@
 use crate::data::{Edge, EdgeDescription};
 use thiserror::Error;
 
+pub type LibResult<T> = Result<T, KruskalsAlgorithmError>;
+
 #[derive(Error, Debug)]
 pub enum KruskalsAlgorithmError {
     #[error("graph is not connected!")]

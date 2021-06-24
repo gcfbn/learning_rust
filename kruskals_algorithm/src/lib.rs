@@ -12,9 +12,9 @@ use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
 use crate::data::Graph;
 
-pub use crate::errors::{CreatingEdgeError, KruskalsAlgorithmError};
+pub use crate::errors::{CreatingEdgeError, KruskalsAlgorithmError, LibResult};
 
-pub fn run<P>(filename: P) -> Result<i32, KruskalsAlgorithmError>
+pub fn run<P>(filename: P) -> LibResult<i32>
 where
     P: AsRef<Path>,
 {
