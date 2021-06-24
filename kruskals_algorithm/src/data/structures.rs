@@ -202,16 +202,20 @@ mod tests {
     #[test]
     fn too_many_edges() {
         let mut graph_builder = create_test_graph_builder();
-        graph_builder.add_edge(Edge {
-            from_index: 1,
-            to_index:   3,
-            weight:     200,
-        }).unwrap();
-        graph_builder.add_edge(Edge {
-            from_index: 2,
-            to_index:   1,
-            weight:     50,
-        }).unwrap();
+        graph_builder
+            .add_edge(Edge {
+                from_index: 1,
+                to_index:   3,
+                weight:     200,
+            })
+            .unwrap();
+        graph_builder
+            .add_edge(Edge {
+                from_index: 2,
+                to_index:   1,
+                weight:     50,
+            })
+            .unwrap();
 
         let third_edge = Edge {
             from_index: 3,
@@ -256,7 +260,7 @@ mod tests {
 
         let expected = KruskalsAlgorithmError::WrongToIndex {
             edge_number: 1,
-            to_index: 7,
+            to_index:    7,
             nodes_count: 3,
         };
 
@@ -276,7 +280,7 @@ mod tests {
         graph_builder.add_edge(first_edge).unwrap();
         let expected = KruskalsAlgorithmError::TooFewEdges {
             current_count: graph_builder.edges.len(),
-            declared: graph_builder.max_edges_count,
+            declared:      graph_builder.max_edges_count,
         };
         let actual = graph_builder.build().unwrap_err();
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
