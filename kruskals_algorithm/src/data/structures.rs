@@ -1,8 +1,8 @@
 use crate::data::dfs::is_connected as dfs_is_connected;
-use crate::KruskalsAlgorithmError;
+use crate::{CreatingEdgeError, KruskalsAlgorithmError};
 use std::convert::TryFrom;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Edge {
     pub from_index: u32,
     pub to_index:   u32,
@@ -30,36 +30,28 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
     type Error = KruskalsAlgorithmError;
 
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
-        // compiler errors: every |_| in closure may outlive borrowed value 'edge_description'
-        let parsed_from_index =
-            edge_description
-                .from_index
-                .parse::<u32>()
-                .map_err(|_| KruskalsAlgorithmError::CreatingEdgeError {
-                    edge_description: format!("{:?}", edge_description),
-                    field_name:       "from_index".to_owned(),
-                    field_value:      edge_description.from_index.to_owned(),
-                })?;
+        let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
+            let err: KruskalsAlgorithmError =
+                CreatingEdgeError::from_edge_description(&edge_description, "from_index", edge_description.from_index)
+                    .into();
+            err
+        })?;
 
-        let parsed_to_index =
-            edge_description
-                .to_index
-                .parse::<u32>()
-                .map_err(|_| KruskalsAlgorithmError::CreatingEdgeError {
-                    edge_description: format!("{:?}", edge_description),
-                    field_name:       "to_index".to_owned(),
-                    field_value:      edge_description.to_index.to_owned(),
-                })?;
+        let parsed_to_index = edge_description.to_index.parse::<u32>().map_err(|_| {
+            KruskalsAlgorithmError::from(CreatingEdgeError::from_edge_description(
+                &edge_description,
+                "to_index",
+                edge_description.to_index,
+            ))
+        })?;
 
-        let parsed_weight =
-            edge_description
-                .weight
-                .parse::<i32>()
-                .map_err(|_| KruskalsAlgorithmError::CreatingEdgeError {
-                    edge_description: format!("{:?}", edge_description),
-                    field_name:       "weight".to_owned(),
-                    field_value:      edge_description.weight.to_owned(),
-                })?;
+        let parsed_weight = edge_description.weight.parse::<i32>().map_err(|_| {
+            KruskalsAlgorithmError::from(CreatingEdgeError::from_edge_description(
+                &edge_description,
+                "weight",
+                edge_description.weight,
+            ))
+        })?;
 
         Ok(Edge::new(parsed_from_index, parsed_to_index, parsed_weight))
     }
@@ -166,6 +158,7 @@ impl GraphParameters {
 mod tests {
     use crate::data::structures::{Edge, EdgeDescription, GraphBuilder, GraphParameters};
     use crate::data::Graph;
+    use crate::{CreatingEdgeError, KruskalsAlgorithmError};
     use anyhow::{anyhow, Result as aResult};
     use assert_matches::assert_matches;
     use std::convert::TryFrom;
@@ -179,7 +172,7 @@ mod tests {
         };
         let expected = Edge::new(1, 5, 200);
         let actual = Edge::try_from(edge_description).unwrap();
-        assert_matches!(expected, actual);
+        assert_eq!(expected, actual);
     }
 
     #[test]
@@ -189,21 +182,23 @@ mod tests {
             to_index:   "a",
             weight:     "130",
         };
-        let expected: Result<Edge, String> = Err(format!(
-            "creating graph edge from description `{:?}` has failed: to_index=a is not an integer !",
-            edge_description
+        let expected = KruskalsAlgorithmError::from(CreatingEdgeError::from_edge_description(
+            &edge_description,
+            "to_index",
+            edge_description.to_index,
         ));
 
-        let actual = Edge::try_from(edge_description);
-        assert_matches!(expected, actual);
+        let actual = Edge::try_from(edge_description).unwrap_err();
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 
+    const test_graph_parameters: GraphParameters = GraphParameters {
+        nodes_count:     3,
+        max_edges_count: 2,
+    };
+
     fn create_test_graph_builder() -> GraphBuilder {
-        let graph_parameters = GraphParameters {
-            nodes_count:     3,
-            max_edges_count: 2,
-        };
-        GraphBuilder::new(graph_parameters)
+        GraphBuilder::new(test_graph_parameters)
     }
 
     #[test]
@@ -225,12 +220,13 @@ mod tests {
             to_index:   4,
             weight:     170,
         };
-        let expected: aResult<()> = Err(anyhow!(
-            "max allowed count of edges is 2 but you are trying to add a new edge {:?}",
-            third_edge
-        ));
-        let actual = graph_builder.add_edge(third_edge);
-        assert_matches!(expected, actual);
+        let expected = KruskalsAlgorithmError::TooManyEdges {
+            max_edges_count: test_graph_parameters.max_edges_count,
+            edge:            third_edge,
+        };
+
+        let actual = graph_builder.add_edge(third_edge).unwrap_err();
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 
     #[test]
@@ -242,11 +238,13 @@ mod tests {
             weight:     120,
         };
 
-        let expected: aResult<()> = Err(anyhow!(
-            "add_edge has failed for edge number: 1 - from_index 10 is greater than 5 !"
-        ));
-        let actual = graph_builder.add_edge(invalid_edge);
-        assert_matches!(expected, actual);
+        let expected = KruskalsAlgorithmError::WrongFromIndex {
+            edge_number: 1,
+            from_index:  10,
+            nodes_count: test_graph_parameters.nodes_count,
+        };
+        let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 
     #[test]

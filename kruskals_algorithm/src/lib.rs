@@ -1,8 +1,5 @@
 // extern these crates only when running tests
 #[cfg(test)]
-extern crate assert_matches;
-
-#[cfg(test)]
 extern crate test_case;
 
 mod algorithm;
@@ -14,7 +11,7 @@ use thiserror::Error;
 
 use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
-use crate::data::{Edge, Graph};
+use crate::data::{Edge, EdgeDescription, Graph};
 
 pub fn run<P>(filename: P) -> aResult<i32>
 where
@@ -59,12 +56,8 @@ pub enum KruskalsAlgorithmError {
     #[error("not enough data in input file")]
     NotEnoughData,
 
-    #[error("creating graph edge from description `{}` has failed: {field_name}={field_value} is not an integer!")]
-    CreatingEdgeError {
-        edge_description: String,
-        field_name:       String,
-        field_value:      String,
-    },
+    #[error("{0}")]
+    CreatingEdgeError(CreatingEdgeError),
 
     #[error("parsing graph parameters has failed: {parameter_name}={value} is not an integer!")]
     ParsingError {
@@ -74,4 +67,41 @@ pub enum KruskalsAlgorithmError {
 
     #[error(transparent)]
     StandardError(#[from] std::io::Error),
+}
+
+impl From<CreatingEdgeError> for KruskalsAlgorithmError {
+    fn from(e: CreatingEdgeError) -> Self {
+        KruskalsAlgorithmError::CreatingEdgeError(e)
+    }
+}
+
+#[derive(Debug)]
+pub struct CreatingEdgeError {
+    edge_description: String,
+    field_name:       String,
+    field_value:      String,
+}
+
+impl CreatingEdgeError {
+    pub fn from_edge_description(edge_description: &EdgeDescription, field_name: &str, field_value: &str) -> Self {
+        Self {
+            edge_description: format!("{:?}", edge_description),
+            field_name:       field_name.to_owned(),
+            field_value:      field_value.to_owned(),
+        }
+    }
+}
+
+use std::fmt;
+
+impl fmt::Display for CreatingEdgeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "creating graph edge from description `{}` has failed: {field_name}={field_value} is not an integer!",
+            self.edge_description,
+            field_name = self.field_name,
+            field_value = self.field_value
+        )
+    }
 }
