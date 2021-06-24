@@ -11,8 +11,6 @@ pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
         parents.push(i);
     }
 
-    // copy all edges from the graph to result vector of edges
-
     // sort result_edges by ascending weight
     graph.edges.sort_by(|a, b| a.weight.cmp(&b.weight));
 
@@ -49,3 +47,26 @@ fn _find_parent_no_recursion(parents: &[u32], index: u32) -> u32 {
     current_index
 }
 */
+
+#[cfg(test)]
+#[cfg(test)]
+mod tests {
+    use crate::algorithm::find_parent;
+    use crate::test_case::test_case;
+
+    #[test_case(1 => 10; "last element is parent of the first element")]
+    #[test_case(10 => 10; "last element is it's own parent")]
+    fn find_parent_when_all_nodes_are_connected(index: u32) -> u32 {
+        let parents = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10];
+        find_parent(&parents, index)
+    }
+
+    #[test_case(1 => 1)]
+    #[test_case(4 => 1)]
+    #[test_case(8 => 6)]
+    #[test_case(6 => 6)]
+    fn find_parent_disjoint_set(index: u32) -> u32 {
+        let parents = [0, 1, 1, 2, 1, 7, 6, 6, 5];
+        find_parent(&parents, index)
+    }
+}

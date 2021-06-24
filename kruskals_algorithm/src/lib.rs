@@ -1,14 +1,20 @@
+// extern these crates only when running tests
+#[cfg(test)]
+extern crate test_case;
+
 mod algorithm;
 mod data;
+mod errors;
 
-use anyhow::Result as aResult;
 use std::path::Path;
 
 use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
 use crate::data::Graph;
 
-pub fn run<P>(filename: P) -> aResult<i32>
+pub use crate::errors::{CreatingEdgeError, KruskalsAlgorithmError, LibResult};
+
+pub fn run<P>(filename: P) -> LibResult<i32>
 where
     P: AsRef<Path>,
 {

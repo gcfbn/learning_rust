@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result as aResult};
 use clap::{AppSettings, Clap};
+use kruskals_algorithm::LibResult;
 use std::path::{Path, PathBuf};
 use std::process;
 
@@ -32,7 +33,7 @@ fn file_exists(p: &str) -> aResult<()> {
     }
 }
 
-fn run() -> aResult<()> {
+fn run() -> LibResult<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
     let output = kruskals_algorithm::run(cmd_args.task_file)?;
