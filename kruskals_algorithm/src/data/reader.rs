@@ -1,10 +1,10 @@
 use crate::data::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};
-use crate::KruskalsAlgorithmError;
+use crate::{KruskalsAlgorithmError, LibResult};
 use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
 
-pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph, KruskalsAlgorithmError> {
+pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> LibResult<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
     let mut task_file_reader = TaskFileReader::new(&input);
@@ -37,7 +37,7 @@ impl<'a> TaskFileReader<'a> {
         }
     }
 
-    pub fn graph_parameters(&mut self) -> Result<GraphParameters, KruskalsAlgorithmError> {
+    pub fn graph_parameters(&mut self) -> LibResult<GraphParameters> {
         let n = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
         let m = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
 

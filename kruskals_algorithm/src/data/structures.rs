@@ -1,5 +1,5 @@
 use crate::data::dfs::is_connected as dfs_is_connected;
-use crate::{CreatingEdgeError, KruskalsAlgorithmError};
+use crate::{CreatingEdgeError, KruskalsAlgorithmError, LibResult};
 use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -89,7 +89,7 @@ impl GraphBuilder {
         }
     }
 
-    pub fn add_edge(&mut self, edge: Edge) -> Result<(), KruskalsAlgorithmError> {
+    pub fn add_edge(&mut self, edge: Edge) -> LibResult<()> {
         if self.edges.len() < self.max_edges_count {
             if edge.from_index > self.nodes_count {
                 return Err(KruskalsAlgorithmError::WrongFromIndex {
@@ -122,7 +122,7 @@ impl GraphBuilder {
         dfs_is_connected(&self.edges, self.nodes_count)
     }
 
-    pub fn build(self) -> Result<Graph, KruskalsAlgorithmError> {
+    pub fn build(self) -> LibResult<Graph> {
         if self.edges.len() < self.max_edges_count {
             Err(KruskalsAlgorithmError::TooFewEdges {
                 current_count: self.edges.len(),
