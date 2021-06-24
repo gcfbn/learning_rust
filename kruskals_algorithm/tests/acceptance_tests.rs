@@ -14,8 +14,8 @@ fn passing(dataset_number: u32) -> i32 {
 }
 
 #[test]
-fn failing_1() {
-    let actual = run("tests/data/failing1.txt").unwrap_err();
+fn failing_graph_not_connected() {
+    let actual = run("tests/data/failing_graph_not_connected.txt").unwrap_err();
     let expected = KruskalsAlgorithmError::GraphNotConnected;
-    assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+    assert_eq!(actual.to_string(), expected.to_string());
 }
