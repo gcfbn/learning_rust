@@ -14,7 +14,7 @@ use thiserror::Error;
 
 use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
-use crate::data::{Edge, EdgeDescription, Graph};
+use crate::data::{Edge, Graph};
 
 pub fn run<P>(filename: P) -> aResult<i32>
 where
@@ -25,7 +25,7 @@ where
 }
 
 #[derive(Error, Debug)]
-pub enum KruskalsAlgorithmError<'a> {
+pub enum KruskalsAlgorithmError {
     #[error("graph is not connected!")]
     GraphNotConnected,
 
@@ -59,17 +59,17 @@ pub enum KruskalsAlgorithmError<'a> {
     #[error("not enough data in input file")]
     NotEnoughData,
 
-    #[error("creating graph edge from description `{:?}` has failed: {field_name}={field_value} is not an integer!")]
+    #[error("creating graph edge from description `{}` has failed: {field_name}={field_value} is not an integer!")]
     CreatingEdgeError {
-        edge_description: &'a EdgeDescription<'a>,
-        field_name:       &'a str,
-        field_value:      &'a str,
+        edge_description: String,
+        field_name:       String,
+        field_value:      String,
     },
 
     #[error("parsing graph parameters has failed: {parameter_name}={value} is not an integer!")]
     ParsingError {
-        parameter_name: &'a str,
-        value:          &'a str,
+        parameter_name: String,
+        value:          String,
     },
 
     #[error(transparent)]

@@ -27,7 +27,7 @@ pub struct EdgeDescription<'a> {
 }
 
 impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
-    type Error = KruskalsAlgorithmError<'a>;
+    type Error = KruskalsAlgorithmError;
 
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
         // compiler errors: every |_| in closure may outlive borrowed value 'edge_description'
@@ -36,9 +36,9 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
                 .from_index
                 .parse::<u32>()
                 .map_err(|_| KruskalsAlgorithmError::CreatingEdgeError {
-                    edge_description: &edge_description,
-                    field_name:       "from_index",
-                    field_value:      edge_description.from_index,
+                    edge_description: format!("{:?}", edge_description),
+                    field_name:       "from_index".to_owned(),
+                    field_value:      edge_description.from_index.to_owned(),
                 })?;
 
         let parsed_to_index =
@@ -46,9 +46,9 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
                 .to_index
                 .parse::<u32>()
                 .map_err(|_| KruskalsAlgorithmError::CreatingEdgeError {
-                    edge_description: &edge_description,
-                    field_name:       "to_index",
-                    field_value:      edge_description.to_index,
+                    edge_description: format!("{:?}", edge_description),
+                    field_name:       "to_index".to_owned(),
+                    field_value:      edge_description.to_index.to_owned(),
                 })?;
 
         let parsed_weight =
@@ -56,9 +56,9 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
                 .weight
                 .parse::<i32>()
                 .map_err(|_| KruskalsAlgorithmError::CreatingEdgeError {
-                    edge_description: &edge_description,
-                    field_name:       "weight",
-                    field_value:      edge_description.weight,
+                    edge_description: format!("{:?}", edge_description),
+                    field_name:       "weight".to_owned(),
+                    field_value:      edge_description.weight.to_owned(),
                 })?;
 
         Ok(Edge::new(parsed_from_index, parsed_to_index, parsed_weight))
@@ -97,7 +97,7 @@ impl GraphBuilder {
         }
     }
 
-    pub fn add_edge(&mut self, edge: Edge) -> Result<(), KruskalsAlgorithmError<'static>> {
+    pub fn add_edge(&mut self, edge: Edge) -> Result<(), KruskalsAlgorithmError> {
         if self.edges.len() < self.max_edges_count {
             if edge.from_index > self.nodes_count {
                 return Err(KruskalsAlgorithmError::WrongFromIndex {
@@ -130,7 +130,7 @@ impl GraphBuilder {
         dfs_is_connected(&self.edges, self.nodes_count)
     }
 
-    pub fn build(self) -> Result<Graph, KruskalsAlgorithmError<'static>> {
+    pub fn build(self) -> Result<Graph, KruskalsAlgorithmError> {
         if self.edges.len() < self.max_edges_count {
             Err(KruskalsAlgorithmError::TooFewEdges {
                 current_count: self.edges.len(),
