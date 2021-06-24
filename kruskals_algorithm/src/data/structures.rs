@@ -228,7 +228,7 @@ mod tests {
         };
 
         let actual = graph_builder.add_edge(third_edge).unwrap_err();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        assert_eq!(actual.to_string(), expected.to_string());
     }
 
     #[test]
@@ -246,7 +246,7 @@ mod tests {
             nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
         };
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        assert_eq!(actual.to_string(), expected.to_string());
     }
 
     #[test]
@@ -265,7 +265,7 @@ mod tests {
         };
 
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        assert_eq!(actual.to_string(), expected.to_string());
     }
 
     #[test]
@@ -283,7 +283,7 @@ mod tests {
             declared:      graph_builder.max_edges_count,
         };
         let actual = graph_builder.build().unwrap_err();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        assert_eq!(actual.to_string(), expected.to_string());
     }
 
     #[test]
