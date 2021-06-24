@@ -6,7 +6,6 @@ mod algorithm;
 mod data;
 mod errors;
 
-use anyhow::Result as aResult;
 use std::path::Path;
 
 use crate::algorithm::calculate_min_total_weight;
@@ -15,7 +14,7 @@ use crate::data::Graph;
 
 pub use crate::errors::{CreatingEdgeError, KruskalsAlgorithmError};
 
-pub fn run<P>(filename: P) -> aResult<i32>
+pub fn run<P>(filename: P) -> Result<i32, KruskalsAlgorithmError>
 where
     P: AsRef<Path>,
 {
