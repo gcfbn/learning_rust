@@ -159,8 +159,6 @@ mod tests {
     use crate::data::structures::{Edge, EdgeDescription, GraphBuilder, GraphParameters};
     use crate::data::Graph;
     use crate::{CreatingEdgeError, KruskalsAlgorithmError};
-    use anyhow::{anyhow, Result as aResult};
-    use assert_matches::assert_matches;
     use std::convert::TryFrom;
 
     #[test]
@@ -256,11 +254,14 @@ mod tests {
             weight:     120,
         };
 
-        let expected: aResult<()> = Err(anyhow!(
-            "add_edge has failed for edge number: 1 - to_index 7 is greater than 5 !"
-        ));
-        let actual = graph_builder.add_edge(invalid_edge);
-        assert_matches!(expected, actual);
+        let expected = KruskalsAlgorithmError::WrongToIndex {
+            edge_number: 1,
+            to_index: 7,
+            nodes_count: 3,
+        };
+
+        let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 
     #[test]
@@ -271,10 +272,14 @@ mod tests {
             to_index:   3,
             weight:     100,
         };
+
         graph_builder.add_edge(first_edge);
-        let expected: aResult<()> = Err(anyhow!("current count of edges 1 is less than declared 2"));
-        let actual = graph_builder.build();
-        assert_matches!(expected, actual);
+        let expected = KruskalsAlgorithmError::TooFewEdges {
+            current_count: graph_builder.edges.len(),
+            declared: graph_builder.max_edges_count,
+        };
+        let actual = graph_builder.build().unwrap_err();
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 
     #[test]
@@ -297,6 +302,6 @@ mod tests {
             edges:       vec![first_edge, second_edge],
         };
         let actual = graph_builder.build().unwrap();
-        assert_matches!(expected, actual);
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 }
