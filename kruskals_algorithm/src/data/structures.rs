@@ -190,13 +190,13 @@ mod tests {
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
 
-    const test_graph_parameters: GraphParameters = GraphParameters {
+    const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
         nodes_count:     3,
         max_edges_count: 2,
     };
 
     fn create_test_graph_builder() -> GraphBuilder {
-        GraphBuilder::new(test_graph_parameters)
+        GraphBuilder::new(TEST_GRAPH_PARAMETERS)
     }
 
     #[test]
@@ -206,12 +206,12 @@ mod tests {
             from_index: 1,
             to_index:   3,
             weight:     200,
-        });
+        }).unwrap();
         graph_builder.add_edge(Edge {
             from_index: 2,
             to_index:   1,
             weight:     50,
-        });
+        }).unwrap();
 
         let third_edge = Edge {
             from_index: 3,
@@ -219,7 +219,7 @@ mod tests {
             weight:     170,
         };
         let expected = KruskalsAlgorithmError::TooManyEdges {
-            max_edges_count: test_graph_parameters.max_edges_count,
+            max_edges_count: TEST_GRAPH_PARAMETERS.max_edges_count,
             edge:            third_edge,
         };
 
@@ -239,7 +239,7 @@ mod tests {
         let expected = KruskalsAlgorithmError::WrongFromIndex {
             edge_number: 1,
             from_index:  10,
-            nodes_count: test_graph_parameters.nodes_count,
+            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
         };
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
@@ -273,7 +273,7 @@ mod tests {
             weight:     100,
         };
 
-        graph_builder.add_edge(first_edge);
+        graph_builder.add_edge(first_edge).unwrap();
         let expected = KruskalsAlgorithmError::TooFewEdges {
             current_count: graph_builder.edges.len(),
             declared: graph_builder.max_edges_count,
@@ -295,8 +295,8 @@ mod tests {
             to_index:   3,
             weight:     130,
         };
-        graph_builder.add_edge(first_edge);
-        graph_builder.add_edge(second_edge);
+        graph_builder.add_edge(first_edge).unwrap();
+        graph_builder.add_edge(second_edge).unwrap();
         let expected = Graph {
             nodes_count: 3,
             edges:       vec![first_edge, second_edge],
