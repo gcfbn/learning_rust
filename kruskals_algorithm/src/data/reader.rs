@@ -9,7 +9,6 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph, Krusk
     let input = fs::read_to_string(filename)?;
     let mut task_file_reader = TaskFileReader::new(&input);
 
-    // compiler error: returns a value referencing data owned by the current function
     let graph_parameters = task_file_reader.graph_parameters()?;
 
     let mut graph_builder = GraphBuilder::new(graph_parameters);
