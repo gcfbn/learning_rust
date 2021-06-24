@@ -1,8 +1,8 @@
 use crate::data::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};
+use crate::KruskalsAlgorithmError;
 use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
-use crate::KruskalsAlgorithmError;
 
 pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph, KruskalsAlgorithmError<'static>> {
     let filename = filename.as_ref();
@@ -42,16 +42,14 @@ impl<'a> TaskFileReader<'a> {
         let n = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
         let m = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
 
-        let n = n.parse::<u32>().map_err(|_|
-            KruskalsAlgorithmError::ParsingError {
-                parameter_name: "n",
-                value: n,
-            })?;
-        let m = m.parse::<usize>().map_err(|_|
-            KruskalsAlgorithmError::ParsingError {
-                parameter_name: "m",
-                value: m,
-            })?;
+        let n = n.parse::<u32>().map_err(|_| KruskalsAlgorithmError::ParsingError {
+            parameter_name: "n",
+            value:          n,
+        })?;
+        let m = m.parse::<usize>().map_err(|_| KruskalsAlgorithmError::ParsingError {
+            parameter_name: "m",
+            value:          m,
+        })?;
 
         Ok(GraphParameters::new(n, m))
     }
