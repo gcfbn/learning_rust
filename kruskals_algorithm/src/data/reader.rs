@@ -1,10 +1,10 @@
 use crate::data::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};
+use crate::KruskalsAlgorithmError;
 use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
-use crate::KruskalsAlgorithmError;
 
-pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph, KruskalsAlgorithmError<'static>> {
+pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph, KruskalsAlgorithmError> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
     let mut task_file_reader = TaskFileReader::new(&input);
@@ -38,20 +38,18 @@ impl<'a> TaskFileReader<'a> {
         }
     }
 
-    pub fn graph_parameters(&mut self) -> Result<GraphParameters, KruskalsAlgorithmError<'a>> {
+    pub fn graph_parameters(&mut self) -> Result<GraphParameters, KruskalsAlgorithmError> {
         let n = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
         let m = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
 
-        let n = n.parse::<u32>().map_err(|_|
-            KruskalsAlgorithmError::ParsingError {
-                parameter_name: "n",
-                value: n,
-            })?;
-        let m = m.parse::<usize>().map_err(|_|
-            KruskalsAlgorithmError::ParsingError {
-                parameter_name: "m",
-                value: m,
-            })?;
+        let n = n.parse::<u32>().map_err(|_| KruskalsAlgorithmError::ParsingError {
+            parameter_name: "n".to_owned(),
+            value:          n.to_owned(),
+        })?;
+        let m = m.parse::<usize>().map_err(|_| KruskalsAlgorithmError::ParsingError {
+            parameter_name: "m".to_owned(),
+            value:          m.to_owned(),
+        })?;
 
         Ok(GraphParameters::new(n, m))
     }
