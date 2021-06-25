@@ -1,10 +1,10 @@
 use crate::data::{Edge, EdgeDescription};
 use thiserror::Error;
 
-pub type LibResult<T> = Result<T, KruskalsAlgorithmError>;
+pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 
 #[derive(Error, Debug)]
-pub enum KruskalsAlgorithmError {
+pub enum BuildGraphError {
     #[error("graph is not connected!")]
     GraphNotConnected,
 
@@ -51,9 +51,9 @@ pub enum KruskalsAlgorithmError {
     StandardError(#[from] std::io::Error),
 }
 
-impl From<CreatingEdgeError> for KruskalsAlgorithmError {
+impl From<CreatingEdgeError> for BuildGraphError {
     fn from(e: CreatingEdgeError) -> Self {
-        KruskalsAlgorithmError::CreatingEdgeError(e)
+        BuildGraphError::CreatingEdgeError(e)
     }
 }
 
