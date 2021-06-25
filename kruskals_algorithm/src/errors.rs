@@ -70,11 +70,23 @@ pub struct CreatingEdgeError {
 }
 
 impl CreatingEdgeError {
-    pub fn from_edge_description(edge_description: &EdgeDescription, field_name: &str, field_value: &str) -> Self {
+    fn from_edge_description(edge_description: &EdgeDescription, field_name: &str, field_value: &str) -> Self {
         Self {
             edge_description: format!("{:?}", edge_description),
             field_name:       field_name.to_owned(),
             field_value:      field_value.to_owned(),
         }
+    }
+
+    pub fn from_edge_description_with_bad_from_index(edge_description: &EdgeDescription) -> Self {
+        Self::from_edge_description(edge_description, "from_index", edge_description.from_index.into())
+    }
+
+    pub fn from_edge_description_with_bad_to_index(edge_description: &EdgeDescription) -> Self {
+        Self::from_edge_description(edge_description, "to_index", edge_description.to_index.into())
+    }
+
+    pub fn from_edge_description_with_bad_weight(edge_description: &EdgeDescription) -> Self {
+        Self::from_edge_description(edge_description, "weight", edge_description.weight.into())
     }
 }
