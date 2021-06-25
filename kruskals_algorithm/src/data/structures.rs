@@ -32,24 +32,19 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
         let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
             let err: BuildGraphError =
-                CreatingEdgeError::from_edge_description(&edge_description, "from_index", edge_description.from_index)
-                    .into();
+                CreatingEdgeError::from_edge_description_with_bad_from_index(&edge_description).into();
             err
         })?;
 
         let parsed_to_index = edge_description.to_index.parse::<u32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::from_edge_description(
+            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
                 &edge_description,
-                "to_index",
-                edge_description.to_index,
             ))
         })?;
 
         let parsed_weight = edge_description.weight.parse::<i32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::from_edge_description(
+            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
                 &edge_description,
-                "weight",
-                edge_description.weight,
             ))
         })?;
 
@@ -176,22 +171,48 @@ mod tests {
     }
 
     #[test]
-    fn create_edge_err() {
+    fn create_edge_with_err_because_from_index_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription {
-            from_index: "1",
-            to_index:   "a",
+            from_index: "xxx",
+            to_index:   "2",
             weight:     "130",
         };
-        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description(
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_from_index(
             &edge_description,
-            "to_index",
-            edge_description.to_index,
         ));
 
-        println!("expected={}", expected);
+        let actual = Edge::try_from(edge_description).unwrap_err();
+        assert_eq!(actual.to_string(), expected.to_string());
+    }
+
+    #[test]
+    fn create_edge_with_err_because_to_index_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription {
+            from_index: "1",
+            to_index:   "xxx",
+            weight:     "130",
+        };
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
+            &edge_description,
+        ));
 
         let actual = Edge::try_from(edge_description).unwrap_err();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        assert_eq!(actual.to_string(), expected.to_string());
+    }
+
+    #[test]
+    fn create_edge_with_err_because_weight_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription {
+            from_index: "1",
+            to_index:   "2",
+            weight:     "xxx",
+        };
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
+            &edge_description,
+        ));
+
+        let actual = Edge::try_from(edge_description).unwrap_err();
+        assert_eq!(actual.to_string(), expected.to_string());
     }
 
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
