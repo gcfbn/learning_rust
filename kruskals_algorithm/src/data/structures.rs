@@ -188,6 +188,8 @@ mod tests {
             edge_description.to_index,
         ));
 
+        println!("expected={}", expected);
+
         let actual = Edge::try_from(edge_description).unwrap_err();
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
     }
