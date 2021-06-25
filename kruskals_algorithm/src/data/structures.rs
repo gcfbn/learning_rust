@@ -1,5 +1,5 @@
 use crate::data::dfs::is_connected as dfs_is_connected;
-use crate::{BuildGraphError, CreatingEdgeError, Result};
+use crate::{errors::CreatingEdgeError, BuildGraphError, Result};
 use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -124,15 +124,17 @@ impl GraphBuilder {
 
     pub fn build(self) -> Result<Graph> {
         if self.edges.len() < self.max_edges_count {
-            Err(BuildGraphError::TooFewEdges {
+            return Err(BuildGraphError::TooFewEdges {
                 current_count: self.edges.len(),
                 declared:      self.max_edges_count,
-            })
-        } else if !self.is_connected() {
-            Err(BuildGraphError::GraphNotConnected)
-        } else {
-            Ok(Graph::new(self.nodes_count, self.edges))
+            });
         }
+
+        if !self.is_connected() {
+            return Err(BuildGraphError::GraphNotConnected);
+        }
+
+        Ok(Graph::new(self.nodes_count, self.edges))
     }
 }
 
@@ -156,9 +158,9 @@ impl GraphParameters {
 #[cfg(test)]
 #[macro_use]
 mod tests {
-    use crate::data::structures::{Edge, EdgeDescription, GraphBuilder, GraphParameters};
+    use super::*;
     use crate::data::Graph;
-    use crate::{BuildGraphError, CreatingEdgeError};
+    use crate::{errors::CreatingEdgeError, BuildGraphError};
     use std::convert::TryFrom;
 
     #[test]
