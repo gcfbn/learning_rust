@@ -89,27 +89,27 @@ impl GraphBuilder {
     }
 
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
-        if self.edges.len() < self.max_edges_count {
-            if edge.from_index > self.nodes_count {
-                return Err(BuildGraphError::from(WrongFromIndex::new(edge, self.nodes_count)));
-            }
-
-            if edge.to_index > self.nodes_count {
-                return Err(BuildGraphError::WrongToIndex {
-                    edge_number: self.edges.len() + 1,
-                    to_index:    edge.to_index,
-                    nodes_count: self.nodes_count,
-                });
-            }
-
-            self.edges.push(edge);
-            Ok(())
-        } else {
-            Err(BuildGraphError::TooManyEdges {
+        if self.edges.len() >= self.max_edges_count {
+            return Err(BuildGraphError::TooManyEdges {
                 max_edges_count: self.max_edges_count,
                 edge,
-            })
+            });
         }
+
+        if edge.from_index > self.nodes_count {
+            return Err(BuildGraphError::from(WrongFromIndex::new(edge, self.nodes_count)));
+        }
+
+        if edge.to_index > self.nodes_count {
+            return Err(BuildGraphError::WrongToIndex {
+                edge_number: self.edges.len() + 1,
+                to_index:    edge.to_index,
+                nodes_count: self.nodes_count,
+            });
+        }
+
+        self.edges.push(edge);
+        Ok(())
     }
 
     // checks if there is a path from any node to any other node
