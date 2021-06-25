@@ -12,14 +12,8 @@ pub enum BuildGraphError {
     #[error("current count of edges {current_count} is less than declared {declared}")]
     TooFewEdges { current_count: usize, declared: usize },
 
-    #[error(
-        "add_edge has failed for edge number: {edge_number} - from_index {from_index} is greater than {nodes_count} !"
-    )]
-    WrongFromIndex {
-        edge_number: usize,
-        from_index:  u32,
-        nodes_count: u32,
-    },
+    #[error("{0}")]
+    WrongFromIndex(WrongFromIndex),
 
     #[error(
         "add_edge has failed for edge number: {edge_number} - to_index {to_index} is greater than {nodes_count} !"
@@ -57,6 +51,29 @@ impl From<CreatingEdgeError> for BuildGraphError {
         BuildGraphError::CreatingEdgeError(e)
     }
 }
+
+impl From<WrongFromIndex> for BuildGraphError {
+    fn from(e: WrongFromIndex) -> Self {
+        BuildGraphError::WrongFromIndex(e)
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Display)]
+#[display("invalid edge {edge:?} - from_index field value is greater than nodes count `{nodes_count}` in graph !")]
+pub struct WrongFromIndex {
+    edge:        Edge,
+    nodes_count: u32,
+}
+
+impl WrongFromIndex {
+    pub fn new(edge: Edge, nodes_count: u32) -> Self {
+        Self { edge, nodes_count }
+    }
+}
+
+// -----------------------------------------------------------------------------
 
 #[derive(Debug, Display)]
 #[display(

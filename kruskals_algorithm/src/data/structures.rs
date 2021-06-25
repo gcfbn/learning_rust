@@ -1,5 +1,9 @@
 use crate::data::dfs::is_connected as dfs_is_connected;
-use crate::{errors::CreatingEdgeError, BuildGraphError, Result};
+use crate::{
+    errors::{CreatingEdgeError, WrongFromIndex},
+    BuildGraphError,
+    Result,
+};
 use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -87,11 +91,7 @@ impl GraphBuilder {
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
         if self.edges.len() < self.max_edges_count {
             if edge.from_index > self.nodes_count {
-                return Err(BuildGraphError::WrongFromIndex {
-                    edge_number: self.edges.len() + 1,
-                    from_index:  edge.from_index,
-                    nodes_count: self.nodes_count,
-                });
+                return Err(BuildGraphError::from(WrongFromIndex::new(edge, self.nodes_count)));
             }
 
             if edge.to_index > self.nodes_count {
@@ -265,11 +265,8 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::WrongFromIndex {
-            edge_number: 1,
-            from_index:  10,
-            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
-        };
+        let expected = BuildGraphError::from(WrongFromIndex::new(invalid_edge, TEST_GRAPH_PARAMETERS.nodes_count));
+
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
     }
