@@ -1,4 +1,5 @@
 use crate::data::{Edge, EdgeDescription};
+use parse_display::Display;
 use thiserror::Error;
 
 pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
@@ -57,7 +58,11 @@ impl From<CreatingEdgeError> for BuildGraphError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
+#[display(
+    "creating graph edge from description `{edge_description}` has failed: {field_name}={field_value} is not an \
+     integer!"
+)]
 pub struct CreatingEdgeError {
     edge_description: String,
     field_name:       String,
@@ -71,19 +76,5 @@ impl CreatingEdgeError {
             field_name:       field_name.to_owned(),
             field_value:      field_value.to_owned(),
         }
-    }
-}
-
-use std::fmt;
-
-impl fmt::Display for CreatingEdgeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "creating graph edge from description `{}` has failed: {field_name}={field_value} is not an integer!",
-            self.edge_description,
-            field_name = self.field_name,
-            field_value = self.field_value
-        )
     }
 }
