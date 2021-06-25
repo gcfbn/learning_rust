@@ -7,7 +7,7 @@ use std::path::Path;
 pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
-    let mut task_file_reader = TaskFileReader::new(&input);
+    let mut task_file_reader = GraphFileReader::new(&input);
 
     let graph_parameters = task_file_reader.graph_parameters()?;
 
@@ -26,11 +26,11 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 
 type DataIter<'a> = std::str::SplitWhitespace<'a>;
 
-struct TaskFileReader<'a> {
+struct GraphFileReader<'a> {
     iter: DataIter<'a>,
 }
 
-impl<'a> TaskFileReader<'a> {
+impl<'a> GraphFileReader<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
             iter: input.split_whitespace(),
@@ -54,7 +54,7 @@ impl<'a> TaskFileReader<'a> {
     }
 }
 
-impl<'a> Iterator for TaskFileReader<'a> {
+impl<'a> Iterator for GraphFileReader<'a> {
     type Item = EdgeDescription<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
