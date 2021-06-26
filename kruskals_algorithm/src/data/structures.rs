@@ -1,6 +1,6 @@
 use crate::data::dfs::is_connected as dfs_is_connected;
 use crate::{
-    errors::{CreatingEdgeError, WrongFromIndex},
+    errors::{CreatingEdgeError, EdgeDescriptionError, WrongFromIndex},
     BuildGraphError,
     Result,
 };
@@ -28,6 +28,30 @@ pub struct EdgeDescription<'a> {
     pub from_index: &'a str,
     pub to_index:   &'a str,
     pub weight:     &'a str,
+}
+
+impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
+    type Error = BuildGraphError;
+
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        let mut iter = s.split_whitespace();
+
+        let from_index = iter
+            .next()
+            .ok_or(BuildGraphError::from(EdgeDescriptionError::EmptyInput))?;
+        let to_index = iter
+            .next()
+            .ok_or(BuildGraphError::from(EdgeDescriptionError::MissingToIndexField))?;
+        let weight = iter
+            .next()
+            .ok_or(BuildGraphError::from(EdgeDescriptionError::MissingWeightField))?;
+
+        Ok(EdgeDescription {
+            from_index,
+            to_index,
+            weight,
+        })
+    }
 }
 
 impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
@@ -155,28 +179,33 @@ impl GraphParameters {
 mod tests {
     use super::*;
     use crate::data::Graph;
+    use crate::test_case::test_case;
     use crate::{errors::CreatingEdgeError, BuildGraphError};
     use std::convert::TryFrom;
 
     #[test]
     fn create_edge_ok() {
-        let edge_description = EdgeDescription {
-            from_index: "1",
-            to_index:   "5",
-            weight:     "200",
-        };
+        let edge_description = EdgeDescription::try_from("1 5 200").unwrap();
         let expected = Edge::new(1, 5, 200);
         let actual = Edge::try_from(edge_description).unwrap();
         assert_eq!(expected, actual);
     }
 
-    #[test]
-    fn create_edge_with_err_because_from_index_field_in_edge_description_is_invalid() {
-        let edge_description = EdgeDescription {
-            from_index: "xxx",
-            to_index:   "2",
-            weight:     "130",
+    #[test_case( "", EdgeDescriptionError::EmptyInput; "empty input")]
+    #[test_case( "1", EdgeDescriptionError::MissingToIndexField; "missing to_index field" )]
+    #[test_case( "1 2", EdgeDescriptionError::MissingWeightField; "missing weight field" )]
+    fn create_edge_fails_because_of_invalid_edge_description(input: &str, expected_error: EdgeDescriptionError) {
+        let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
+            BuildGraphError::InvalidEdgeDescription(actual_err) if actual_err == expected_error => true,
+            _ => false,
         };
+
+        assert_eq!(match_expected, true);
+    }
+
+    #[test]
+    fn create_edge_fails_because_from_index_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription::try_from("x 2 130").unwrap();
         let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_from_index(
             &edge_description,
         ));
@@ -186,12 +215,8 @@ mod tests {
     }
 
     #[test]
-    fn create_edge_with_err_because_to_index_field_in_edge_description_is_invalid() {
-        let edge_description = EdgeDescription {
-            from_index: "1",
-            to_index:   "xxx",
-            weight:     "130",
-        };
+    fn create_edge_fails_because_to_index_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription::try_from("1 x 130").unwrap();
         let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
             &edge_description,
         ));
@@ -201,12 +226,8 @@ mod tests {
     }
 
     #[test]
-    fn create_edge_with_err_because_weight_field_in_edge_description_is_invalid() {
-        let edge_description = EdgeDescription {
-            from_index: "1",
-            to_index:   "2",
-            weight:     "xxx",
-        };
+    fn create_edge_fails_because_weight_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription::try_from("1 2 xxx").unwrap();
         let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
             &edge_description,
         ));
