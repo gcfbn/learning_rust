@@ -15,6 +15,9 @@ pub enum BuildGraphError {
     #[error("{0}")]
     WrongFromIndex(WrongFromIndex),
 
+    #[error("invalid edge descritpion - {0}")]
+    InvalidEdgeDescription(EdgeDescriptionError),
+
     #[error(
         "add_edge has failed for edge number: {edge_number} - to_index {to_index} is greater than {nodes_count} !"
     )]
@@ -56,6 +59,24 @@ impl From<WrongFromIndex> for BuildGraphError {
     fn from(e: WrongFromIndex) -> Self {
         BuildGraphError::WrongFromIndex(e)
     }
+}
+
+impl From<EdgeDescriptionError> for BuildGraphError {
+    fn from(e: EdgeDescriptionError) -> Self {
+        BuildGraphError::InvalidEdgeDescription(e)
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Display, PartialEq, Debug)]
+pub enum EdgeDescriptionError {
+    #[display("empty input")]
+    EmptyInput,
+    #[display("missing `to_index` field")]
+    MissingToIndexField,
+    #[display("missing `weight` field")]
+    MissingWeightField,
 }
 
 // -----------------------------------------------------------------------------
