@@ -15,15 +15,6 @@ pub enum BuildGraphError {
     #[error("invalid edge descritpion - {0}")]
     InvalidEdgeDescription(EdgeDescriptionError),
 
-    #[error(
-        "add_edge has failed for edge number: {edge_number} - to_index {to_index} is greater than {nodes_count} !"
-    )]
-    WrongToIndex {
-        edge_number: usize,
-        to_index:    u32,
-        nodes_count: u32,
-    },
-
     #[error("max allowed count of edges is {max_edges_count} but you are trying to add a new edge {edge:?}")]
     TooManyEdges {
         max_edges_count: usize,
