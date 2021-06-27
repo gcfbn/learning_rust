@@ -1,4 +1,4 @@
-use crate::Graph;
+use crate::data::Graph;
 
 pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
     // create array of parental nodes
@@ -51,7 +51,7 @@ fn _find_parent_no_recursion(parents: &[u32], index: u32) -> u32 {
 #[cfg(test)]
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::find_parent;
+    use super::*;
     use crate::test_case::test_case;
 
     #[test_case(1 => 10; "last element is parent of the first element")]

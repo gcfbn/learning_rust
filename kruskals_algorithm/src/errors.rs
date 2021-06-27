@@ -1,24 +1,22 @@
 use crate::data::{Edge, EdgeDescription};
+use parse_display::Display;
 use thiserror::Error;
 
-pub type LibResult<T> = Result<T, KruskalsAlgorithmError>;
+pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 
 #[derive(Error, Debug)]
-pub enum KruskalsAlgorithmError {
+pub enum BuildGraphError {
     #[error("graph is not connected!")]
     GraphNotConnected,
 
     #[error("current count of edges {current_count} is less than declared {declared}")]
     TooFewEdges { current_count: usize, declared: usize },
 
-    #[error(
-        "add_edge has failed for edge number: {edge_number} - from_index {from_index} is greater than {nodes_count} !"
-    )]
-    WrongFromIndex {
-        edge_number: usize,
-        from_index:  u32,
-        nodes_count: u32,
-    },
+    #[error("{0}")]
+    WrongFromIndex(WrongFromIndex),
+
+    #[error("invalid edge descritpion - {0}")]
+    InvalidEdgeDescription(EdgeDescriptionError),
 
     #[error(
         "add_edge has failed for edge number: {edge_number} - to_index {to_index} is greater than {nodes_count} !"
@@ -51,13 +49,58 @@ pub enum KruskalsAlgorithmError {
     StandardError(#[from] std::io::Error),
 }
 
-impl From<CreatingEdgeError> for KruskalsAlgorithmError {
+impl From<CreatingEdgeError> for BuildGraphError {
     fn from(e: CreatingEdgeError) -> Self {
-        KruskalsAlgorithmError::CreatingEdgeError(e)
+        BuildGraphError::CreatingEdgeError(e)
     }
 }
 
-#[derive(Debug)]
+impl From<WrongFromIndex> for BuildGraphError {
+    fn from(e: WrongFromIndex) -> Self {
+        BuildGraphError::WrongFromIndex(e)
+    }
+}
+
+impl From<EdgeDescriptionError> for BuildGraphError {
+    fn from(e: EdgeDescriptionError) -> Self {
+        BuildGraphError::InvalidEdgeDescription(e)
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Display, PartialEq, Debug)]
+pub enum EdgeDescriptionError {
+    #[display("empty input")]
+    EmptyInput,
+    #[display("missing `to_index` field")]
+    MissingToIndexField,
+    #[display("missing `weight` field")]
+    MissingWeightField,
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Display)]
+#[display("invalid edge {edge:?} - from_index field value is greater than nodes count `{nodes_count}` in graph !")]
+pub struct WrongFromIndex {
+    edge:        Edge,
+    nodes_count: u32,
+}
+
+impl WrongFromIndex {
+    pub fn new(edge: Edge, nodes_count: u32) -> Self {
+        Self { edge, nodes_count }
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Display)]
+#[display(
+    "creating graph edge from description `{edge_description}` has failed: {field_name}={field_value} is not an \
+     integer!"
+)]
 pub struct CreatingEdgeError {
     edge_description: String,
     field_name:       String,
@@ -65,25 +108,23 @@ pub struct CreatingEdgeError {
 }
 
 impl CreatingEdgeError {
-    pub fn from_edge_description(edge_description: &EdgeDescription, field_name: &str, field_value: &str) -> Self {
+    fn from_edge_description(edge_description: &EdgeDescription, field_name: &str, field_value: &str) -> Self {
         Self {
             edge_description: format!("{:?}", edge_description),
             field_name:       field_name.to_owned(),
             field_value:      field_value.to_owned(),
         }
     }
-}
 
-use std::fmt;
+    pub fn from_edge_description_with_bad_from_index(edge_description: &EdgeDescription) -> Self {
+        Self::from_edge_description(edge_description, "from_index", edge_description.from_index)
+    }
 
-impl fmt::Display for CreatingEdgeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "creating graph edge from description `{}` has failed: {field_name}={field_value} is not an integer!",
-            self.edge_description,
-            field_name = self.field_name,
-            field_value = self.field_value
-        )
+    pub fn from_edge_description_with_bad_to_index(edge_description: &EdgeDescription) -> Self {
+        Self::from_edge_description(edge_description, "to_index", edge_description.to_index)
+    }
+
+    pub fn from_edge_description_with_bad_weight(edge_description: &EdgeDescription) -> Self {
+        Self::from_edge_description(edge_description, "weight", edge_description.weight)
     }
 }

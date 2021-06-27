@@ -1,13 +1,13 @@
 use crate::data::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};
-use crate::{KruskalsAlgorithmError, LibResult};
+use crate::{BuildGraphError, Result};
 use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
 
-pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> LibResult<Graph> {
+pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
-    let mut task_file_reader = TaskFileReader::new(&input);
+    let mut task_file_reader = GraphFileReader::new(&input);
 
     let graph_parameters = task_file_reader.graph_parameters()?;
 
@@ -26,26 +26,26 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> LibResult<Graph> {
 
 type DataIter<'a> = std::str::SplitWhitespace<'a>;
 
-struct TaskFileReader<'a> {
+struct GraphFileReader<'a> {
     iter: DataIter<'a>,
 }
 
-impl<'a> TaskFileReader<'a> {
+impl<'a> GraphFileReader<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
             iter: input.split_whitespace(),
         }
     }
 
-    pub fn graph_parameters(&mut self) -> LibResult<GraphParameters> {
-        let n = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
-        let m = self.iter.next().ok_or(KruskalsAlgorithmError::NotEnoughData)?;
+    pub fn graph_parameters(&mut self) -> Result<GraphParameters> {
+        let n = self.iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+        let m = self.iter.next().ok_or(BuildGraphError::NotEnoughData)?;
 
-        let n = n.parse::<u32>().map_err(|_| KruskalsAlgorithmError::ParsingError {
+        let n = n.parse::<u32>().map_err(|_| BuildGraphError::ParsingError {
             parameter_name: "n".to_owned(),
             value:          n.to_owned(),
         })?;
-        let m = m.parse::<usize>().map_err(|_| KruskalsAlgorithmError::ParsingError {
+        let m = m.parse::<usize>().map_err(|_| BuildGraphError::ParsingError {
             parameter_name: "m".to_owned(),
             value:          m.to_owned(),
         })?;
@@ -54,7 +54,7 @@ impl<'a> TaskFileReader<'a> {
     }
 }
 
-impl<'a> Iterator for TaskFileReader<'a> {
+impl<'a> Iterator for GraphFileReader<'a> {
     type Item = EdgeDescription<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {

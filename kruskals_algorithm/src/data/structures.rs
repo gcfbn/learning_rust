@@ -1,5 +1,9 @@
 use crate::data::dfs::is_connected as dfs_is_connected;
-use crate::{CreatingEdgeError, KruskalsAlgorithmError, LibResult};
+use crate::{
+    errors::{CreatingEdgeError, EdgeDescriptionError, WrongFromIndex},
+    BuildGraphError,
+    Result,
+};
 use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -26,30 +30,49 @@ pub struct EdgeDescription<'a> {
     pub weight:     &'a str,
 }
 
+impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
+    type Error = BuildGraphError;
+
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        let mut iter = s.split_whitespace();
+
+        let from_index = iter
+            .next()
+            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::EmptyInput))?;
+        let to_index = iter
+            .next()
+            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::MissingToIndexField))?;
+        let weight = iter
+            .next()
+            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::MissingWeightField))?;
+
+        Ok(EdgeDescription {
+            from_index,
+            to_index,
+            weight,
+        })
+    }
+}
+
 impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
-    type Error = KruskalsAlgorithmError;
+    type Error = BuildGraphError;
 
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
         let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
-            let err: KruskalsAlgorithmError =
-                CreatingEdgeError::from_edge_description(&edge_description, "from_index", edge_description.from_index)
-                    .into();
+            let err: BuildGraphError =
+                CreatingEdgeError::from_edge_description_with_bad_from_index(&edge_description).into();
             err
         })?;
 
         let parsed_to_index = edge_description.to_index.parse::<u32>().map_err(|_| {
-            KruskalsAlgorithmError::from(CreatingEdgeError::from_edge_description(
+            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
                 &edge_description,
-                "to_index",
-                edge_description.to_index,
             ))
         })?;
 
         let parsed_weight = edge_description.weight.parse::<i32>().map_err(|_| {
-            KruskalsAlgorithmError::from(CreatingEdgeError::from_edge_description(
+            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
                 &edge_description,
-                "weight",
-                edge_description.weight,
             ))
         })?;
 
@@ -89,32 +112,28 @@ impl GraphBuilder {
         }
     }
 
-    pub fn add_edge(&mut self, edge: Edge) -> LibResult<()> {
-        if self.edges.len() < self.max_edges_count {
-            if edge.from_index > self.nodes_count {
-                return Err(KruskalsAlgorithmError::WrongFromIndex {
-                    edge_number: self.edges.len() + 1,
-                    from_index:  edge.from_index,
-                    nodes_count: self.nodes_count,
-                });
-            }
-
-            if edge.to_index > self.nodes_count {
-                return Err(KruskalsAlgorithmError::WrongToIndex {
-                    edge_number: self.edges.len() + 1,
-                    to_index:    edge.to_index,
-                    nodes_count: self.nodes_count,
-                });
-            }
-
-            self.edges.push(edge);
-            Ok(())
-        } else {
-            Err(KruskalsAlgorithmError::TooManyEdges {
+    pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
+        if self.edges.len() >= self.max_edges_count {
+            return Err(BuildGraphError::TooManyEdges {
                 max_edges_count: self.max_edges_count,
                 edge,
-            })
+            });
         }
+
+        if edge.from_index > self.nodes_count {
+            return Err(BuildGraphError::from(WrongFromIndex::new(edge, self.nodes_count)));
+        }
+
+        if edge.to_index > self.nodes_count {
+            return Err(BuildGraphError::WrongToIndex {
+                edge_number: self.edges.len() + 1,
+                to_index:    edge.to_index,
+                nodes_count: self.nodes_count,
+            });
+        }
+
+        self.edges.push(edge);
+        Ok(())
     }
 
     // checks if there is a path from any node to any other node
@@ -122,17 +141,19 @@ impl GraphBuilder {
         dfs_is_connected(&self.edges, self.nodes_count)
     }
 
-    pub fn build(self) -> LibResult<Graph> {
+    pub fn build(self) -> Result<Graph> {
         if self.edges.len() < self.max_edges_count {
-            Err(KruskalsAlgorithmError::TooFewEdges {
+            return Err(BuildGraphError::TooFewEdges {
                 current_count: self.edges.len(),
                 declared:      self.max_edges_count,
-            })
-        } else if !self.is_connected() {
-            Err(KruskalsAlgorithmError::GraphNotConnected)
-        } else {
-            Ok(Graph::new(self.nodes_count, self.edges))
+            });
         }
+
+        if !self.is_connected() {
+            return Err(BuildGraphError::GraphNotConnected);
+        }
+
+        Ok(Graph::new(self.nodes_count, self.edges))
     }
 }
 
@@ -156,38 +177,63 @@ impl GraphParameters {
 #[cfg(test)]
 #[macro_use]
 mod tests {
-    use crate::data::structures::{Edge, EdgeDescription, GraphBuilder, GraphParameters};
+    use super::*;
     use crate::data::Graph;
-    use crate::{CreatingEdgeError, KruskalsAlgorithmError};
+    use crate::test_case::test_case;
+    use crate::{errors::CreatingEdgeError, BuildGraphError};
     use std::convert::TryFrom;
 
     #[test]
     fn create_edge_ok() {
-        let edge_description = EdgeDescription {
-            from_index: "1",
-            to_index:   "5",
-            weight:     "200",
-        };
+        let edge_description = EdgeDescription::try_from("1 5 200").unwrap();
         let expected = Edge::new(1, 5, 200);
         let actual = Edge::try_from(edge_description).unwrap();
         assert_eq!(expected, actual);
     }
 
-    #[test]
-    fn create_edge_err() {
-        let edge_description = EdgeDescription {
-            from_index: "1",
-            to_index:   "a",
-            weight:     "130",
+    #[test_case( "", EdgeDescriptionError::EmptyInput; "empty input")]
+    #[test_case( "1", EdgeDescriptionError::MissingToIndexField; "missing to_index field" )]
+    #[test_case( "1 2", EdgeDescriptionError::MissingWeightField; "missing weight field" )]
+    fn create_edge_fails_because_of_invalid_edge_description(input: &str, expected_error: EdgeDescriptionError) {
+        let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
+            BuildGraphError::InvalidEdgeDescription(actual_err) if actual_err == expected_error => true,
+            _ => false,
         };
-        let expected = KruskalsAlgorithmError::from(CreatingEdgeError::from_edge_description(
+
+        assert_eq!(match_expected, true);
+    }
+
+    #[test]
+    fn create_edge_fails_because_from_index_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription::try_from("x 2 130").unwrap();
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_from_index(
             &edge_description,
-            "to_index",
-            edge_description.to_index,
         ));
 
         let actual = Edge::try_from(edge_description).unwrap_err();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        assert_eq!(actual.to_string(), expected.to_string());
+    }
+
+    #[test]
+    fn create_edge_fails_because_to_index_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription::try_from("1 x 130").unwrap();
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
+            &edge_description,
+        ));
+
+        let actual = Edge::try_from(edge_description).unwrap_err();
+        assert_eq!(actual.to_string(), expected.to_string());
+    }
+
+    #[test]
+    fn create_edge_fails_because_weight_field_in_edge_description_is_invalid() {
+        let edge_description = EdgeDescription::try_from("1 2 xxx").unwrap();
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
+            &edge_description,
+        ));
+
+        let actual = Edge::try_from(edge_description).unwrap_err();
+        assert_eq!(actual.to_string(), expected.to_string());
     }
 
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
@@ -222,7 +268,7 @@ mod tests {
             to_index:   4,
             weight:     170,
         };
-        let expected = KruskalsAlgorithmError::TooManyEdges {
+        let expected = BuildGraphError::TooManyEdges {
             max_edges_count: TEST_GRAPH_PARAMETERS.max_edges_count,
             edge:            third_edge,
         };
@@ -240,11 +286,8 @@ mod tests {
             weight:     120,
         };
 
-        let expected = KruskalsAlgorithmError::WrongFromIndex {
-            edge_number: 1,
-            from_index:  10,
-            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
-        };
+        let expected = BuildGraphError::from(WrongFromIndex::new(invalid_edge, TEST_GRAPH_PARAMETERS.nodes_count));
+
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
     }
@@ -258,7 +301,7 @@ mod tests {
             weight:     120,
         };
 
-        let expected = KruskalsAlgorithmError::WrongToIndex {
+        let expected = BuildGraphError::WrongToIndex {
             edge_number: 1,
             to_index:    7,
             nodes_count: 3,
@@ -278,7 +321,7 @@ mod tests {
         };
 
         graph_builder.add_edge(first_edge).unwrap();
-        let expected = KruskalsAlgorithmError::TooFewEdges {
+        let expected = BuildGraphError::TooFewEdges {
             current_count: graph_builder.edges.len(),
             declared:      graph_builder.max_edges_count,
         };
