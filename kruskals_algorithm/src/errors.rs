@@ -59,10 +59,10 @@ pub enum EdgeDescriptionError {
     MissingToIndexField,
     #[display("missing `weight` field")]
     MissingWeightField,
-    #[display("`{0:?}` from_index field value is greater than nodes count `{1}` in graph !")]
-    WrongFromIndex(Edge, u32),
-    #[display("`{0:?}` to_index field value is greater than nodes count `{1}` in graph !")]
-    WrongToIndex(Edge, u32),
+    #[display("`{edge:?}` from_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongFromIndex { edge: Edge, nodes_count: u32 },
+    #[display("`{edge:?}` to_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongToIndex { edge: Edge, nodes_count: u32 },
 }
 
 // -----------------------------------------------------------------------------
