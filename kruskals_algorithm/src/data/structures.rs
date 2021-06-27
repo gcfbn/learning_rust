@@ -1,6 +1,6 @@
 use crate::data::dfs::dfs;
 use crate::{
-    errors::{CreatingEdgeError, EdgeDescriptionError, WrongFromIndex},
+    errors::{CreatingEdgeError, EdgeDescriptionError},
     BuildGraphError,
     Result,
 };
@@ -121,15 +121,17 @@ impl GraphBuilder {
         }
 
         if edge.from_index > self.nodes_count {
-            return Err(BuildGraphError::from(WrongFromIndex::new(edge, self.nodes_count)));
+            return Err(BuildGraphError::from(EdgeDescriptionError::WrongFromIndex(
+                edge,
+                self.nodes_count,
+            )));
         }
 
         if edge.to_index > self.nodes_count {
-            return Err(BuildGraphError::WrongToIndex {
-                edge_number: self.edges.len() + 1,
-                to_index:    edge.to_index,
-                nodes_count: self.nodes_count,
-            });
+            return Err(BuildGraphError::from(EdgeDescriptionError::WrongToIndex(
+                edge,
+                self.nodes_count,
+            )));
         }
 
         self.edges.push(edge);
@@ -301,7 +303,10 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::from(WrongFromIndex::new(invalid_edge, TEST_GRAPH_PARAMETERS.nodes_count));
+        let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex(
+            invalid_edge,
+            TEST_GRAPH_PARAMETERS.nodes_count,
+        ));
 
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -316,13 +321,13 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::WrongToIndex {
-            edge_number: 1,
-            to_index:    7,
-            nodes_count: 3,
-        };
+        let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex(
+            invalid_edge,
+            TEST_GRAPH_PARAMETERS.nodes_count,
+        ));
 
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
+        eprintln!("{}", actual);
         assert_eq!(actual.to_string(), expected.to_string());
     }
 

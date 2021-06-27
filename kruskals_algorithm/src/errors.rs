@@ -12,9 +12,6 @@ pub enum BuildGraphError {
     #[error("current count of edges {current_count} is less than declared {declared}")]
     TooFewEdges { current_count: usize, declared: usize },
 
-    #[error("{0}")]
-    WrongFromIndex(WrongFromIndex),
-
     #[error("invalid edge descritpion - {0}")]
     InvalidEdgeDescription(EdgeDescriptionError),
 
@@ -55,12 +52,6 @@ impl From<CreatingEdgeError> for BuildGraphError {
     }
 }
 
-impl From<WrongFromIndex> for BuildGraphError {
-    fn from(e: WrongFromIndex) -> Self {
-        BuildGraphError::WrongFromIndex(e)
-    }
-}
-
 impl From<EdgeDescriptionError> for BuildGraphError {
     fn from(e: EdgeDescriptionError) -> Self {
         BuildGraphError::InvalidEdgeDescription(e)
@@ -77,21 +68,10 @@ pub enum EdgeDescriptionError {
     MissingToIndexField,
     #[display("missing `weight` field")]
     MissingWeightField,
-}
-
-// -----------------------------------------------------------------------------
-
-#[derive(Debug, Display)]
-#[display("invalid edge {edge:?} - from_index field value is greater than nodes count `{nodes_count}` in graph !")]
-pub struct WrongFromIndex {
-    edge:        Edge,
-    nodes_count: u32,
-}
-
-impl WrongFromIndex {
-    pub fn new(edge: Edge, nodes_count: u32) -> Self {
-        Self { edge, nodes_count }
-    }
+    #[display("`{0:?}` from_index field value is greater than nodes count `{1}` in graph !")]
+    WrongFromIndex(Edge, u32),
+    #[display("`{0:?}` to_index field value is greater than nodes count `{1}` in graph !")]
+    WrongToIndex(Edge, u32),
 }
 
 // -----------------------------------------------------------------------------
