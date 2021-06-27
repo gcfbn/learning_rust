@@ -11,7 +11,8 @@ use std::path::Path;
 use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
 
-pub use crate::errors::{BuildGraphError, Result};
+pub use crate::data::Edge;
+pub use crate::errors::{BuildGraphError, EdgeDescriptionError, Result};
 
 pub fn run<P>(filename: P) -> Result<i32>
 where
