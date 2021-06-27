@@ -38,13 +38,13 @@ impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
 
         let from_index = iter
             .next()
-            .ok_or(BuildGraphError::from(EdgeDescriptionError::EmptyInput))?;
+            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::EmptyInput))?;
         let to_index = iter
             .next()
-            .ok_or(BuildGraphError::from(EdgeDescriptionError::MissingToIndexField))?;
+            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::MissingToIndexField))?;
         let weight = iter
             .next()
-            .ok_or(BuildGraphError::from(EdgeDescriptionError::MissingWeightField))?;
+            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::MissingWeightField))?;
 
         Ok(EdgeDescription {
             from_index,

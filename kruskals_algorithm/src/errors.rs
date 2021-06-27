@@ -117,14 +117,14 @@ impl CreatingEdgeError {
     }
 
     pub fn from_edge_description_with_bad_from_index(edge_description: &EdgeDescription) -> Self {
-        Self::from_edge_description(edge_description, "from_index", edge_description.from_index.into())
+        Self::from_edge_description(edge_description, "from_index", edge_description.from_index)
     }
 
     pub fn from_edge_description_with_bad_to_index(edge_description: &EdgeDescription) -> Self {
-        Self::from_edge_description(edge_description, "to_index", edge_description.to_index.into())
+        Self::from_edge_description(edge_description, "to_index", edge_description.to_index)
     }
 
     pub fn from_edge_description_with_bad_weight(edge_description: &EdgeDescription) -> Self {
-        Self::from_edge_description(edge_description, "weight", edge_description.weight.into())
+        Self::from_edge_description(edge_description, "weight", edge_description.weight)
     }
 }
