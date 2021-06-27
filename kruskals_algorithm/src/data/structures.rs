@@ -1,4 +1,4 @@
-use crate::data::dfs::is_connected as dfs_is_connected;
+use crate::data::dfs::dfs;
 use crate::{
     errors::{CreatingEdgeError, EdgeDescriptionError, WrongFromIndex},
     BuildGraphError,
@@ -138,7 +138,22 @@ impl GraphBuilder {
 
     // checks if there is a path from any node to any other node
     fn is_connected(&self) -> bool {
-        dfs_is_connected(&self.edges, self.nodes_count)
+        let mut adjacency_list: Vec<Vec<usize>> = vec![Vec::new(); (self.nodes_count + 1) as usize];
+
+        for edge in &self.edges {
+            adjacency_list[edge.from_index as usize].push(edge.to_index as usize);
+            adjacency_list[edge.to_index as usize].push(edge.from_index as usize);
+        }
+
+        let mut visited: Vec<bool> = vec![false; (self.nodes_count + 1) as usize];
+        dfs(1, &adjacency_list, &mut visited);
+
+        for value in visited.iter().skip(1) {
+            if !value {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn build(self) -> Result<Graph> {
