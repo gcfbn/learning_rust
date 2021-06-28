@@ -12,20 +12,8 @@ pub enum BuildGraphError {
     #[error("current count of edges {current_count} is less than declared {declared}")]
     TooFewEdges { current_count: usize, declared: usize },
 
-    #[error("{0}")]
-    WrongFromIndex(WrongFromIndex),
-
     #[error("invalid edge descritpion - {0}")]
     InvalidEdgeDescription(EdgeDescriptionError),
-
-    #[error(
-        "add_edge has failed for edge number: {edge_number} - to_index {to_index} is greater than {nodes_count} !"
-    )]
-    WrongToIndex {
-        edge_number: usize,
-        to_index:    u32,
-        nodes_count: u32,
-    },
 
     #[error("max allowed count of edges is {max_edges_count} but you are trying to add a new edge {edge:?}")]
     TooManyEdges {
@@ -55,12 +43,6 @@ impl From<CreatingEdgeError> for BuildGraphError {
     }
 }
 
-impl From<WrongFromIndex> for BuildGraphError {
-    fn from(e: WrongFromIndex) -> Self {
-        BuildGraphError::WrongFromIndex(e)
-    }
-}
-
 impl From<EdgeDescriptionError> for BuildGraphError {
     fn from(e: EdgeDescriptionError) -> Self {
         BuildGraphError::InvalidEdgeDescription(e)
@@ -77,21 +59,10 @@ pub enum EdgeDescriptionError {
     MissingToIndexField,
     #[display("missing `weight` field")]
     MissingWeightField,
-}
-
-// -----------------------------------------------------------------------------
-
-#[derive(Debug, Display)]
-#[display("invalid edge {edge:?} - from_index field value is greater than nodes count `{nodes_count}` in graph !")]
-pub struct WrongFromIndex {
-    edge:        Edge,
-    nodes_count: u32,
-}
-
-impl WrongFromIndex {
-    pub fn new(edge: Edge, nodes_count: u32) -> Self {
-        Self { edge, nodes_count }
-    }
+    #[display("`{edge:?}` from_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongFromIndex { edge: Edge, nodes_count: u32 },
+    #[display("`{edge:?}` to_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongToIndex { edge: Edge, nodes_count: u32 },
 }
 
 // -----------------------------------------------------------------------------

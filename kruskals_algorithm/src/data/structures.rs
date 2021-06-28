@@ -1,6 +1,6 @@
-use crate::data::dfs::is_connected as dfs_is_connected;
+use crate::data::dfs::dfs;
 use crate::{
-    errors::{CreatingEdgeError, EdgeDescriptionError, WrongFromIndex},
+    errors::{CreatingEdgeError, EdgeDescriptionError},
     BuildGraphError,
     Result,
 };
@@ -121,15 +121,17 @@ impl GraphBuilder {
         }
 
         if edge.from_index > self.nodes_count {
-            return Err(BuildGraphError::from(WrongFromIndex::new(edge, self.nodes_count)));
+            return Err(BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+                edge,
+                nodes_count: self.nodes_count,
+            }));
         }
 
         if edge.to_index > self.nodes_count {
-            return Err(BuildGraphError::WrongToIndex {
-                edge_number: self.edges.len() + 1,
-                to_index:    edge.to_index,
+            return Err(BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+                edge,
                 nodes_count: self.nodes_count,
-            });
+            }));
         }
 
         self.edges.push(edge);
@@ -138,7 +140,22 @@ impl GraphBuilder {
 
     // checks if there is a path from any node to any other node
     fn is_connected(&self) -> bool {
-        dfs_is_connected(&self.edges, self.nodes_count)
+        let mut adjacency_list: Vec<Vec<usize>> = vec![Vec::new(); (self.nodes_count + 1) as usize];
+
+        for edge in &self.edges {
+            adjacency_list[edge.from_index as usize].push(edge.to_index as usize);
+            adjacency_list[edge.to_index as usize].push(edge.from_index as usize);
+        }
+
+        let mut visited: Vec<bool> = vec![false; (self.nodes_count + 1) as usize];
+        dfs(1, &adjacency_list, &mut visited);
+
+        for value in visited.iter().skip(1) {
+            if !value {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn build(self) -> Result<Graph> {
@@ -286,7 +303,10 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::from(WrongFromIndex::new(invalid_edge, TEST_GRAPH_PARAMETERS.nodes_count));
+        let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+            edge:        invalid_edge,
+            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
+        });
 
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -301,13 +321,13 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::WrongToIndex {
-            edge_number: 1,
-            to_index:    7,
-            nodes_count: 3,
-        };
+        let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+            edge:        invalid_edge,
+            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
+        });
 
         let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
+        eprintln!("{}", actual);
         assert_eq!(actual.to_string(), expected.to_string());
     }
 
