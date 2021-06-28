@@ -8,22 +8,6 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
 
-    /*
-        let mut iter = input.lines();
-
-        let first_line = iter.next().ok_or(BuildGraphError::NotEnoughData)?;
-        let graph_parameters = GraphParameters::try_from(first_line)?;
-
-        let mut graph_builder = GraphBuilder::new(graph_parameters);
-
-        for line in iter {
-            let edge_description = EdgeDescription::try_from(line)?;
-            let edge = Edge::try_from(edge_description)?;
-
-            graph_builder.add_edge(edge)?;
-        }
-    */
-
     let mut graph_file_reader = GraphFileReader::new(&input);
 
     let graph_parameters = graph_file_reader.graph_parameters()?;
@@ -31,8 +15,7 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let mut graph_builder = GraphBuilder::new(graph_parameters);
 
     for maybe_edge in graph_file_reader {
-        let edge = maybe_edge?;
-        graph_builder.add_edge(edge)?;
+        graph_builder.add_edge(maybe_edge?)?;
     }
 
     graph_builder.build()
@@ -50,21 +33,8 @@ impl<'a> GraphFileReader<'a> {
     }
 
     pub fn graph_parameters(&mut self) -> Result<GraphParameters> {
-        /*
-        let n = self.iter.next().ok_or(BuildGraphError::NotEnoughData)?;
-        let m = self.iter.next().ok_or(BuildGraphError::NotEnoughData)?;
-
-        let n = n.parse::<u32>().map_err(|_| BuildGraphError::ParsingError {
-            parameter_name: "n".to_owned(),
-            value:          n.to_owned(),
-        })?;
-        let m = m.parse::<usize>().map_err(|_| BuildGraphError::ParsingError {
-            parameter_name: "m".to_owned(),
-            value:          m.to_owned(),
-        })?;
-        */
-
-        Ok(GraphParameters::new(1, 2))
+        let line = self.iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+        GraphParameters::try_from(line)
     }
 }
 
