@@ -1,4 +1,12 @@
-use kruskals_algorithm::{run, BuildGraphError, CreatingEdgeError, Edge, EdgeDescription, EdgeDescriptionError};
+use kruskals_algorithm::{
+    run,
+    BuildGraphError,
+    CreatingEdgeError,
+    Edge,
+    EdgeDescription,
+    EdgeDescriptionError,
+    GraphParametersParsingError,
+};
 use test_case::test_case;
 
 #[test_case(1 => 280)]
@@ -33,7 +41,7 @@ fn passing(dataset_number: u32) -> i32 {
     nodes_count: 3,
 }))]
 #[test_case("error_too_many_edges", BuildGraphError::TooManyEdges{
-    max_edges_count: 3,
+    edges_count: 3,
     edge: Edge{
         from_index: 1,
         to_index: 4,
@@ -41,14 +49,26 @@ fn passing(dataset_number: u32) -> i32 {
         }
 })]
 #[test_case("error_not_enough_data", BuildGraphError::NotEnoughData)]
-#[test_case("error_parsing_graph_parameters_n", BuildGraphError::ParsingError{
-    parameter_name: String::from("n"),
-    value: String::from("X"),
-})]
-#[test_case("error_parsing_graph_parameters_m", BuildGraphError::ParsingError{
-parameter_name: String::from("m"),
-value: String::from("X"),
-})]
+#[test_case(
+    "error_parsing_graph_parameters_nodes_count",
+    BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count("X"))
+)]
+#[test_case(
+    "error_parsing_graph_parameters_edges_count",
+    BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count("X"))
+)]
+#[test_case(
+    "error_edge_description_missing_to_index",
+    BuildGraphError::from(EdgeDescriptionError::MissingToIndexField)
+)]
+#[test_case(
+    "error_edge_description_missing_weight",
+    BuildGraphError::from(EdgeDescriptionError::MissingWeightField)
+)]
+#[test_case(
+    "error_edge_description_empty_input",
+    BuildGraphError::from(EdgeDescriptionError::EmptyInput)
+)]
 fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
     let actual_error = run(format!(
         "tests/data/error_tests/graph_building_errors/{}.txt",

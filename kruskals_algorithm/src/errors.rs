@@ -15,11 +15,8 @@ pub enum BuildGraphError {
     #[error("invalid edge descritpion - {0}")]
     InvalidEdgeDescription(EdgeDescriptionError),
 
-    #[error("max allowed count of edges is {max_edges_count} but you are trying to add a new edge {edge:?}")]
-    TooManyEdges {
-        max_edges_count: usize,
-        edge:            Edge,
-    },
+    #[error("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
+    TooManyEdges { edges_count: usize, edge: Edge },
 
     #[error("not enough data in input file")]
     NotEnoughData,
@@ -27,11 +24,8 @@ pub enum BuildGraphError {
     #[error("{0}")]
     CreatingEdgeError(CreatingEdgeError),
 
-    #[error("parsing graph parameters has failed: {parameter_name}={value} is not an integer!")]
-    ParsingError {
-        parameter_name: String,
-        value:          String,
-    },
+    #[error("{0}")]
+    GraphParametersParsingError(GraphParametersParsingError),
 
     #[error(transparent)]
     StandardError(#[from] std::io::Error),
@@ -46,6 +40,12 @@ impl From<CreatingEdgeError> for BuildGraphError {
 impl From<EdgeDescriptionError> for BuildGraphError {
     fn from(e: EdgeDescriptionError) -> Self {
         BuildGraphError::InvalidEdgeDescription(e)
+    }
+}
+
+impl From<GraphParametersParsingError> for BuildGraphError {
+    fn from(e: GraphParametersParsingError) -> Self {
+        BuildGraphError::GraphParametersParsingError(e)
     }
 }
 
@@ -97,5 +97,31 @@ impl CreatingEdgeError {
 
     pub fn from_edge_description_with_bad_weight(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "weight", edge_description.weight)
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Display)]
+#[display("parsing graph parameters has failed: {parameter_name}={value} is not an integer!")]
+pub struct GraphParametersParsingError {
+    parameter_name: String,
+    value:          String,
+}
+
+impl GraphParametersParsingError {
+    fn from_non_integer_value(field_name: &str, value: &str) -> Self {
+        Self {
+            parameter_name: field_name.to_owned(),
+            value:          value.to_owned(),
+        }
+    }
+
+    pub fn from_non_integer_nodes_count(value: &str) -> Self {
+        Self::from_non_integer_value("nodes_count", value)
+    }
+
+    pub fn from_non_integer_edges_count(value: &str) -> Self {
+        Self::from_non_integer_value("edges_count", value)
     }
 }

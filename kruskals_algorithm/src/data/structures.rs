@@ -1,6 +1,6 @@
 use crate::data::dfs::dfs;
 use crate::{
-    errors::{CreatingEdgeError, EdgeDescriptionError},
+    errors::{CreatingEdgeError, EdgeDescriptionError, GraphParametersParsingError},
     BuildGraphError,
     Result,
 };
@@ -102,7 +102,7 @@ impl GraphBuilder {
     pub fn new(gp: GraphParameters) -> GraphBuilder {
         let GraphParameters {
             nodes_count,
-            max_edges_count,
+            edges_count: max_edges_count,
         } = gp;
 
         GraphBuilder {
@@ -115,7 +115,7 @@ impl GraphBuilder {
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
         if self.edges.len() >= self.max_edges_count {
             return Err(BuildGraphError::TooManyEdges {
-                max_edges_count: self.max_edges_count,
+                edges_count: self.max_edges_count,
                 edge,
             });
         }
@@ -178,16 +178,36 @@ impl GraphBuilder {
 
 #[derive(Debug)]
 pub struct GraphParameters {
-    pub nodes_count:     u32,
-    pub max_edges_count: usize,
+    pub nodes_count: u32,
+    pub edges_count: usize,
 }
 
 impl GraphParameters {
     pub fn new(nodes_count: u32, max_edges_count: usize) -> GraphParameters {
         GraphParameters {
             nodes_count,
-            max_edges_count,
+            edges_count: max_edges_count,
         }
+    }
+}
+
+impl TryFrom<&str> for GraphParameters {
+    type Error = BuildGraphError;
+
+    fn try_from(line: &str) -> Result<Self, Self::Error> {
+        let mut inner_iter = line.split_whitespace();
+
+        let nodes_count = inner_iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+        let edges_count = inner_iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+
+        let nodes_count = nodes_count.parse::<u32>().map_err(|_| {
+            BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count(nodes_count))
+        })?;
+        let edges_count = edges_count.parse::<usize>().map_err(|_| {
+            BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count(edges_count))
+        })?;
+
+        Ok(GraphParameters::new(nodes_count, edges_count))
     }
 }
 
@@ -254,8 +274,8 @@ mod tests {
     }
 
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
-        nodes_count:     3,
-        max_edges_count: 2,
+        nodes_count: 3,
+        edges_count: 2,
     };
 
     fn create_test_graph_builder() -> GraphBuilder {
@@ -286,8 +306,8 @@ mod tests {
             weight:     170,
         };
         let expected = BuildGraphError::TooManyEdges {
-            max_edges_count: TEST_GRAPH_PARAMETERS.max_edges_count,
-            edge:            third_edge,
+            edges_count: TEST_GRAPH_PARAMETERS.edges_count,
+            edge:        third_edge,
         };
 
         let actual = graph_builder.add_edge(third_edge).unwrap_err();
