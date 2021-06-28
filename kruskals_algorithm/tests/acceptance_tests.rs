@@ -1,4 +1,4 @@
-use kruskals_algorithm::{run, BuildGraphError, Edge, EdgeDescriptionError};
+use kruskals_algorithm::{run, BuildGraphError, CreatingEdgeError, Edge, EdgeDescription, EdgeDescriptionError};
 use test_case::test_case;
 
 #[test_case(1 => 280)]
@@ -10,7 +10,7 @@ use test_case::test_case;
 #[test_case(7 => 1500)]
 #[test_case(8 => 400)]
 fn passing(dataset_number: u32) -> i32 {
-    run(format!("tests/data/passing{}.txt", dataset_number)).unwrap()
+    run(format!("tests/data/passing_tests/passing{}.txt", dataset_number)).unwrap()
 }
 
 #[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected)]
@@ -42,6 +42,24 @@ fn passing(dataset_number: u32) -> i32 {
 })]
 #[test_case("error_not_enough_data", BuildGraphError::NotEnoughData)]
 fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
-    let actual_error = run(format!("tests/data/{}.txt", graph_file)).unwrap_err();
+    let actual_error = run(format!(
+        "tests/data/error_tests/graph_building_errors/{}.txt",
+        graph_file
+    ))
+    .unwrap_err();
+    assert_eq!(actual_error.to_string(), expected_error.to_string());
+}
+
+#[test_case("error_edge_description_bad_from_index", CreatingEdgeError::from_edge_description_with_bad_from_index(&EdgeDescription {
+from_index: "xyz",
+to_index: "3",
+weight: "100",
+}))]
+fn test_creating_edge_errors(graph_file: &str, expected_error: CreatingEdgeError) {
+    let actual_error = run(format!(
+        "tests/data/error_tests/creating_edge_errors/{}.txt",
+        graph_file
+    ))
+    .unwrap_err();
     assert_eq!(actual_error.to_string(), expected_error.to_string());
 }
