@@ -12,7 +12,13 @@ use crate::algorithm::calculate_min_total_weight;
 use crate::data::build_graph_from_file;
 
 pub use crate::data::{Edge, EdgeDescription};
-pub use crate::errors::{BuildGraphError, CreatingEdgeError, EdgeDescriptionError, Result};
+pub use crate::errors::{
+    BuildGraphError,
+    CreatingEdgeError,
+    EdgeDescriptionError,
+    GraphParametersParsingError,
+    Result,
+};
 
 pub fn run<P>(filename: P) -> Result<i32>
 where

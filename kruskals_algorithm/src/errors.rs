@@ -12,25 +12,22 @@ pub enum BuildGraphError {
     #[error("current count of edges {current_count} is less than declared {declared}")]
     TooFewEdges { current_count: usize, declared: usize },
 
-    #[error("invalid edge descritpion - {0}")]
+    #[error("invalid edge description - {0}")]
     InvalidEdgeDescription(EdgeDescriptionError),
 
-    #[error("max allowed count of edges is {max_edges_count} but you are trying to add a new edge {edge:?}")]
-    TooManyEdges {
-        max_edges_count: usize,
-        edge:            Edge,
-    },
-
-    #[error("not enough data in input file")]
-    NotEnoughData,
+    #[error("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
+    TooManyEdges { edges_count: usize, edge: Edge },
 
     #[error("{0}")]
     CreatingEdgeError(CreatingEdgeError),
 
-    #[error("parsing graph parameters has failed: {parameter_name}={value} is not an integer!")]
-    ParsingError {
-        parameter_name: String,
-        value:          String,
+    #[error("error parsing graph parameters - {0}")]
+    GraphParametersParsingError(GraphParametersParsingError),
+
+    #[error("error in line {line_no}: {error}")]
+    ErrorInGraphDescriptionFile {
+        line_no: usize,
+        error:   Box<BuildGraphError>,
     },
 
     #[error(transparent)]
@@ -46,6 +43,12 @@ impl From<CreatingEdgeError> for BuildGraphError {
 impl From<EdgeDescriptionError> for BuildGraphError {
     fn from(e: EdgeDescriptionError) -> Self {
         BuildGraphError::InvalidEdgeDescription(e)
+    }
+}
+
+impl From<GraphParametersParsingError> for BuildGraphError {
+    fn from(e: GraphParametersParsingError) -> Self {
+        BuildGraphError::GraphParametersParsingError(e)
     }
 }
 
@@ -87,15 +90,32 @@ impl CreatingEdgeError {
         }
     }
 
-    pub fn from_edge_description_with_bad_from_index(edge_description: &EdgeDescription) -> Self {
+    pub fn from_edge_description_with_non_integer_from_index(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "from_index", edge_description.from_index)
     }
 
-    pub fn from_edge_description_with_bad_to_index(edge_description: &EdgeDescription) -> Self {
+    pub fn from_edge_description_with_non_integer_to_index(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "to_index", edge_description.to_index)
     }
 
-    pub fn from_edge_description_with_bad_weight(edge_description: &EdgeDescription) -> Self {
+    pub fn from_edge_description_with_non_integer_weight(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "weight", edge_description.weight)
     }
+}
+
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Display)]
+pub enum GraphParametersParsingError {
+    #[display("empty input")]
+    EmptyInput,
+
+    #[display("missing edges count value")]
+    MissingEdgesCountValue,
+
+    #[display("nodes count must be an integer, but it is: `{0}`")]
+    NodesCountValueMustBeInteger(String),
+
+    #[display("edges count must be an integer, but it is: `{0}`")]
+    EdgesCountValueIsNotInteger(String),
 }
