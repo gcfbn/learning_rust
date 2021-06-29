@@ -47,17 +47,17 @@ fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError)
     assert_eq!(actual_error.to_string(), expected_error.to_string());
 }
 
-#[test_case("error_edge_description_bad_from_index", 2,
+#[test_case("error_edge_description_non_integer_from_index", 2,
             BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_from_index(
                 &EdgeDescription { from_index: "xyz", to_index: "3", weight: "100" }
             )); "error_edge_description_non_integer_from_index"
  )]
-#[test_case("error_edge_description_bad_to_index", 2,
+#[test_case("error_edge_description_non_integer_to_index", 2,
             BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_to_index(
                 &EdgeDescription { from_index: "1", to_index: "abc", weight: "150" }
             )); "error_edge_description_non_integer_to_index"
 )]
-#[test_case("error_edge_description_bad_weight", 2,
+#[test_case("error_edge_description_non_integer_weight", 2,
             BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_weight(
                 &EdgeDescription { from_index: "1", to_index: "2", weight: "10a0" }
             )); "error_edge_description_non_integer_weight"
