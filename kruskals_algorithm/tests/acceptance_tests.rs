@@ -17,23 +17,6 @@ fn passing(dataset_number: u32) -> i32 {
 
 // -----------------------------------------------------------------------------
 
-#[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected;
-            "error_graph_not_connected"
-)]
-#[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4};
-            "error_too_few_edges"
-)]
-fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
-    let actual_error = run(format!(
-        "tests/data/error_tests/graph_building_errors/{}.txt",
-        graph_file
-    ))
-    .unwrap_err();
-    assert_eq!(actual_error.to_string(), expected_error.to_string());
-}
-
-// -----------------------------------------------------------------------------
-
 #[test_case("error_parsing_graph_parameters_empty_input",
         BuildGraphError::from(GraphParametersParsingError::EmptyInput);
         "error_parsing_graph_parameters_empty_input"

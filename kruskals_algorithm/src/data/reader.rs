@@ -1,4 +1,4 @@
-use crate::data::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};
+use crate::data::structures::{Edge, Graph, GraphBuilder, GraphParameters};
 use crate::errors::GraphParametersParsingError;
 use crate::{BuildGraphError, Result};
 use std::convert::TryFrom;
@@ -51,11 +51,6 @@ impl<'a> Iterator for GraphFileReader<'a> {
     type Item = Result<Edge>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next().map(line2edge)
+        self.iter.next().map(str::parse)
     }
-}
-
-fn line2edge(line: &str) -> Result<Edge> {
-    let edge_description = EdgeDescription::try_from(line)?;
-    Edge::try_from(edge_description)
 }
