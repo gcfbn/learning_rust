@@ -5,6 +5,7 @@ use crate::{
     Result,
 };
 use std::convert::TryFrom;
+use std::str::FromStr;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Edge {
@@ -20,6 +21,27 @@ impl Edge {
             to_index,
             weight,
         }
+    }
+}
+
+impl FromStr for Edge {
+    type Err = BuildGraphError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut iterator = s.split_whitespace();
+
+        let from_index = iterator.next().unwrap();
+        let to_index = iterator.next().unwrap();
+        let weight = iterator.next().unwrap();
+
+        let from_index = from_index.parse::<u32>().unwrap();
+        let to_index = to_index.parse::<u32>().unwrap();
+        let weight = weight.parse::<i32>().unwrap();
+        Ok(Edge {
+            from_index,
+            to_index,
+            weight,
+        })
     }
 }
 
@@ -287,26 +309,11 @@ mod tests {
     #[test]
     fn too_many_edges() {
         let mut graph_builder = create_test_graph_builder();
-        graph_builder
-            .add_edge(Edge {
-                from_index: 1,
-                to_index:   3,
-                weight:     200,
-            })
-            .unwrap();
-        graph_builder
-            .add_edge(Edge {
-                from_index: 2,
-                to_index:   1,
-                weight:     50,
-            })
-            .unwrap();
+        graph_builder.add_edge("1 3 200".parse().unwrap()).unwrap();
+        graph_builder.add_edge("2 1 50".parse().unwrap()).unwrap();
 
-        let third_edge = Edge {
-            from_index: 3,
-            to_index:   4,
-            weight:     170,
-        };
+        let third_edge = "3 4 170".parse().unwrap();
+
         let expected = BuildGraphError::TooManyEdges {
             edges_count: TEST_GRAPH_PARAMETERS.edges_count,
             edge:        third_edge,
@@ -319,11 +326,7 @@ mod tests {
     #[test]
     fn invalid_from_index() {
         let mut graph_builder = create_test_graph_builder();
-        let invalid_edge = Edge {
-            from_index: 10,
-            to_index:   3,
-            weight:     120,
-        };
+        let invalid_edge = "10 3 120".parse().unwrap();
 
         let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
             edge:        invalid_edge,
@@ -337,11 +340,7 @@ mod tests {
     #[test]
     fn invalid_to_index() {
         let mut graph_builder = create_test_graph_builder();
-        let invalid_edge = Edge {
-            from_index: 2,
-            to_index:   7,
-            weight:     120,
-        };
+        let invalid_edge = "2 7 120".parse().unwrap();
 
         let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
             edge:        invalid_edge,
@@ -356,13 +355,8 @@ mod tests {
     #[test]
     fn build_graph_too_few_edges() {
         let mut graph_builder = create_test_graph_builder();
-        let first_edge = Edge {
-            from_index: 1,
-            to_index:   3,
-            weight:     100,
-        };
 
-        graph_builder.add_edge(first_edge).unwrap();
+        graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
         let expected = BuildGraphError::TooFewEdges {
             current_count: graph_builder.edges.len(),
             declared:      graph_builder.max_edges_count,
@@ -374,18 +368,11 @@ mod tests {
     #[test]
     fn build_graph_ok() {
         let mut graph_builder = create_test_graph_builder();
-        let first_edge = Edge {
-            from_index: 1,
-            to_index:   3,
-            weight:     100,
-        };
-        let second_edge = Edge {
-            from_index: 2,
-            to_index:   3,
-            weight:     130,
-        };
-        graph_builder.add_edge(first_edge).unwrap();
-        graph_builder.add_edge(second_edge).unwrap();
+        let first_edge = "1 3 100".parse().unwrap();
+        let second_edge = "2 3 130".parse().unwrap();
+
+        graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
+        graph_builder.add_edge("2 3 130".parse().unwrap()).unwrap();
         let expected = Graph {
             nodes_count: 3,
             edges:       vec![first_edge, second_edge],
