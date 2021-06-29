@@ -60,18 +60,18 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
         let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
             let err: BuildGraphError =
-                CreatingEdgeError::from_edge_description_with_bad_from_index(&edge_description).into();
+                CreatingEdgeError::from_edge_description_with_non_integer_from_index(&edge_description).into();
             err
         })?;
 
         let parsed_to_index = edge_description.to_index.parse::<u32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
+            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_to_index(
                 &edge_description,
             ))
         })?;
 
         let parsed_weight = edge_description.weight.parse::<i32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
+            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_weight(
                 &edge_description,
             ))
         })?;
@@ -197,14 +197,22 @@ impl TryFrom<&str> for GraphParameters {
     fn try_from(line: &str) -> Result<Self, Self::Error> {
         let mut inner_iter = line.split_whitespace();
 
-        let nodes_count = inner_iter.next().ok_or(BuildGraphError::NotEnoughData)?;
-        let edges_count = inner_iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+        let nodes_count = inner_iter.next().unwrap(); // cannot fail !
 
         let nodes_count = nodes_count.parse::<u32>().map_err(|_| {
-            BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count(nodes_count))
+            BuildGraphError::from(GraphParametersParsingError::NodesCountValueMustBeInteger(
+                nodes_count.to_owned(),
+            ))
         })?;
+
+        let edges_count = inner_iter
+            .next()
+            .ok_or_else(|| BuildGraphError::from(GraphParametersParsingError::MissingEdgesCountValue))?;
+
         let edges_count = edges_count.parse::<usize>().map_err(|_| {
-            BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count(edges_count))
+            BuildGraphError::from(GraphParametersParsingError::EdgesCountValueIsNotInteger(
+                edges_count.to_owned(),
+            ))
         })?;
 
         Ok(GraphParameters::new(nodes_count, edges_count))
@@ -243,7 +251,7 @@ mod tests {
     #[test]
     fn create_edge_fails_because_from_index_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription::try_from("x 2 130").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_from_index(
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_from_index(
             &edge_description,
         ));
 
@@ -254,7 +262,7 @@ mod tests {
     #[test]
     fn create_edge_fails_because_to_index_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription::try_from("1 x 130").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_to_index(
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_to_index(
             &edge_description,
         ));
 
@@ -265,7 +273,7 @@ mod tests {
     #[test]
     fn create_edge_fails_because_weight_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription::try_from("1 2 xxx").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_bad_weight(
+        let expected = BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_weight(
             &edge_description,
         ));
 
