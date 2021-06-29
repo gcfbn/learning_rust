@@ -13,6 +13,7 @@ use crate::data::build_graph_from_file;
 
 pub use crate::data::{Edge, EdgeDescription};
 pub use crate::errors::{
+    AddingEdgeError,
     BuildGraphError,
     CreatingEdgeError,
     EdgeDescriptionError,

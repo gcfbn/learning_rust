@@ -15,11 +15,11 @@ pub enum BuildGraphError {
     #[error("invalid edge description - {0}")]
     InvalidEdgeDescription(EdgeDescriptionError),
 
-    #[error("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
-    TooManyEdges { edges_count: usize, edge: Edge },
-
     #[error("error parsing edge - {0}")]
     CreatingEdgeError(CreatingEdgeError),
+
+    #[error("error adding edge - {0}")]
+    AddingEdgeError(AddingEdgeError),
 
     #[error("error parsing graph parameters - {0}")]
     GraphParametersParsingError(GraphParametersParsingError),
@@ -46,6 +46,12 @@ impl From<EdgeDescriptionError> for BuildGraphError {
     }
 }
 
+impl From<AddingEdgeError> for BuildGraphError {
+    fn from(e: AddingEdgeError) -> Self {
+        BuildGraphError::AddingEdgeError(e)
+    }
+}
+
 impl From<GraphParametersParsingError> for BuildGraphError {
     fn from(e: GraphParametersParsingError) -> Self {
         BuildGraphError::GraphParametersParsingError(e)
@@ -62,10 +68,6 @@ pub enum EdgeDescriptionError {
     MissingToIndexField,
     #[display("missing `weight` field")]
     MissingWeightField,
-    #[display("`{edge:?}` from_index field value is greater than nodes count `{nodes_count}` in graph !")]
-    WrongFromIndex { edge: Edge, nodes_count: u32 },
-    #[display("`{edge:?}` to_index field value is greater than nodes count `{nodes_count}` in graph !")]
-    WrongToIndex { edge: Edge, nodes_count: u32 },
 }
 
 // -----------------------------------------------------------------------------
@@ -81,6 +83,20 @@ pub enum CreatingEdgeError {
     #[display("weight must be an integer, but it is: `{0}`")]
     WeightValueMustBeInteger(String),
 }
+
+#[derive(Debug, Display)]
+pub enum AddingEdgeError {
+    #[display("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
+    TooManyEdges { edges_count: usize, edge: Edge },
+
+    #[display("{edge:?} from_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongFromIndex { edge: Edge, nodes_count: u32 },
+
+    #[display("{edge:?} to_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongToIndex { edge: Edge, nodes_count: u32 },
+}
+
+// -----------------------------------------------------------------------------
 
 #[derive(Debug, Display)]
 pub enum GraphParametersParsingError {

@@ -1,6 +1,6 @@
 use crate::data::dfs::dfs;
 use crate::{
-    errors::{CreatingEdgeError, EdgeDescriptionError, GraphParametersParsingError},
+    errors::{AddingEdgeError, CreatingEdgeError, EdgeDescriptionError, GraphParametersParsingError},
     BuildGraphError,
     Result,
 };
@@ -114,21 +114,21 @@ impl GraphBuilder {
 
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
         if self.edges.len() >= self.max_edges_count {
-            return Err(BuildGraphError::TooManyEdges {
-                edges_count: self.max_edges_count,
+            return Err(BuildGraphError::from(AddingEdgeError::TooManyEdges {
+                edges_count: self.edges.len(),
                 edge,
-            });
+            }));
         }
 
         if edge.from_index > self.nodes_count {
-            return Err(BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+            return Err(BuildGraphError::from(AddingEdgeError::WrongFromIndex {
                 edge,
                 nodes_count: self.nodes_count,
             }));
         }
 
         if edge.to_index > self.nodes_count {
-            return Err(BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+            return Err(BuildGraphError::from(AddingEdgeError::WrongToIndex {
                 edge,
                 nodes_count: self.nodes_count,
             }));
@@ -307,10 +307,10 @@ mod tests {
             to_index:   4,
             weight:     170,
         };
-        let expected = BuildGraphError::TooManyEdges {
+        let expected = BuildGraphError::from(AddingEdgeError::TooManyEdges {
             edges_count: TEST_GRAPH_PARAMETERS.edges_count,
             edge:        third_edge,
-        };
+        });
 
         let actual = graph_builder.add_edge(third_edge).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -325,7 +325,7 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+        let expected = BuildGraphError::from(AddingEdgeError::WrongFromIndex {
             edge:        invalid_edge,
             nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
         });
@@ -343,7 +343,7 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+        let expected = BuildGraphError::from(AddingEdgeError::WrongToIndex {
             edge:        invalid_edge,
             nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
         });
