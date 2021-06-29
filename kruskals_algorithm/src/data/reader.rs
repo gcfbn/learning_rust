@@ -1,4 +1,5 @@
 use crate::data::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};
+use crate::errors::GraphParametersParsingError;
 use crate::{BuildGraphError, Result};
 use std::convert::TryFrom;
 use std::fs;
@@ -38,7 +39,10 @@ impl<'a> GraphFileReader<'a> {
     }
 
     pub fn graph_parameters(&mut self) -> Result<GraphParameters> {
-        let line = self.iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+        let line = self
+            .iter
+            .next()
+            .ok_or(BuildGraphError::from(GraphParametersParsingError::EmptyInput))?;
         GraphParameters::try_from(line)
     }
 }

@@ -31,13 +31,20 @@ fn passing(dataset_number: u32) -> i32 {
 #[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4};
             "error_too_few_edges"
 )]
-#[test_case("error_not_enough_data", BuildGraphError::NotEnoughData; "error_not_enough_data")]
+#[test_case("error_parsing_graph_parameters_empty_input",
+            BuildGraphError::from(GraphParametersParsingError::EmptyInput);
+            "error_parsing_graph_parameters_empty_input"
+)]
+#[test_case("error_parsing_graph_parameters_missing_edges_count",
+            BuildGraphError::from(GraphParametersParsingError::MissingEdgesCountValue);
+            "error_parsing_graph_parameters_missing_edges_count"
+)]
 #[test_case( "error_parsing_graph_parameters_nodes_count",
-            BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count("X"));
+            BuildGraphError::from(GraphParametersParsingError::NodesCountValueMustBeInteger("X".to_owned()));
             "error_parsing_graph_parameters_nodes_count"
 )]
 #[test_case("error_parsing_graph_parameters_edges_count",
-            BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count("X"));
+            BuildGraphError::from(GraphParametersParsingError::EdgesCountValueIsNotInteger("X".to_owned()));
             "error_parsing_graph_parameters_edges_count"
 )]
 fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {

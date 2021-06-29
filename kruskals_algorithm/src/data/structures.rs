@@ -197,14 +197,22 @@ impl TryFrom<&str> for GraphParameters {
     fn try_from(line: &str) -> Result<Self, Self::Error> {
         let mut inner_iter = line.split_whitespace();
 
-        let nodes_count = inner_iter.next().ok_or(BuildGraphError::NotEnoughData)?;
-        let edges_count = inner_iter.next().ok_or(BuildGraphError::NotEnoughData)?;
+        let nodes_count = inner_iter.next().unwrap(); // cannot fail !
 
         let nodes_count = nodes_count.parse::<u32>().map_err(|_| {
-            BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count(nodes_count))
+            BuildGraphError::from(GraphParametersParsingError::NodesCountValueMustBeInteger(
+                nodes_count.to_owned(),
+            ))
         })?;
+
+        let edges_count = inner_iter
+            .next()
+            .ok_or_else(|| BuildGraphError::from(GraphParametersParsingError::MissingEdgesCountValue))?;
+
         let edges_count = edges_count.parse::<usize>().map_err(|_| {
-            BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count(edges_count))
+            BuildGraphError::from(GraphParametersParsingError::EdgesCountValueIsNotInteger(
+                edges_count.to_owned(),
+            ))
         })?;
 
         Ok(GraphParameters::new(nodes_count, edges_count))
