@@ -1,4 +1,4 @@
-use crate::data::{Edge, EdgeDescription};
+use crate::data::Edge;
 use parse_display::Display;
 use thiserror::Error;
 
@@ -18,7 +18,7 @@ pub enum BuildGraphError {
     #[error("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
     TooManyEdges { edges_count: usize, edge: Edge },
 
-    #[error("{0}")]
+    #[error("error parsing edge - {0}")]
     CreatingEdgeError(CreatingEdgeError),
 
     #[error("error parsing graph parameters - {0}")]
@@ -71,39 +71,16 @@ pub enum EdgeDescriptionError {
 // -----------------------------------------------------------------------------
 
 #[derive(Debug, Display)]
-#[display(
-    "creating graph edge from description `{edge_description}` has failed: {field_name}={field_value} is not an \
-     integer!"
-)]
-pub struct CreatingEdgeError {
-    edge_description: String,
-    field_name:       String,
-    field_value:      String,
+pub enum CreatingEdgeError {
+    #[display("from_index must be an integer, but it is: `{0}`")]
+    FromIndexValueMustBeInteger(String),
+
+    #[display("to_index must be an integer, but it is: `{0}`")]
+    ToIndexValueMustBeInteger(String),
+
+    #[display("weight must be an integer, but it is: `{0}`")]
+    WeightValueMustBeInteger(String),
 }
-
-impl CreatingEdgeError {
-    fn from_edge_description(edge_description: &EdgeDescription, field_name: &str, field_value: &str) -> Self {
-        Self {
-            edge_description: format!("{:?}", edge_description),
-            field_name:       field_name.to_owned(),
-            field_value:      field_value.to_owned(),
-        }
-    }
-
-    pub fn from_edge_description_with_non_integer_from_index(edge_description: &EdgeDescription) -> Self {
-        Self::from_edge_description(edge_description, "from_index", edge_description.from_index)
-    }
-
-    pub fn from_edge_description_with_non_integer_to_index(edge_description: &EdgeDescription) -> Self {
-        Self::from_edge_description(edge_description, "to_index", edge_description.to_index)
-    }
-
-    pub fn from_edge_description_with_non_integer_weight(edge_description: &EdgeDescription) -> Self {
-        Self::from_edge_description(edge_description, "weight", edge_description.weight)
-    }
-}
-
-// -----------------------------------------------------------------------------
 
 #[derive(Debug, Display)]
 pub enum GraphParametersParsingError {

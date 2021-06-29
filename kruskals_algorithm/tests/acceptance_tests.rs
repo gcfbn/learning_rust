@@ -59,31 +59,28 @@ fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError)
 // -----------------------------------------------------------------------------
 
 #[test_case("error_edge_description_non_integer_from_index", 2,
-            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_from_index(
-                &EdgeDescription { from_index: "xyz", to_index: "3", weight: "100" }
-            )); "error_edge_description_non_integer_from_index"
+            BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger("xyz".to_owned()));
+            "error_edge_description_non_integer_from_index"
  )]
 #[test_case("error_edge_description_non_integer_to_index", 2,
-            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_to_index(
-                &EdgeDescription { from_index: "1", to_index: "abc", weight: "150" }
-            )); "error_edge_description_non_integer_to_index"
+            BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger("abc".to_owned()));
+            "error_edge_description_non_integer_to_index"
 )]
 #[test_case("error_edge_description_non_integer_weight", 2,
-            BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_weight(
-                &EdgeDescription { from_index: "1", to_index: "2", weight: "10a0" }
-            )); "error_edge_description_non_integer_weight"
+            BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger("10a0".to_owned())); 
+            "error_edge_description_non_integer_weight"
 )]
-#[test_case(
-            "error_edge_description_empty_input", 2,
-            BuildGraphError::from(EdgeDescriptionError::EmptyInput); "error_edge_description_empty_input"
+#[test_case("error_edge_description_empty_input", 2,
+            BuildGraphError::from(EdgeDescriptionError::EmptyInput);
+            "error_edge_description_empty_input"
 )]
-#[test_case(
-            "error_edge_description_missing_to_index", 4,
-            BuildGraphError::from(EdgeDescriptionError::MissingToIndexField); "error_edge_description_missing_to_index"
+#[test_case("error_edge_description_missing_to_index", 4,
+            BuildGraphError::from(EdgeDescriptionError::MissingToIndexField);
+            "error_edge_description_missing_to_index"
 )]
-#[test_case(
-            "error_edge_description_missing_weight", 3,
-            BuildGraphError::from(EdgeDescriptionError::MissingWeightField); "error_edge_description_missing_weight"
+#[test_case("error_edge_description_missing_weight", 3,
+            BuildGraphError::from(EdgeDescriptionError::MissingWeightField);
+            "error_edge_description_missing_weight"
 )]
 #[test_case("error_too_many_edges", 4, 
             BuildGraphError::TooManyEdges{
