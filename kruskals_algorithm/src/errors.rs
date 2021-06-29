@@ -12,14 +12,11 @@ pub enum BuildGraphError {
     #[error("current count of edges {current_count} is less than declared {declared}")]
     TooFewEdges { current_count: usize, declared: usize },
 
-    #[error("invalid edge description - {0}")]
-    InvalidEdgeDescription(EdgeDescriptionError),
-
-    #[error("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
-    TooManyEdges { edges_count: usize, edge: Edge },
-
     #[error("error parsing edge - {0}")]
-    CreatingEdgeError(CreatingEdgeError),
+    ParsingEdgeError(ParsingEdgeError),
+
+    #[error("error adding edge - {0}")]
+    AddingEdgeError(AddingEdgeError),
 
     #[error("error parsing graph parameters - {0}")]
     GraphParametersParsingError(GraphParametersParsingError),
@@ -34,15 +31,15 @@ pub enum BuildGraphError {
     StandardError(#[from] std::io::Error),
 }
 
-impl From<CreatingEdgeError> for BuildGraphError {
-    fn from(e: CreatingEdgeError) -> Self {
-        BuildGraphError::CreatingEdgeError(e)
+impl From<ParsingEdgeError> for BuildGraphError {
+    fn from(e: ParsingEdgeError) -> Self {
+        BuildGraphError::ParsingEdgeError(e)
     }
 }
 
-impl From<EdgeDescriptionError> for BuildGraphError {
-    fn from(e: EdgeDescriptionError) -> Self {
-        BuildGraphError::InvalidEdgeDescription(e)
+impl From<AddingEdgeError> for BuildGraphError {
+    fn from(e: AddingEdgeError) -> Self {
+        BuildGraphError::AddingEdgeError(e)
     }
 }
 
@@ -54,24 +51,17 @@ impl From<GraphParametersParsingError> for BuildGraphError {
 
 // -----------------------------------------------------------------------------
 
-#[derive(Display, PartialEq, Debug)]
-pub enum EdgeDescriptionError {
-    #[display("empty input")]
-    EmptyInput,
+#[derive(Debug, Display, PartialEq)]
+pub enum ParsingEdgeError {
+    #[display("empty line")]
+    EmptyLine,
+
     #[display("missing `to_index` field")]
     MissingToIndexField,
+
     #[display("missing `weight` field")]
     MissingWeightField,
-    #[display("`{edge:?}` from_index field value is greater than nodes count `{nodes_count}` in graph !")]
-    WrongFromIndex { edge: Edge, nodes_count: u32 },
-    #[display("`{edge:?}` to_index field value is greater than nodes count `{nodes_count}` in graph !")]
-    WrongToIndex { edge: Edge, nodes_count: u32 },
-}
 
-// -----------------------------------------------------------------------------
-
-#[derive(Debug, Display)]
-pub enum CreatingEdgeError {
     #[display("from_index must be an integer, but it is: `{0}`")]
     FromIndexValueMustBeInteger(String),
 
@@ -81,6 +71,22 @@ pub enum CreatingEdgeError {
     #[display("weight must be an integer, but it is: `{0}`")]
     WeightValueMustBeInteger(String),
 }
+
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Display)]
+pub enum AddingEdgeError {
+    #[display("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
+    TooManyEdges { edges_count: usize, edge: Edge },
+
+    #[display("{edge:?} from_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongFromIndex { edge: Edge, nodes_count: u32 },
+
+    #[display("{edge:?} to_index field value is greater than nodes count `{nodes_count}` in graph !")]
+    WrongToIndex { edge: Edge, nodes_count: u32 },
+}
+
+// -----------------------------------------------------------------------------
 
 #[derive(Debug, Display)]
 pub enum GraphParametersParsingError {

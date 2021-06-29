@@ -1,6 +1,6 @@
 use crate::data::dfs::dfs;
 use crate::{
-    errors::{CreatingEdgeError, EdgeDescriptionError, GraphParametersParsingError},
+    errors::{AddingEdgeError, GraphParametersParsingError, ParsingEdgeError},
     BuildGraphError,
     Result,
 };
@@ -38,13 +38,13 @@ impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
 
         let from_index = iter
             .next()
-            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::EmptyInput))?;
+            .ok_or_else(|| BuildGraphError::from(ParsingEdgeError::EmptyLine))?;
         let to_index = iter
             .next()
-            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::MissingToIndexField))?;
+            .ok_or_else(|| BuildGraphError::from(ParsingEdgeError::MissingToIndexField))?;
         let weight = iter
             .next()
-            .ok_or_else(|| BuildGraphError::from(EdgeDescriptionError::MissingWeightField))?;
+            .ok_or_else(|| BuildGraphError::from(ParsingEdgeError::MissingWeightField))?;
 
         Ok(EdgeDescription {
             from_index,
@@ -59,19 +59,19 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
 
     fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
         let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger(
+            BuildGraphError::from(ParsingEdgeError::FromIndexValueMustBeInteger(
                 edge_description.from_index.to_owned(),
             ))
         })?;
 
         let parsed_to_index = edge_description.to_index.parse::<u32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger(
+            BuildGraphError::from(ParsingEdgeError::ToIndexValueMustBeInteger(
                 edge_description.to_index.to_owned(),
             ))
         })?;
 
         let parsed_weight = edge_description.weight.parse::<i32>().map_err(|_| {
-            BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger(
+            BuildGraphError::from(ParsingEdgeError::WeightValueMustBeInteger(
                 edge_description.weight.to_owned(),
             ))
         })?;
@@ -114,21 +114,21 @@ impl GraphBuilder {
 
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
         if self.edges.len() >= self.max_edges_count {
-            return Err(BuildGraphError::TooManyEdges {
-                edges_count: self.max_edges_count,
+            return Err(BuildGraphError::from(AddingEdgeError::TooManyEdges {
+                edges_count: self.edges.len(),
                 edge,
-            });
+            }));
         }
 
         if edge.from_index > self.nodes_count {
-            return Err(BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+            return Err(BuildGraphError::from(AddingEdgeError::WrongFromIndex {
                 edge,
                 nodes_count: self.nodes_count,
             }));
         }
 
         if edge.to_index > self.nodes_count {
-            return Err(BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+            return Err(BuildGraphError::from(AddingEdgeError::WrongToIndex {
                 edge,
                 nodes_count: self.nodes_count,
             }));
@@ -225,7 +225,7 @@ mod tests {
     use super::*;
     use crate::data::Graph;
     use crate::test_case::test_case;
-    use crate::{errors::CreatingEdgeError, BuildGraphError};
+    use crate::{errors::ParsingEdgeError, BuildGraphError};
     use std::convert::TryFrom;
 
     #[test]
@@ -236,12 +236,12 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    #[test_case( "", EdgeDescriptionError::EmptyInput; "empty input")]
-    #[test_case( "1", EdgeDescriptionError::MissingToIndexField; "missing to_index field" )]
-    #[test_case( "1 2", EdgeDescriptionError::MissingWeightField; "missing weight field" )]
-    fn create_edge_fails_because_of_invalid_edge_description(input: &str, expected_error: EdgeDescriptionError) {
+    #[test_case( "", ParsingEdgeError::EmptyLine; "empty line")]
+    #[test_case( "1", ParsingEdgeError::MissingToIndexField; "missing to_index field" )]
+    #[test_case( "1 2", ParsingEdgeError::MissingWeightField; "missing weight field" )]
+    fn create_edge_fails_because_of_invalid_edge_description(input: &str, expected_error: ParsingEdgeError) {
         let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
-            BuildGraphError::InvalidEdgeDescription(actual_err) if actual_err == expected_error => true,
+            BuildGraphError::ParsingEdgeError(actual_err) if actual_err == expected_error => true,
             _ => false,
         };
 
@@ -251,7 +251,7 @@ mod tests {
     #[test]
     fn create_edge_fails_because_from_index_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription::try_from("x 2 130").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger(String::from("x")));
+        let expected = BuildGraphError::from(ParsingEdgeError::FromIndexValueMustBeInteger(String::from("x")));
 
         let actual = Edge::try_from(edge_description).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -260,7 +260,7 @@ mod tests {
     #[test]
     fn create_edge_fails_because_to_index_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription::try_from("1 x 130").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger(String::from("x")));
+        let expected = BuildGraphError::from(ParsingEdgeError::ToIndexValueMustBeInteger(String::from("x")));
 
         let actual = Edge::try_from(edge_description).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn create_edge_fails_because_weight_field_in_edge_description_is_invalid() {
         let edge_description = EdgeDescription::try_from("1 2 xxx").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger(String::from("xxx")));
+        let expected = BuildGraphError::from(ParsingEdgeError::WeightValueMustBeInteger(String::from("xxx")));
 
         let actual = Edge::try_from(edge_description).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -307,10 +307,10 @@ mod tests {
             to_index:   4,
             weight:     170,
         };
-        let expected = BuildGraphError::TooManyEdges {
+        let expected = BuildGraphError::from(AddingEdgeError::TooManyEdges {
             edges_count: TEST_GRAPH_PARAMETERS.edges_count,
             edge:        third_edge,
-        };
+        });
 
         let actual = graph_builder.add_edge(third_edge).unwrap_err();
         assert_eq!(actual.to_string(), expected.to_string());
@@ -325,7 +325,7 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+        let expected = BuildGraphError::from(AddingEdgeError::WrongFromIndex {
             edge:        invalid_edge,
             nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
         });
@@ -343,7 +343,7 @@ mod tests {
             weight:     120,
         };
 
-        let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+        let expected = BuildGraphError::from(AddingEdgeError::WrongToIndex {
             edge:        invalid_edge,
             nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
         });
