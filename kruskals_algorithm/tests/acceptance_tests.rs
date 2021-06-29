@@ -3,7 +3,6 @@ use kruskals_algorithm::{
     BuildGraphError,
     CreatingEdgeError,
     Edge,
-    EdgeDescription,
     EdgeDescriptionError,
     GraphParametersParsingError,
 };
