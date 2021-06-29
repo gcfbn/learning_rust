@@ -28,20 +28,8 @@ impl FromStr for Edge {
     type Err = BuildGraphError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut iterator = s.split_whitespace();
-
-        let from_index = iterator.next().unwrap();
-        let to_index = iterator.next().unwrap();
-        let weight = iterator.next().unwrap();
-
-        let from_index = from_index.parse::<u32>().unwrap();
-        let to_index = to_index.parse::<u32>().unwrap();
-        let weight = weight.parse::<i32>().unwrap();
-        Ok(Edge {
-            from_index,
-            to_index,
-            weight,
-        })
+        let edge_description = EdgeDescription::try_from(s)?;
+        Edge::try_from(edge_description)
     }
 }
 
