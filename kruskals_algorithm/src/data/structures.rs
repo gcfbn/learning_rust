@@ -251,7 +251,7 @@ mod tests {
         #[test_case( "", ParsingEdgeError::EmptyLine; "empty line")]
         #[test_case( "1", ParsingEdgeError::MissingToIndexField; "missing to_index field" )]
         #[test_case( "1 2", ParsingEdgeError::MissingWeightField; "missing weight field" )]
-        fn create_edge_fails_because_of_invalid_edge_description(input: &str, expected_error: ParsingEdgeError) {
+        fn fails_because_of_invalid_edge_description(input: &str, expected_error: ParsingEdgeError) {
             let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
                 BuildGraphError::ParsingEdgeError(actual_err) if actual_err == expected_error => true,
                 _ => false,
@@ -262,15 +262,18 @@ mod tests {
 
         #[test_case(
             "x 2 130",
-            BuildGraphError::from(ParsingEdgeError::FromIndexValueMustBeInteger(String::from("x")))
+            BuildGraphError::from(ParsingEdgeError::FromIndexValueMustBeInteger(String::from("x")));
+            "from index is not an integer"
         )]
         #[test_case(
             "1 x 130",
-            BuildGraphError::from(ParsingEdgeError::ToIndexValueMustBeInteger(String::from("x")))
+            BuildGraphError::from(ParsingEdgeError::ToIndexValueMustBeInteger(String::from("x")));
+            "to index is not an integer"
         )]
         #[test_case(
             "1 2 xxx",
-            BuildGraphError::from(ParsingEdgeError::WeightValueMustBeInteger(String::from("xxx")))
+            BuildGraphError::from(ParsingEdgeError::WeightValueMustBeInteger(String::from("xxx")));
+            "weight is not an integer"
         )]
         fn fails_because_of_non_integer_value(line: &str, expected_error: BuildGraphError) {
             let edge_description = EdgeDescription::try_from(line).unwrap();
