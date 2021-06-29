@@ -9,6 +9,8 @@ use kruskals_algorithm::{
 };
 use test_case::test_case;
 
+// -----------------------------------------------------------------------------
+
 #[test_case(1 => 280)]
 #[test_case(2 => 0)]
 #[test_case(3 => 600)]
@@ -21,6 +23,8 @@ fn passing(dataset_number: u32) -> i32 {
     run(format!("tests/data/passing_tests/passing{}.txt", dataset_number)).unwrap()
 }
 
+// -----------------------------------------------------------------------------
+
 #[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected;
             "error_graph_not_connected"
 )]
@@ -28,13 +32,13 @@ fn passing(dataset_number: u32) -> i32 {
             "error_too_few_edges"
 )]
 #[test_case("error_not_enough_data", BuildGraphError::NotEnoughData; "error_not_enough_data")]
-#[test_case(
-    "error_parsing_graph_parameters_nodes_count",
-    BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count("X"))
+#[test_case( "error_parsing_graph_parameters_nodes_count",
+            BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count("X"));
+            "error_parsing_graph_parameters_nodes_count"
 )]
-#[test_case(
-    "error_parsing_graph_parameters_edges_count",
-    BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count("X"))
+#[test_case("error_parsing_graph_parameters_edges_count",
+            BuildGraphError::from(GraphParametersParsingError::from_non_integer_edges_count("X"));
+            "error_parsing_graph_parameters_edges_count"
 )]
 fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
     let actual_error = run(format!(
@@ -44,6 +48,8 @@ fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError)
     .unwrap_err();
     assert_eq!(actual_error.to_string(), expected_error.to_string());
 }
+
+// -----------------------------------------------------------------------------
 
 #[test_case("error_edge_description_non_integer_from_index", 2,
             BuildGraphError::from(CreatingEdgeError::from_edge_description_with_non_integer_from_index(
@@ -105,3 +111,5 @@ fn test_creating_edge_errors(graph_file: &str, expected_line_no_with_error: usiz
         panic!("invalid error !")
     }
 }
+
+// -----------------------------------------------------------------------------
