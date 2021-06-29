@@ -261,7 +261,7 @@ mod tests {
     #[test_case( "", EdgeDescriptionError::EmptyInput; "empty input")]
     #[test_case( "1", EdgeDescriptionError::MissingToIndexField; "missing to_index field" )]
     #[test_case( "1 2", EdgeDescriptionError::MissingWeightField; "missing weight field" )]
-    fn create_edge_fails_because_of_invalid_edge_description(input: &str, expected_error: EdgeDescriptionError) {
+    fn create_edge_fails_because_of_missing_fields(input: &str, expected_error: EdgeDescriptionError) {
         let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
             BuildGraphError::InvalidEdgeDescription(actual_err) if actual_err == expected_error => true,
             _ => false,
@@ -270,31 +270,23 @@ mod tests {
         assert_eq!(match_expected, true);
     }
 
-    #[test]
-    fn create_edge_fails_because_from_index_field_in_edge_description_is_invalid() {
-        let edge_description = EdgeDescription::try_from("x 2 130").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger(String::from("x")));
+    #[test_case(
+        "x 2 130",
+        BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger(String::from("x")))
+    )]
+    #[test_case(
+        "1 x 130",
+        BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger(String::from("x")))
+    )]
+    #[test_case(
+        "1 2 xxx",
+        BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger(String::from("xxx")))
+    )]
+    fn create_edge_fails_because_of_non_integer_value(line: &str, expected_error: BuildGraphError) {
+        let edge_description = EdgeDescription::try_from(line).unwrap();
 
-        let actual = Edge::try_from(edge_description).unwrap_err();
-        assert_eq!(actual.to_string(), expected.to_string());
-    }
-
-    #[test]
-    fn create_edge_fails_because_to_index_field_in_edge_description_is_invalid() {
-        let edge_description = EdgeDescription::try_from("1 x 130").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger(String::from("x")));
-
-        let actual = Edge::try_from(edge_description).unwrap_err();
-        assert_eq!(actual.to_string(), expected.to_string());
-    }
-
-    #[test]
-    fn create_edge_fails_because_weight_field_in_edge_description_is_invalid() {
-        let edge_description = EdgeDescription::try_from("1 2 xxx").unwrap();
-        let expected = BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger(String::from("xxx")));
-
-        let actual = Edge::try_from(edge_description).unwrap_err();
-        assert_eq!(actual.to_string(), expected.to_string());
+        let actual_error = Edge::try_from(edge_description).unwrap_err();
+        assert_eq!(actual_error.to_string(), expected_error.to_string());
     }
 
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
