@@ -244,50 +244,57 @@ impl TryFrom<&str> for GraphParameters {
 #[cfg(test)]
 #[macro_use]
 mod tests {
-    use super::*;
-    use crate::data::Graph;
-    use crate::test_case::test_case;
-    use crate::{errors::CreatingEdgeError, BuildGraphError};
-    use std::convert::TryFrom;
 
-    #[test]
-    fn create_edge_ok() {
-        let edge_description = EdgeDescription::try_from("1 5 200").unwrap();
-        let expected = Edge::new(1, 5, 200);
-        let actual = Edge::try_from(edge_description).unwrap();
-        assert_eq!(expected, actual);
+    mod create_edge {
+        use crate::data::EdgeDescription;
+        use crate::errors::CreatingEdgeError;
+        use crate::{BuildGraphError, Edge, EdgeDescriptionError};
+        use std::convert::TryFrom;
+        use test_case::test_case;
+
+        #[test]
+        fn ok() {
+            let edge_description = EdgeDescription::try_from("1 5 200").unwrap();
+            let expected = Edge::new(1, 5, 200);
+            let actual = Edge::try_from(edge_description).unwrap();
+            assert_eq!(expected, actual);
+        }
+
+        #[test_case( "", EdgeDescriptionError::EmptyInput; "empty input" )]
+        #[test_case( "1", EdgeDescriptionError::MissingToIndexField; "missing to_index field" )]
+        #[test_case( "1 2", EdgeDescriptionError::MissingWeightField; "missing weight field" )]
+        fn fails_because_of_missing_fields(input: &str, expected_error: EdgeDescriptionError) {
+            let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
+                BuildGraphError::InvalidEdgeDescription(actual_err) if actual_err == expected_error => true,
+                _ => false,
+            };
+
+            assert_eq!(match_expected, true);
+        }
+
+        #[test_case(
+            "x 2 130",
+            BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger(String::from("x")))
+        )]
+        #[test_case(
+            "1 x 130",
+            BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger(String::from("x")))
+        )]
+        #[test_case(
+            "1 2 xxx",
+            BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger(String::from("xxx")))
+        )]
+        fn fails_because_of_non_integer_value(line: &str, expected_error: BuildGraphError) {
+            let edge_description = EdgeDescription::try_from(line).unwrap();
+
+            let actual_error = Edge::try_from(edge_description).unwrap_err();
+            assert_eq!(actual_error.to_string(), expected_error.to_string());
+        }
     }
 
-    #[test_case( "", EdgeDescriptionError::EmptyInput; "empty input")]
-    #[test_case( "1", EdgeDescriptionError::MissingToIndexField; "missing to_index field" )]
-    #[test_case( "1 2", EdgeDescriptionError::MissingWeightField; "missing weight field" )]
-    fn create_edge_fails_because_of_missing_fields(input: &str, expected_error: EdgeDescriptionError) {
-        let match_expected = match EdgeDescription::try_from(input).unwrap_err() {
-            BuildGraphError::InvalidEdgeDescription(actual_err) if actual_err == expected_error => true,
-            _ => false,
-        };
+    // -----------------------------------------------------------------------------
 
-        assert_eq!(match_expected, true);
-    }
-
-    #[test_case(
-        "x 2 130",
-        BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger(String::from("x")))
-    )]
-    #[test_case(
-        "1 x 130",
-        BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger(String::from("x")))
-    )]
-    #[test_case(
-        "1 2 xxx",
-        BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger(String::from("xxx")))
-    )]
-    fn create_edge_fails_because_of_non_integer_value(line: &str, expected_error: BuildGraphError) {
-        let edge_description = EdgeDescription::try_from(line).unwrap();
-
-        let actual_error = Edge::try_from(edge_description).unwrap_err();
-        assert_eq!(actual_error.to_string(), expected_error.to_string());
-    }
+    use crate::data::structures::{GraphBuilder, GraphParameters};
 
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
         nodes_count: 3,
@@ -298,78 +305,93 @@ mod tests {
         GraphBuilder::new(TEST_GRAPH_PARAMETERS)
     }
 
-    #[test]
-    fn too_many_edges() {
-        let mut graph_builder = create_test_graph_builder();
-        graph_builder.add_edge("1 3 200".parse().unwrap()).unwrap();
-        graph_builder.add_edge("2 1 50".parse().unwrap()).unwrap();
+    // -----------------------------------------------------------------------------
 
-        let third_edge = "3 4 170".parse().unwrap();
+    mod add_edge {
+        use crate::data::structures::tests::{create_test_graph_builder, TEST_GRAPH_PARAMETERS};
+        use crate::{BuildGraphError, EdgeDescriptionError};
 
-        let expected = BuildGraphError::TooManyEdges {
-            edges_count: TEST_GRAPH_PARAMETERS.edges_count,
-            edge:        third_edge,
-        };
+        #[test]
+        fn too_many_edges() {
+            let mut graph_builder = create_test_graph_builder();
+            graph_builder.add_edge("1 3 200".parse().unwrap()).unwrap();
+            graph_builder.add_edge("2 1 50".parse().unwrap()).unwrap();
 
-        let actual = graph_builder.add_edge(third_edge).unwrap_err();
-        assert_eq!(actual.to_string(), expected.to_string());
+            let third_edge = "3 4 170".parse().unwrap();
+
+            let expected = BuildGraphError::TooManyEdges {
+                edges_count: TEST_GRAPH_PARAMETERS.edges_count,
+                edge:        third_edge,
+            };
+
+            let actual = graph_builder.add_edge(third_edge).unwrap_err();
+            assert_eq!(actual.to_string(), expected.to_string());
+        }
+
+        #[test]
+        fn invalid_from_index() {
+            let mut graph_builder = create_test_graph_builder();
+            let invalid_edge = "10 3 120".parse().unwrap();
+
+            let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
+                edge:        invalid_edge,
+                nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
+            });
+
+            let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
+            assert_eq!(actual.to_string(), expected.to_string());
+        }
+
+        #[test]
+        fn invalid_to_index() {
+            let mut graph_builder = create_test_graph_builder();
+            let invalid_edge = "2 7 120".parse().unwrap();
+
+            let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
+                edge:        invalid_edge,
+                nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
+            });
+
+            let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
+            eprintln!("{}", actual);
+            assert_eq!(actual.to_string(), expected.to_string());
+        }
     }
 
-    #[test]
-    fn invalid_from_index() {
-        let mut graph_builder = create_test_graph_builder();
-        let invalid_edge = "10 3 120".parse().unwrap();
+    // -----------------------------------------------------------------------------
 
-        let expected = BuildGraphError::from(EdgeDescriptionError::WrongFromIndex {
-            edge:        invalid_edge,
-            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
-        });
+    mod build_graph {
+        use crate::data::structures::tests::create_test_graph_builder;
+        use crate::data::Graph;
+        use crate::BuildGraphError;
 
-        let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
-        assert_eq!(actual.to_string(), expected.to_string());
-    }
+        #[test]
+        fn ok() {
+            let mut graph_builder = create_test_graph_builder();
+            let first_edge = "1 3 100".parse().unwrap();
+            let second_edge = "2 3 130".parse().unwrap();
 
-    #[test]
-    fn invalid_to_index() {
-        let mut graph_builder = create_test_graph_builder();
-        let invalid_edge = "2 7 120".parse().unwrap();
+            graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
+            graph_builder.add_edge("2 3 130".parse().unwrap()).unwrap();
+            let expected = Graph {
+                nodes_count: 3,
+                edges:       vec![first_edge, second_edge],
+            };
+            let actual = graph_builder.build().unwrap();
+            assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+        }
 
-        let expected = BuildGraphError::from(EdgeDescriptionError::WrongToIndex {
-            edge:        invalid_edge,
-            nodes_count: TEST_GRAPH_PARAMETERS.nodes_count,
-        });
+        #[test]
+        fn error_too_few_edges() {
+            let mut graph_builder = create_test_graph_builder();
 
-        let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
-        eprintln!("{}", actual);
-        assert_eq!(actual.to_string(), expected.to_string());
-    }
-
-    #[test]
-    fn build_graph_too_few_edges() {
-        let mut graph_builder = create_test_graph_builder();
-
-        graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
-        let expected = BuildGraphError::TooFewEdges {
-            current_count: graph_builder.edges.len(),
-            declared:      graph_builder.max_edges_count,
-        };
-        let actual = graph_builder.build().unwrap_err();
-        assert_eq!(actual.to_string(), expected.to_string());
-    }
-
-    #[test]
-    fn build_graph_ok() {
-        let mut graph_builder = create_test_graph_builder();
-        let first_edge = "1 3 100".parse().unwrap();
-        let second_edge = "2 3 130".parse().unwrap();
-
-        graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
-        graph_builder.add_edge("2 3 130".parse().unwrap()).unwrap();
-        let expected = Graph {
-            nodes_count: 3,
-            edges:       vec![first_edge, second_edge],
-        };
-        let actual = graph_builder.build().unwrap();
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+            graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
+            let expected = BuildGraphError::TooFewEdges {
+                current_count: graph_builder.edges.len(),
+                declared:      graph_builder.max_edges_count,
+            };
+            let actual = graph_builder.build().unwrap_err();
+            assert_eq!(actual.to_string(), expected.to_string());
+        }
     }
 }
