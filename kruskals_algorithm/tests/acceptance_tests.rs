@@ -21,9 +21,15 @@ fn passing(dataset_number: u32) -> i32 {
     run(format!("tests/data/passing_tests/passing{}.txt", dataset_number)).unwrap()
 }
 
-#[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected)]
-#[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4})]
-#[test_case("error_not_enough_data", BuildGraphError::NotEnoughData)]
+#[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected;
+            "error_graph_not_connected"
+)]
+#[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4};
+            "error_too_few_edges"
+)]
+#[test_case("error_not_enough_data", BuildGraphError::NotEnoughData; 
+            "error_not_enough_data"
+)]
 #[test_case(
     "error_parsing_graph_parameters_nodes_count",
     BuildGraphError::from(GraphParametersParsingError::from_non_integer_nodes_count("X"))
@@ -57,42 +63,47 @@ fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError)
             )); "error_edge_description_non_integer_weight"
 )]
 #[test_case(
-"error_edge_description_empty_input", 2,
-BuildGraphError::from(EdgeDescriptionError::EmptyInput); "error_edge_description_empty_input")]
+            "error_edge_description_empty_input", 2,
+            BuildGraphError::from(EdgeDescriptionError::EmptyInput); "error_edge_description_empty_input"
+)]
 #[test_case(
-"error_edge_description_missing_to_index", 4,
-BuildGraphError::from(EdgeDescriptionError::MissingToIndexField); "error_edge_description_missing_to_index")]
+            "error_edge_description_missing_to_index", 4,
+            BuildGraphError::from(EdgeDescriptionError::MissingToIndexField); "error_edge_description_missing_to_index"
+)]
 #[test_case(
-"error_edge_description_missing_weight", 3,
-BuildGraphError::from(EdgeDescriptionError::MissingWeightField); "error_edge_description_missing_weight"
+            "error_edge_description_missing_weight", 3,
+            BuildGraphError::from(EdgeDescriptionError::MissingWeightField); "error_edge_description_missing_weight"
 )]
 #[test_case("error_too_many_edges", 4, 
-    BuildGraphError::TooManyEdges{
-        edges_count: 3,
-        edge: Edge{
-            from_index: 1,
-            to_index: 4,
-            weight: 200
-        }
-})]
+            BuildGraphError::TooManyEdges{
+                edges_count: 3,
+                edge: Edge{
+                    from_index: 1,
+                    to_index: 4,
+                    weight: 200
+                }
+            }; "error_too_many_edges"
+)]
 #[test_case("error_edge_description_wrong_from_index", 3, 
-    BuildGraphError::from(EdgeDescriptionError::WrongFromIndex{
-        edge: Edge{
-            from_index: 5,
-            to_index: 3,
-            weight: 100,
-        },
-        nodes_count: 4,
-}))]
+            BuildGraphError::from(EdgeDescriptionError::WrongFromIndex{
+                edge: Edge{
+                    from_index: 5,
+                    to_index: 3,
+                    weight: 100,
+                },
+                nodes_count: 4,
+            }); "error_edge_description_wrong_from_index"
+)]
 #[test_case("error_edge_description_wrong_to_index", 2, 
-    BuildGraphError::from(EdgeDescriptionError::WrongToIndex{
-        edge: Edge{
-            from_index: 1,
-            to_index: 4,
-            weight: 100,
-        },
-        nodes_count: 3,
-}))]
+            BuildGraphError::from(EdgeDescriptionError::WrongToIndex{
+                edge: Edge{
+                    from_index: 1,
+                    to_index: 4,
+                    weight: 100,
+                },
+                nodes_count: 3,
+            }); "error_edge_description_wrong_to_index"
+)]
 fn test_creating_edge_errors(graph_file: &str, expected_line_no_with_error: usize, expected_error: BuildGraphError) {
     let result = run(format!(
         "tests/data/error_tests/creating_edge_errors/{}.txt",
