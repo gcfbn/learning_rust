@@ -27,7 +27,6 @@ pub enum BuildGraphError {
     #[error("{0}")]
     GraphParametersParsingError(GraphParametersParsingError),
 
-    //#[error(transparent)]
     #[error("error in line {line_no}: {error}")]
     ErrorInGraphDescriptionFile {
         line_no: usize,
@@ -94,15 +93,15 @@ impl CreatingEdgeError {
         }
     }
 
-    pub fn from_edge_description_with_bad_from_index(edge_description: &EdgeDescription) -> Self {
+    pub fn from_edge_description_with_non_integer_from_index(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "from_index", edge_description.from_index)
     }
 
-    pub fn from_edge_description_with_bad_to_index(edge_description: &EdgeDescription) -> Self {
+    pub fn from_edge_description_with_non_integer_to_index(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "to_index", edge_description.to_index)
     }
 
-    pub fn from_edge_description_with_bad_weight(edge_description: &EdgeDescription) -> Self {
+    pub fn from_edge_description_with_non_integer_weight(edge_description: &EdgeDescription) -> Self {
         Self::from_edge_description(edge_description, "weight", edge_description.weight)
     }
 }
