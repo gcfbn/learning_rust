@@ -27,6 +27,13 @@ pub enum BuildGraphError {
     #[error("{0}")]
     GraphParametersParsingError(GraphParametersParsingError),
 
+    //#[error(transparent)]
+    #[error("error in line {line_no}: {error}")]
+    ErrorInGraphDescriptionFile {
+        line_no: usize,
+        error:   Box<BuildGraphError>,
+    },
+
     #[error(transparent)]
     StandardError(#[from] std::io::Error),
 }
