@@ -1,12 +1,4 @@
-use kruskals_algorithm::{
-    run,
-    AddingEdgeError,
-    BuildGraphError,
-    CreatingEdgeError,
-    Edge,
-    EdgeDescriptionError,
-    GraphParametersParsingError,
-};
+use kruskals_algorithm::{run, AddingEdgeError, BuildGraphError, Edge, GraphParametersParsingError, ParsingEdgeError};
 use test_case::test_case;
 
 // -----------------------------------------------------------------------------
@@ -69,44 +61,44 @@ fn test_parsing_graph_parameters_errors(graph_file: &str, expected_error: BuildG
 
 // -----------------------------------------------------------------------------
 
-#[test_case("error_edge_description_non_integer_from_index", 2,
-            BuildGraphError::from(CreatingEdgeError::FromIndexValueMustBeInteger("xyz".to_owned()));
-            "error_edge_description_non_integer_from_index"
+#[test_case("error_parsing_edge_non_integer_from_index", 2,
+            BuildGraphError::from(ParsingEdgeError::FromIndexValueMustBeInteger("xyz".to_owned()));
+            "error_parsing_edge_non_integer_from_index"
  )]
-#[test_case("error_edge_description_non_integer_to_index", 2,
-            BuildGraphError::from(CreatingEdgeError::ToIndexValueMustBeInteger("abc".to_owned()));
-            "error_edge_description_non_integer_to_index"
+#[test_case("error_parsing_edge_non_integer_to_index", 2,
+            BuildGraphError::from(ParsingEdgeError::ToIndexValueMustBeInteger("abc".to_owned()));
+            "error_parsing_edge_non_integer_to_index"
 )]
-#[test_case("error_edge_description_non_integer_weight", 2,
-            BuildGraphError::from(CreatingEdgeError::WeightValueMustBeInteger("10a0".to_owned())); 
-            "error_edge_description_non_integer_weight"
+#[test_case("error_parsing_edge_non_integer_weight", 2,
+            BuildGraphError::from(ParsingEdgeError::WeightValueMustBeInteger("10a0".to_owned())); 
+            "error_parsing_edge_non_integer_weight"
 )]
-#[test_case("error_edge_description_empty_input", 2,
-            BuildGraphError::from(EdgeDescriptionError::EmptyInput);
-            "error_edge_description_empty_input"
+#[test_case("error_parsing_edge_empty_line", 2,
+            BuildGraphError::from(ParsingEdgeError::EmptyLine);
+            "error_creating_edge_empty_line"
 )]
-#[test_case("error_edge_description_missing_to_index", 4,
-            BuildGraphError::from(EdgeDescriptionError::MissingToIndexField);
-            "error_edge_description_missing_to_index"
+#[test_case("error_parsing_edge_missing_to_index", 4,
+            BuildGraphError::from(ParsingEdgeError::MissingToIndexField);
+            "error_creating_edge_missing_to_index"
 )]
-#[test_case("error_edge_description_missing_weight", 3,
-            BuildGraphError::from(EdgeDescriptionError::MissingWeightField);
+#[test_case("error_parsing_edge_missing_weight", 3,
+            BuildGraphError::from(ParsingEdgeError::MissingWeightField);
             "error_edge_description_missing_weight"
 )]
-#[test_case("error_too_many_edges", 4, 
+#[test_case("error_adding_edge_too_many_edges", 4, 
             BuildGraphError::from(AddingEdgeError::TooManyEdges{
                 edges_count: 3,
-                edge: Edge{ from_index: 1, to_index: 4, weight: 200 }}); "error_too_many_edges"
+                edge: Edge{ from_index: 1, to_index: 4, weight: 200 }}); "error_adding_edge_too_many_edges"
 )]
-#[test_case("error_edge_description_wrong_from_index", 3, 
+#[test_case("error_adding_edge_wrong_from_index", 3, 
             BuildGraphError::from(AddingEdgeError::WrongFromIndex{
                 edge: Edge{ from_index: 5, to_index: 3, weight: 100, },
-                nodes_count: 4, }); "error_edge_description_wrong_from_index"
+                nodes_count: 4, }); "error_adding_edge_wrong_from_index"
 )]
-#[test_case("error_edge_description_wrong_to_index", 2, 
+#[test_case("error_adding_edge_wrong_to_index", 2, 
             BuildGraphError::from(AddingEdgeError::WrongToIndex{
                 edge: Edge{ from_index: 1, to_index: 4, weight: 100, },
-                nodes_count: 3, }); "error_edge_description_wrong_to_index"
+                nodes_count: 3, }); "error_adding_edge_wrong_to_index"
 )]
 fn test_edge_errors(graph_file: &str, expected_line_no_with_error: usize, expected_error: BuildGraphError) {
     let result = run(format!("tests/data/error_tests/edge_errors/{}.txt", graph_file)).unwrap_err();
