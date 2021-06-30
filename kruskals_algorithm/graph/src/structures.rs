@@ -280,6 +280,8 @@ mod tests {
 
     // -----------------------------------------------------------------------------
 
+    use crate::structures::{GraphBuilder, GraphParameters};
+
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
         nodes_count: 3,
         edges_count: 2,

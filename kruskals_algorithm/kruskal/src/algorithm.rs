@@ -1,4 +1,4 @@
-use crate::data::Graph;
+use graph::Graph;
 
 pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
     // create array of parental nodes

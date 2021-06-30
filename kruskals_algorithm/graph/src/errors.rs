@@ -1,4 +1,4 @@
-use crate::data::Edge;
+use crate::Edge;
 use parse_display::Display;
 use thiserror::Error;
 

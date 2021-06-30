@@ -79,6 +79,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "graph"
+version = "0.1.0"
+dependencies = [
+ "parse-display",
+ "test-case",
+ "thiserror",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -113,14 +122,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "kruskals_algorithm"
+name = "kruskal"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "clap",
- "parse-display",
+ "graph",
  "test-case",
- "thiserror",
 ]
 
 [[package]]
@@ -237,6 +243,17 @@ name = "regex-syntax"
 version = "0.6.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
+
+[[package]]
+name = "runner"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "graph",
+ "kruskal",
+ "thiserror",
+]
 
 [[package]]
 name = "strsim"
