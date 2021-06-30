@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result as aResult};
 use clap::{AppSettings, Clap};
-use kruskals_algorithm::Result;
+use graph::Result;
 use std::path::{Path, PathBuf};
 use std::process;
 
@@ -36,7 +36,8 @@ fn file_exists(p: &str) -> aResult<()> {
 fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
-    let output = kruskals_algorithm::run(cmd_args.task_file)?;
+    let graph = graph::build_graph_from_file(cmd_args.task_file)?;
+    let output = kruskal::calculate_min_total_weight(graph);
     println!("{}", output);
 
     Ok(())

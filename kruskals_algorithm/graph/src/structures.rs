@@ -1,9 +1,5 @@
-use crate::data::dfs::dfs;
-use crate::{
-    errors::{AddingEdgeError, GraphParametersParsingError, ParsingEdgeError},
-    BuildGraphError,
-    Result,
-};
+use crate::dfs::dfs;
+use crate::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -234,8 +230,8 @@ impl TryFrom<&str> for GraphParameters {
 mod tests {
 
     mod create_edge {
-        use crate::data::EdgeDescription;
         use crate::errors::ParsingEdgeError;
+        use crate::EdgeDescription;
         use crate::{BuildGraphError, Edge};
         use std::convert::TryFrom;
         use test_case::test_case;
@@ -285,7 +281,7 @@ mod tests {
 
     // -----------------------------------------------------------------------------
 
-    use crate::data::structures::{GraphBuilder, GraphParameters};
+    use crate::structures::{GraphBuilder, GraphParameters};
 
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
         nodes_count: 3,
@@ -299,7 +295,7 @@ mod tests {
     // -----------------------------------------------------------------------------
 
     mod add_edge {
-        use crate::data::structures::tests::{create_test_graph_builder, TEST_GRAPH_PARAMETERS};
+        use crate::structures::tests::{create_test_graph_builder, TEST_GRAPH_PARAMETERS};
         use crate::{AddingEdgeError, BuildGraphError};
 
         #[test]
@@ -352,9 +348,9 @@ mod tests {
     // -----------------------------------------------------------------------------
 
     mod build_graph {
-        use crate::data::structures::tests::create_test_graph_builder;
-        use crate::data::Graph;
+        use crate::structures::tests::create_test_graph_builder;
         use crate::BuildGraphError;
+        use crate::Graph;
 
         #[test]
         fn ok() {
