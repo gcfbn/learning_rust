@@ -16,12 +16,12 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let mut graph_builder = GraphBuilder::new(graph_parameters);
 
     for (line_no, maybe_edge) in graph_file_reader.enumerate() {
-        let add_edge = || -> Result<()> { Ok(graph_builder.add_edge(maybe_edge?)?) };
-
-        add_edge().map_err(|error| BuildGraphError::ErrorInGraphDescriptionFile {
-            line_no: line_no + 1,
-            error:   Box::new(error),
-        })?;
+        graph_builder
+            .add_edge(maybe_edge?)
+            .map_err(|error| BuildGraphError::ErrorInGraphDescriptionFile {
+                line_no: line_no + 1,
+                error:   Box::new(error),
+            })?;
     }
 
     graph_builder.build()
@@ -42,7 +42,7 @@ impl<'a> GraphFileReader<'a> {
         let line = self
             .iter
             .next()
-            .ok_or(BuildGraphError::from(GraphParametersParsingError::EmptyInput))?;
+            .ok_or_else(|| BuildGraphError::from(GraphParametersParsingError::EmptyInput))?;
         GraphParameters::try_from(line)
     }
 }
