@@ -232,11 +232,10 @@ impl TryFrom<&str> for GraphParameters {
 #[cfg(test)]
 #[macro_use]
 mod tests {
+    use super::*;
 
     mod create_edge {
-        use crate::data::EdgeDescription;
-        use crate::errors::ParsingEdgeError;
-        use crate::{BuildGraphError, Edge};
+        use super::*;
         use std::convert::TryFrom;
         use test_case::test_case;
 
@@ -285,8 +284,6 @@ mod tests {
 
     // -----------------------------------------------------------------------------
 
-    use crate::data::structures::{GraphBuilder, GraphParameters};
-
     const TEST_GRAPH_PARAMETERS: GraphParameters = GraphParameters {
         nodes_count: 3,
         edges_count: 2,
@@ -299,16 +296,15 @@ mod tests {
     // -----------------------------------------------------------------------------
 
     mod add_edge {
-        use crate::data::structures::tests::{create_test_graph_builder, TEST_GRAPH_PARAMETERS};
-        use crate::{AddingEdgeError, BuildGraphError};
+        use super::*;
 
         #[test]
-        fn too_many_edges() {
+        fn too_many_edges() -> Result<()> {
             let mut graph_builder = create_test_graph_builder();
-            graph_builder.add_edge("1 3 200".parse().unwrap()).unwrap();
-            graph_builder.add_edge("2 1 50".parse().unwrap()).unwrap();
+            graph_builder.add_edge("1 3 200".parse()?)?;
+            graph_builder.add_edge("2 1 50".parse()?)?;
 
-            let third_edge = "3 4 170".parse().unwrap();
+            let third_edge = "3 4 170".parse()?;
 
             let expected = BuildGraphError::from(AddingEdgeError::TooManyEdges {
                 edges_count: TEST_GRAPH_PARAMETERS.edges_count,
@@ -317,6 +313,8 @@ mod tests {
 
             let actual = graph_builder.add_edge(third_edge).unwrap_err();
             assert_eq!(actual.to_string(), expected.to_string());
+
+            Ok(())
         }
 
         #[test]
@@ -344,7 +342,6 @@ mod tests {
             });
 
             let actual = graph_builder.add_edge(invalid_edge).unwrap_err();
-            eprintln!("{}", actual);
             assert_eq!(actual.to_string(), expected.to_string());
         }
     }
@@ -352,24 +349,23 @@ mod tests {
     // -----------------------------------------------------------------------------
 
     mod build_graph {
-        use crate::data::structures::tests::create_test_graph_builder;
-        use crate::data::Graph;
-        use crate::BuildGraphError;
+        use super::*;
 
         #[test]
-        fn ok() {
+        fn ok() -> Result<()> {
             let mut graph_builder = create_test_graph_builder();
-            let first_edge = "1 3 100".parse().unwrap();
-            let second_edge = "2 3 130".parse().unwrap();
+            let first_edge = "1 3 100".parse()?;
+            let second_edge = "2 3 130".parse()?;
 
-            graph_builder.add_edge("1 3 100".parse().unwrap()).unwrap();
-            graph_builder.add_edge("2 3 130".parse().unwrap()).unwrap();
+            graph_builder.add_edge("1 3 100".parse()?)?;
+            graph_builder.add_edge("2 3 130".parse()?)?;
             let expected = Graph {
                 nodes_count: 3,
                 edges:       vec![first_edge, second_edge],
             };
-            let actual = graph_builder.build().unwrap();
+            let actual = graph_builder.build()?;
             assert_eq!(format!("{:?}", actual), format!("{:?}", expected));
+            Ok(())
         }
 
         #[test]
