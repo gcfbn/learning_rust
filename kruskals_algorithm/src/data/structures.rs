@@ -1,9 +1,5 @@
-use crate::data::dfs::dfs;
-use crate::{
-    errors::{AddingEdgeError, GraphParametersParsingError, ParsingEdgeError},
-    BuildGraphError,
-    Result,
-};
+use super::dfs::dfs;
+use crate::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
