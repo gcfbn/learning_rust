@@ -87,3 +87,14 @@ fn test_edge_errors(graph_file: &str, expected_line_no_with_error: usize, expect
         panic!("invalid error !")
     }
 }
+
+// -----------------------------------------------------------------------------
+
+#[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected)]
+#[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4})]
+fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
+    let actual_error =
+        build_graph_from_file(format!("tests/data/graph_building_errors/{}.txt", graph_file)).unwrap_err();
+
+    assert_eq!(actual_error.to_string(), expected_error.to_string());
+}

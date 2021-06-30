@@ -1,6 +1,5 @@
 use graph::build_graph_from_file;
 use kruskal::calculate_min_total_weight;
-// use algorithm::calculate_min_total_weight
 use test_case::test_case;
 
 // -----------------------------------------------------------------------------

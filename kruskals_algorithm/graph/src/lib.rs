@@ -10,10 +10,3 @@ mod structures;
 pub use crate::errors::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
 pub use crate::reader::build_graph_from_file;
 pub use crate::structures::{Edge, EdgeDescription, Graph};
-
-// pub fn build_graph<P>(filename: P) -> Result<Graph>
-// where
-//     P: AsRef<Path>,
-// {
-//     build_graph_from_file(filename)
-// }
