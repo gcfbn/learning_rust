@@ -2,6 +2,6 @@
 #[cfg(test)]
 extern crate test_case;
 
-mod algorithm;
+mod kruskal;
 
-pub use algorithm::calculate_min_total_weight;
+pub use kruskal::calculate_min_total_weight;
