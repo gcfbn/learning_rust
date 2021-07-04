@@ -1,3 +1,7 @@
+//! Implementation of graph structure and few graph algorithms
+//!
+//! Result type for functions in this crate is [`crate::errors::Result`]
+
 // extern these crates only when running tests
 #[cfg(test)]
 extern crate test_case;

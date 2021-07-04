@@ -1,32 +1,56 @@
+#![warn(missing_docs)]
+
 use crate::Edge;
 use parse_display::Display;
 use thiserror::Error;
 
+/// Type returned by functions in this crate
 pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 
+/// Enum containing all possible variants of errors returned by functions in this crate.
+///
+/// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`].
+/// Some errors contain variant of more specific enums.
 #[derive(Error, Debug)]
 pub enum BuildGraphError {
+    /// Kruskal's algorithm finds minimum spanning tree for connected graphs -
+    /// containing path from any point to any other point in the graph
     #[error("graph is not connected!")]
     GraphNotConnected,
 
+    /// It is possible to build a graph only if it's number of edges is equal to declared number of edges
     #[error("current count of edges {current_count} is less than declared {declared}")]
-    TooFewEdges { current_count: usize, declared: usize },
+    TooFewEdges {
+        /// Number of edges already inserted to the graph
+        current_count: usize,
 
+        /// Declared number of edges in the graph
+        declared: usize,
+    },
+
+    /// Line containing edge data is invalid (missing or non-integer values)
     #[error("error parsing edge - {0}")]
     ParsingEdgeError(ParsingEdgeError),
 
+    /// Can't add line to graph (index out of bounds or too many edges)
     #[error("error adding edge - {0}")]
     AddingEdgeError(AddingEdgeError),
 
+    /// Graph parameters are missing or non-integer
     #[error("error parsing graph parameters - {0}")]
     GraphParametersParsingError(GraphParametersParsingError),
 
+    /// Indicates, which line in input file is invalid and what's the error
     #[error("error in line {line_no}: {error}")]
     ErrorInGraphDescriptionFile {
+        ///Number of line that caused the error
         line_no: usize,
-        error:   Box<BuildGraphError>,
+
+        /// Variant of the error
+        error: Box<BuildGraphError>,
     },
 
+    /// Other standard input/output errors
     #[error(transparent)]
     StandardError(#[from] std::io::Error),
 }
@@ -51,54 +75,88 @@ impl From<GraphParametersParsingError> for BuildGraphError {
 
 // -----------------------------------------------------------------------------
 
+/// Enum containing specific errors connected with parsing graph edge data
 #[derive(Debug, Display, PartialEq)]
 pub enum ParsingEdgeError {
+    /// Line is empty
     #[display("empty line")]
     EmptyLine,
 
+    /// Line doesn't contain `to_index` value, which should be second value in the line
     #[display("missing `to_index` field")]
     MissingToIndexField,
 
+    /// Line doesn't contain `weight` value, which should be third value in the line
     #[display("missing `weight` field")]
     MissingWeightField,
 
+    /// Non-integer value as `from_index`
     #[display("from_index must be an integer, but it is: `{0}`")]
     FromIndexValueMustBeInteger(String),
 
+    /// Non-integer value as `to_index`
     #[display("to_index must be an integer, but it is: `{0}`")]
     ToIndexValueMustBeInteger(String),
 
+    /// Non-integer value as `weight`
     #[display("weight must be an integer, but it is: `{0}`")]
     WeightValueMustBeInteger(String),
 }
 
 // -----------------------------------------------------------------------------
 
+/// Enum containing specific errors connected with adding an edge to a graph
 #[derive(Debug, Display)]
 pub enum AddingEdgeError {
+    /// Graph already contains declared number of edges and can't add new edge
     #[display("max allowed count of edges is {edges_count} but you are trying to add a new edge {edge:?}")]
-    TooManyEdges { edges_count: usize, edge: Edge },
+    TooManyEdges {
+        /// Declared number of edges
+        edges_count: usize,
 
+        /// [`crate::Edge`] user is trying to add
+        edge: Edge,
+    },
+
+    /// `from_index` field value is greater than number of nodes in the graph
     #[display("{edge:?} from_index field value is greater than nodes count `{nodes_count}` in graph !")]
-    WrongFromIndex { edge: Edge, nodes_count: u32 },
+    WrongFromIndex {
+        /// [`crate::Edge`] user is trying to add
+        edge: Edge,
 
+        /// Declared number of nodes in the graph
+        nodes_count: u32,
+    },
+
+    /// `to_index` field value is greater than number of nodes in the graph
     #[display("{edge:?} to_index field value is greater than nodes count `{nodes_count}` in graph !")]
-    WrongToIndex { edge: Edge, nodes_count: u32 },
+    WrongToIndex {
+        /// [`crate::Edge`] user is trying to add
+        edge: Edge,
+
+        /// Declared number of nodes in the graph
+        nodes_count: u32,
+    },
 }
 
 // -----------------------------------------------------------------------------
 
+/// Enum containing specific errors connected with parsing graph parameters
 #[derive(Debug, Display)]
 pub enum GraphParametersParsingError {
+    /// Input file is empty
     #[display("empty input")]
     EmptyInput,
 
+    /// First line doesn't contain `edges_count` value, which should be second value in first line
     #[display("missing edges count value")]
     MissingEdgesCountValue,
 
+    /// Non-integer value as `nodes_count`
     #[display("nodes count must be an integer, but it is: `{0}`")]
     NodesCountValueMustBeInteger(String),
 
+    /// Non-integer value as `edges_count`
     #[display("edges count must be an integer, but it is: `{0}`")]
     EdgesCountValueIsNotInteger(String),
 }
