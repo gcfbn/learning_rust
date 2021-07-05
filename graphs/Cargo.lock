@@ -12,6 +12,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "algorithms"
+version = "0.1.0"
+dependencies = [
+ "graph",
+ "test-case",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -119,14 +127,6 @@ checksum = "824845a0bf897a9042383849b02c1bc219c2383772efcd5c6f9766fa4b81aef3"
 dependencies = [
  "autocfg",
  "hashbrown",
-]
-
-[[package]]
-name = "kruskal"
-version = "0.1.0"
-dependencies = [
- "graph",
- "test-case",
 ]
 
 [[package]]
@@ -248,10 +248,10 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 name = "runner"
 version = "0.1.0"
 dependencies = [
+ "algorithms",
  "anyhow",
  "clap",
  "graph",
- "kruskal",
  "thiserror",
 ]
 

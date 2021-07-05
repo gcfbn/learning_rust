@@ -37,7 +37,7 @@ fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
     let graph = graph::build_graph_from_file(cmd_args.task_file)?;
-    let output = kruskal::calculate_min_total_weight(graph);
+    let output = algorithms::calculate_min_total_weight(graph);
     println!("{}", output);
 
     Ok(())
