@@ -14,20 +14,17 @@ pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
     // sort result_edges by ascending weight
     graph.edges.sort_by(|a, b| a.weight.cmp(&b.weight));
 
-    // remove edges that connect nodes with the same parental node
-    // when lambda expression returns false, edge will be removed
-    graph.edges.retain(|&e| {
+    // remove edges that connect nodes with the same parental node and map vector to weights
+    // then calculate the weight by calling sum()
+    graph.edges.iter().filter_map(|&e| {
         let from_parent = find_parent(&parents, e.from_index);
         let to_parent = find_parent(&parents, e.to_index);
-        if from_parent == to_parent {
-            false
-        } else {
+        if from_parent != to_parent {
             parents[to_parent as usize] = from_parent;
-            true
+            return Some(e.weight as i32);
         }
-    });
-
-    graph.edges.iter().map(|e| e.weight as i32).sum()
+        None
+    }).sum()
 }
 
 fn find_parent(parents: &[u32], index: u32) -> u32 {
