@@ -75,7 +75,7 @@ impl From<GraphParametersParsingError> for BuildGraphError {
 
 // -----------------------------------------------------------------------------
 
-/// Enum containing specific errors connected with parsing graph edge data
+/// Enum with errors related to parsing graph edge parameters
 #[derive(Debug, Display, PartialEq)]
 pub enum ParsingEdgeError {
     /// Line is empty
@@ -105,7 +105,7 @@ pub enum ParsingEdgeError {
 
 // -----------------------------------------------------------------------------
 
-/// Enum containing specific errors connected with adding an edge to a graph
+/// Enum with errors related to adding an edge to the graph
 #[derive(Debug, Display)]
 pub enum AddingEdgeError {
     /// Graph already contains declared number of edges and can't add new edge
@@ -141,7 +141,7 @@ pub enum AddingEdgeError {
 
 // -----------------------------------------------------------------------------
 
-/// Enum containing specific errors connected with parsing graph parameters
+/// Enum with errors related to parsing graph parameters
 #[derive(Debug, Display)]
 pub enum GraphParametersParsingError {
     /// Input file is empty
