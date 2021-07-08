@@ -1,5 +1,10 @@
 use graph::Graph;
 
+/// Uses Kruskal's algorithm to calculate weight of graph minimum spanning tree
+///
+/// # Arguments
+///
+/// * 'graph' - connected graph that will be used to calculate weight of minimum spanning tree
 pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
     // create array of parental nodes
     // on initialization, all nodes have themselves as parent nodes

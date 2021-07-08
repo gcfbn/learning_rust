@@ -1,9 +1,33 @@
+#![warn(missing_docs)]
+
 use super::structures::{Edge, Graph, GraphBuilder, GraphParameters};
 use crate::{BuildGraphError, GraphParametersParsingError, Result};
 use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
 
+/// Builds a directed graph from txt file with specific format
+///
+/// First line of txt file should contain two positive integers - number of nodes in the graph (`nodes_count`)
+/// and number of edges in the graph (`edges_count`).
+///
+/// Then, every line describes one of the `edges_count` edges and contains three integers:
+///
+/// * First - Index of node where edge starts ([`Edge::from_index`])
+/// * Second - Index of node where edge ends ([`Edge::to_index`])
+/// * Third - weight of the edge ([`Edge::weight`])
+///
+/// # File example
+/// ```
+/// 4 3
+/// 1 2 100
+/// 2 3 200
+/// 4 1 125
+/// ```
+///
+/// # Arguments
+///
+/// * `filename` - path to file containing graph data
 pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;

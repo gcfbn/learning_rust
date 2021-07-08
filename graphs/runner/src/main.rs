@@ -4,6 +4,9 @@ use graph::Result;
 use std::path::{Path, PathBuf};
 use std::process;
 
+/// Main function that is called when the app starts
+///
+/// Calls run() function and kills process if it returns an error
 fn main() {
     if let Err(err) = run() {
         println!("Error: {:?}", err);
@@ -11,6 +14,7 @@ fn main() {
     }
 }
 
+/// Arguments read from console by Clap
 #[derive(Debug, Clap)]
 #[clap(
     name = "kruskal_algorithm",
@@ -25,6 +29,11 @@ struct CmdArgs {
     pub task_file: PathBuf,
 }
 
+/// Checks if file exists
+///
+/// # Arguments
+///
+/// `p` - Path to file including it's name and format
 fn file_exists(p: &str) -> aResult<()> {
     if Path::new(p).exists() {
         Ok(())
@@ -33,6 +42,7 @@ fn file_exists(p: &str) -> aResult<()> {
     }
 }
 
+/// Builds graph from given file and calculates weight of it's minimum spanning tree, returns [`anyhow::Result`]
 fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
