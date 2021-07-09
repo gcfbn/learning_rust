@@ -143,6 +143,11 @@ pub struct Graph {
 
 impl Graph {
     /// Creates graph from number of nodes and vector of edges
+    ///
+    /// # Arguments
+    ///
+    /// * `nodes_count` - number of nodes in the graph
+    /// * `edges` - vector of [`crate::Edge`]
     pub fn new(nodes_count: u32, edges: Vec<Edge>) -> Graph {
         Graph { nodes_count, edges }
     }
@@ -186,6 +191,10 @@ pub struct GraphBuilder {
 
 impl GraphBuilder {
     /// Creates empty graph builder using [`GraphParameters`]
+    ///
+    /// # Arguments
+    ///
+    /// * `gp` - [`crate::GraphParameters`] containing number of nodes and edges in the graph
     pub fn new(gp: GraphParameters) -> GraphBuilder {
         let GraphParameters {
             nodes_count,
@@ -203,6 +212,10 @@ impl GraphBuilder {
     ///
     /// Returns empty result or [`crate::BuildGraphError`] if GraphBuilder is full or
     /// one of the indices is invalid
+    ///
+    /// # Arguments
+    ///
+    /// * `edge` - edge that will be added to the builder
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
         if self.edges.len() >= self.max_edges_count {
             return Err(BuildGraphError::from(AddingEdgeError::TooManyEdges {
@@ -293,6 +306,11 @@ pub struct GraphParameters {
 
 impl GraphParameters {
     /// Creates GraphParameters from two integers
+    ///
+    /// # Arguments
+    ///
+    /// * `nodes_count` - positive integer indicating, how many nodes graph contains
+    /// * `max_edges_count` - positive integer indicating, how many edges graph might contain
     pub fn new(nodes_count: u32, max_edges_count: usize) -> GraphParameters {
         GraphParameters {
             nodes_count,
