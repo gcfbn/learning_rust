@@ -35,8 +35,7 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 /// ```
 /// use graph::build_graph_from_string;
 ///
-/// let input = String::from("
-/// 4 3
+/// let input = String::from("4 3
 /// 1 2 100
 /// 2 3 200
 /// 4 1 125");
