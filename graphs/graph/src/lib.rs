@@ -4,15 +4,14 @@
 //!
 //! # Example
 //! ```
-//! use graph::build_graph_from_string;
+//! use graph::{build_graph_from_string, Graph};
 //!
-//! let input = String::from("4 3
-//! 1 2 150
-//! 1 3 220
-//! 4 2 140
-//! ");
-//!
-//! let graph = build_graph_from_string(input).unwrap();
+//! let graph: Graph = "4 3
+//!     1 2 150
+//!     1 3 220
+//!     4 2 140"
+//!     .parse()
+//!     .unwrap();
 //!
 //! assert_eq!(graph.nodes_count, 4);
 //! assert_eq!(graph.edges.len(), 3);

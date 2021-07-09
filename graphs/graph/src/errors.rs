@@ -17,16 +17,15 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 ///
 /// [`crate::build_graph_from_string`] should return an [`BuildGraphError::AddingEdgeError`]
 /// ```
-/// use graph::{build_graph_from_string, BuildGraphError, AddingEdgeError};
+/// use graph::{Graph, BuildGraphError, AddingEdgeError, Result};
 ///
-/// let input = String::from("3 2
-/// 1 2 100
-/// 2 4 100");
+/// let maybe_graph: Result<Graph> = "3 2
+///     1 2 100
+///     2 4 100"
+///     .parse();
 ///
-/// let result = build_graph_from_string(input);
-///
-/// assert!(result.is_err());
-/// assert_eq!(result.unwrap_err().to_string(),
+/// assert!(maybe_graph.is_err());
+/// assert_eq!(maybe_graph.unwrap_err().to_string(),
 ///     BuildGraphError::ErrorInGraphDescriptionFile {
 ///     line_no: 2,
 ///     error: Box::from(BuildGraphError::from(AddingEdgeError::WrongToIndex {
@@ -40,16 +39,15 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 ///
 /// [`crate::build_graph_from_string`] should return [`BuildGraphError::TooFewEdges`]
 /// ```
-/// use graph::{build_graph_from_string, BuildGraphError};
+/// use graph::{Graph, BuildGraphError, Result};
 ///
-/// let input = String::from("4 3
-/// 1 2 500
-/// 1 4 350");
+/// let maybe_graph: Result<Graph> = "4 3
+///     1 2 500
+///     1 4 350"
+///     .parse();
 ///
-/// let result = build_graph_from_string(input);
-///
-/// assert!(result.is_err());
-/// assert_eq!(result.unwrap_err().to_string(),
+/// assert!(maybe_graph.is_err());
+/// assert_eq!(maybe_graph.unwrap_err().to_string(),
 ///     BuildGraphError::TooFewEdges {
 ///     current_count: 2,
 ///     declared: 3,

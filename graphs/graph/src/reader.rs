@@ -5,6 +5,7 @@ use crate::{BuildGraphError, GraphParametersParsingError, Result};
 use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 
 /// Builds a directed graph from txt file with specific format
@@ -17,7 +18,7 @@ use std::path::Path;
 pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
-    build_graph_from_string(input)
+    build_graph_from_string(input.as_str())
 }
 
 /// Builds a directed graph from string with specific format
@@ -33,14 +34,14 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 ///
 /// # Example
 /// ```
-/// use graph::build_graph_from_string;
+/// use graph::{build_graph_from_string, Graph};
 ///
-/// let input = String::from("4 3
-/// 1 2 100
-/// 2 3 200
-/// 4 1 125");
-///
-/// let graph = build_graph_from_string(input).unwrap();
+/// let graph: Graph = "4 3
+///     1 2 100
+///     2 3 200
+///     4 1 125"
+///     .parse()
+///     .unwrap();
 ///
 /// assert_eq!(graph.nodes_count, 4);
 /// assert_eq!(graph.edges.len(), 3);
@@ -51,8 +52,8 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 /// # Arguments
 ///
 /// * `input` - string containing graph data
-pub fn build_graph_from_string(input: String) -> Result<Graph> {
-    let mut graph_file_reader = GraphFileReader::new(&input);
+pub fn build_graph_from_string(input: &str) -> Result<Graph> {
+    let mut graph_file_reader = GraphFileReader::new(input);
 
     let graph_parameters = graph_file_reader.graph_parameters()?;
 
@@ -68,6 +69,14 @@ pub fn build_graph_from_string(input: String) -> Result<Graph> {
     }
 
     graph_builder.build()
+}
+
+impl FromStr for Graph {
+    type Err = BuildGraphError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        build_graph_from_string(s)
+    }
 }
 
 type DataIter<'a> = std::str::Lines<'a>;

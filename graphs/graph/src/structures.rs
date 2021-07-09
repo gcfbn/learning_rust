@@ -30,7 +30,7 @@ pub struct Edge {
 }
 
 impl Edge {
-    /// Creates new edge from integers
+    /// Edge constructor
     pub fn new(from_index: u32, to_index: u32, weight: i32) -> Edge {
         Edge {
             from_index,
@@ -119,13 +119,13 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
 ///
 /// # Example
 /// ```
-/// use graph::build_graph_from_string;
+/// use graph::Graph;
 ///
-/// let input = String::from("3 2
-/// 1 3 250
-/// 2 1 120");
-///
-/// let graph = build_graph_from_string(input).unwrap();
+/// let graph: Graph = "3 2
+///     1 3 250
+///     2 1 120"
+///     .parse()
+///     .unwrap();
 ///
 /// assert_eq!(graph.nodes_count, 3);
 /// assert_eq!(graph.edges.len(), 2);
