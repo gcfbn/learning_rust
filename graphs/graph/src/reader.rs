@@ -6,9 +6,23 @@ use std::convert::TryFrom;
 use std::fs;
 use std::path::Path;
 
+
 /// Builds a directed graph from txt file with specific format
 ///
-/// First line of txt file should contain two positive integers - number of nodes in the graph (`nodes_count`)
+/// File should be formatted as in [`build_graph_from_string`]
+///
+/// # Arguments
+///
+/// * `filename` - path to file containing input
+pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
+    let filename = filename.as_ref();
+    let input = fs::read_to_string(filename)?;
+    build_graph_from_string(input)
+}
+
+/// Builds a directed graph from string with specific format
+///
+/// First line of string should contain two positive integers - number of nodes in the graph (`nodes_count`)
 /// and number of edges in the graph (`edges_count`).
 ///
 /// Then, every line describes one of the `edges_count` edges and contains three integers:
@@ -17,21 +31,28 @@ use std::path::Path;
 /// * Second - Index of node where edge ends ([`Edge::to_index`])
 /// * Third - weight of the edge ([`Edge::weight`])
 ///
-/// # File example
+/// # Example
 /// ```
-/// 4 3
+/// use graph::build_graph_from_string;
+///
+/// let input = String::from(
+/// "4 3
 /// 1 2 100
 /// 2 3 200
-/// 4 1 125
-/// ```
+/// 4 1 125");
 ///
+/// let graph = build_graph_from_string(input).unwrap();
+///
+/// assert_eq!(graph.nodes_count, 4);
+/// assert_eq!(graph.edges.len(), 3);
+/// assert_eq!(graph.edges[0], "1 2 100".parse().unwrap());
+/// assert_eq!(graph.edges[1], "2 3 200".parse().unwrap());
+/// assert_eq!(graph.edges[2], "4 1 125".parse().unwrap());
+///```
 /// # Arguments
 ///
-/// * `filename` - path to file containing graph data
-pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
-    let filename = filename.as_ref();
-    let input = fs::read_to_string(filename)?;
-
+/// * `input` - string containing graph data
+pub fn build_graph_from_string(input: String) -> Result<Graph> {
     let mut graph_file_reader = GraphFileReader::new(&input);
 
     let graph_parameters = graph_file_reader.graph_parameters()?;

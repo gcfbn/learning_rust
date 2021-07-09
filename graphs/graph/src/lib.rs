@@ -12,5 +12,5 @@ mod reader;
 mod structures;
 
 pub use crate::errors::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
-pub use crate::reader::build_graph_from_file;
+pub use crate::reader::{build_graph_from_file, build_graph_from_string};
 pub use crate::structures::{Edge, EdgeDescription, Graph};
