@@ -2,25 +2,6 @@ use graph::Graph;
 
 /// Uses Kruskal's algorithm to calculate weight of graph minimum spanning tree
 ///
-/// # Example
-/// ```
-/// use graph::build_graph_from_string;
-/// use algorithms::calculate_min_total_weight;
-///
-/// let input = String::from("3 4
-/// 1 2 100
-/// 2 1 80
-/// 3 1 90
-/// 1 3 110
-/// ");
-///
-/// let graph = build_graph_from_string(input).unwrap();
-///
-/// let result = calculate_min_total_weight(graph);
-///
-/// assert_eq!(result, 170);
-/// ```
-///
 /// # Arguments
 ///
 /// * 'graph' - connected graph that will be used to calculate weight of minimum spanning tree
