@@ -9,8 +9,52 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 
 /// Enum containing all possible variants of errors returned by functions in this crate.
 ///
-/// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`].
+/// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`]).
 /// Some errors contain variant of more specific enums.
+///
+/// # Examples
+/// Input contains edge that connects nodes '2' and '4', but declared number of nodes is 3
+///
+/// [`crate::build_graph_from_string`] should return an [`BuildGraphError::AddingEdgeError`]
+/// ```
+/// use graph::{build_graph_from_string, BuildGraphError, AddingEdgeError};
+///
+/// let input = String::from("3 2
+/// 1 2 100
+/// 2 4 100");
+///
+/// let result = build_graph_from_string(input);
+///
+/// assert!(result.is_err());
+/// assert_eq!(result.unwrap_err().to_string(),
+///     BuildGraphError::ErrorInGraphDescriptionFile {
+///     line_no: 2,
+///     error: Box::from(BuildGraphError::from(AddingEdgeError::WrongToIndex {
+///         edge: "2 4 100".parse().unwrap(),
+///         nodes_count: 3
+///     })),
+/// }.to_string());
+/// ```
+///
+/// Input contains only 2 edges, but declared number of edges is 3
+///
+/// [`crate::build_graph_from_string`] should return [`BuildGraphError::TooFewEdges`]
+/// ```
+/// use graph::{build_graph_from_string, BuildGraphError};
+///
+/// let input = String::from("4 3
+/// 1 2 500
+/// 1 4 350");
+///
+/// let result = build_graph_from_string(input);
+///
+/// assert!(result.is_err());
+/// assert_eq!(result.unwrap_err().to_string(),
+///     BuildGraphError::TooFewEdges {
+///     current_count: 2,
+///     declared: 3,
+/// }.to_string());
+/// ```
 #[derive(Error, Debug)]
 pub enum BuildGraphError {
     /// Kruskal's algorithm finds minimum spanning tree for connected graphs -
