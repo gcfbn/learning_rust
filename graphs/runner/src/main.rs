@@ -1,6 +1,7 @@
 use clap::{AppSettings, Clap};
+use anyhow::{anyhow, Result as aResult};
 use graph::Result;
-use std::path::{PathBuf};
+use std::path::{PathBuf, Path};
 use std::process;
 
 /// Main function that is called when the app starts
@@ -30,23 +31,49 @@ struct CmdArgs {
 
 #[derive(Clap, Debug)]
 enum SubCommand {
-    #[clap()]
-    GraphFileGenerator(GraphFileGeneratorParameters),
-    #[clap()]
-    Task(TaskData),
+    #[clap(visible_alias = "gfg")]
+    GraphFileGenerator(GraphFileGenerator),
+    #[clap(visible_alias = "t")]
+    Task(Task),
 }
 
+/// Subcommand generating random graph file, which could be used in algorithms
 #[derive(Clap, Debug)]
-struct GraphFileGeneratorParameters {
-    output: PathBuf,
+#[clap(setting=AppSettings::ColoredHelp)]
+struct GraphFileGenerator {
+    /// Output filename
+    graph_file: PathBuf,
+
+    /// Number of nodes in graph (indexed from 1 to `nodes_count`)
     nodes_count: u32,
+
+    /// Number of edges in graph
     edges_count: u32,
+
+    /// Maximum weight of an edge in graph
     max_weight: u32,
 }
 
+/// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
-struct TaskData {
+#[clap(setting=AppSettings::ColoredHelp)]
+struct Task {
+    /// Name of file containing graph data
+    #[clap(long, short, parse(from_os_str), validator(file_exists))]
     task_file: PathBuf,
+}
+
+/// Checks if file exists
+///
+/// # Arguments
+///
+/// `p` - Path to file including it's name and format
+fn file_exists(p: &str) -> aResult<()> {
+    if Path::new(p).exists() {
+        Ok(())
+    } else {
+        Err(anyhow!("the file does not exist: {}", p))
+    }
 }
 
 /// Builds graph from given file and calculates weight of it's minimum spanning tree, returns [`anyhow::Result`]
@@ -65,7 +92,7 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn generate_graph(parameters: GraphFileGeneratorParameters) {
+fn generate_graph(parameters: GraphFileGenerator) {
     println!("RANDOM_GRAPH");
 }
 
