@@ -4,7 +4,7 @@
 //!
 //! # Example
 //! ```
-//! use graph::{build_graph_from_string, Graph};
+//! use graph::Graph;
 //!
 //! let graph: Graph = "4 3
 //!     1 2 150
@@ -33,5 +33,5 @@ mod reader;
 mod structures;
 
 pub use crate::errors::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
-pub use crate::reader::{build_graph_from_file, build_graph_from_string};
+pub use crate::reader::build_graph;
 pub use crate::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};

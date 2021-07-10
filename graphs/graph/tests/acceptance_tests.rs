@@ -1,12 +1,16 @@
-use graph::{
-    build_graph_from_file,
-    AddingEdgeError,
-    BuildGraphError,
-    Edge,
-    GraphParametersParsingError,
-    ParsingEdgeError,
-};
+use graph::{build_graph, AddingEdgeError, BuildGraphError, Edge, GraphParametersParsingError, ParsingEdgeError};
+use std::path::PathBuf;
 use test_case::test_case;
+
+// -----------------------------------------------------------------------------
+
+fn build_path(dir: &str, graph_file: &str) -> PathBuf {
+    let mut path = PathBuf::from(dir);
+    path.push(graph_file);
+    path.set_extension("txt");
+
+    path
+}
 
 // -----------------------------------------------------------------------------
 
@@ -27,8 +31,8 @@ BuildGraphError::from(GraphParametersParsingError::EdgesCountValueIsNotInteger("
 "error_parsing_graph_parameters_edges_count"
 )]
 fn test_parsing_graph_parameters_errors(graph_file: &str, expected_error: BuildGraphError) {
-    let actual_error =
-        build_graph_from_file(format!("tests/data/parsing_graph_parameters_errors/{}.txt", graph_file)).unwrap_err();
+    let path = build_path("tests/data/parsing_graph_parameters_errors", graph_file);
+    let actual_error = build_graph(&path).unwrap_err();
     assert_eq!(actual_error.to_string(), expected_error.to_string());
 }
 
@@ -74,7 +78,8 @@ edge: Edge{ from_index: 1, to_index: 4, weight: 100, },
 nodes_count: 3, }); "error_adding_edge_wrong_to_index"
 )]
 fn test_edge_errors(graph_file: &str, expected_line_no_with_error: usize, expected_error: BuildGraphError) {
-    let result = build_graph_from_file(format!("tests/data/edge_errors/{}.txt", graph_file)).unwrap_err();
+    let path = build_path("tests/data/edge_errors", graph_file);
+    let result = build_graph(&path).unwrap_err();
 
     if let BuildGraphError::ErrorInGraphDescriptionFile {
         line_no: actual_line_no_with_error,
@@ -93,8 +98,8 @@ fn test_edge_errors(graph_file: &str, expected_line_no_with_error: usize, expect
 #[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected)]
 #[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4})]
 fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
-    let actual_error =
-        build_graph_from_file(format!("tests/data/graph_building_errors/{}.txt", graph_file)).unwrap_err();
+    let path = build_path("tests/data/graph_building_errors", graph_file);
+    let actual_error = build_graph(&path).unwrap_err();
 
     assert_eq!(actual_error.to_string(), expected_error.to_string());
 }

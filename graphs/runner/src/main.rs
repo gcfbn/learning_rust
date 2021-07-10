@@ -46,7 +46,7 @@ fn file_exists(p: &str) -> aResult<()> {
 fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
-    let graph = graph::build_graph_from_file(cmd_args.task_file)?;
+    let graph = graph::build_graph(&cmd_args.task_file)?;
     let output = algorithms::calculate_min_total_weight(graph);
     println!("{}", output);
 
