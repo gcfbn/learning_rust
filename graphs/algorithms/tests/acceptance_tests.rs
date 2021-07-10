@@ -14,8 +14,8 @@ use test_case::test_case;
 #[test_case(7 => 1500)]
 #[test_case(8 => 400)]
 fn passing(dataset_number: u32) -> i32 {
-    let mut path = PathBuf::from("tests/data/passing");
-    path.push(format!("{}", dataset_number));
+    let mut path = PathBuf::from("tests/data");
+    path.push(format!("passing{}", dataset_number));
     path.set_extension("txt");
 
     let graph = build_graph(&path).unwrap();
