@@ -1,7 +1,6 @@
-use anyhow::{anyhow, Result as aResult};
 use clap::{AppSettings, Clap};
 use graph::Result;
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 use std::process;
 
 /// Main function that is called when the app starts
@@ -17,38 +16,56 @@ fn main() {
 /// Arguments read from console by Clap
 #[derive(Debug, Clap)]
 #[clap(
-    name = "kruskal_algorithm",
-    version = "1.0",
-    about = "Algorithms & Data structures task from graph theory",
-    author = "Bartek M. <bmekarski@interia.pl>",
-    setting=AppSettings::ColoredHelp,
+name = "kruskal_algorithm",
+version = "1.0",
+about = "Algorithms & Data structures task from graph theory",
+author = "Bartek M. <bmekarski@interia.pl>",
+setting = AppSettings::ColoredHelp,
+setting = AppSettings::ArgRequiredElseHelp,
 )]
 struct CmdArgs {
-    /// Task file with task data
-    #[clap(long, short, parse(from_os_str), validator(file_exists))]
-    pub task_file: PathBuf,
+    #[clap(subcommand)]
+    pub subcommand: SubCommand,
 }
 
-/// Checks if file exists
-///
-/// # Arguments
-///
-/// `p` - Path to file including it's name and format
-fn file_exists(p: &str) -> aResult<()> {
-    if Path::new(p).exists() {
-        Ok(())
-    } else {
-        Err(anyhow!("the file does not exist: {}", p))
-    }
+#[derive(Clap, Debug)]
+enum SubCommand {
+    #[clap()]
+    GraphFileGenerator(GraphFileGeneratorParameters),
+    #[clap()]
+    Task(TaskData),
+}
+
+#[derive(Clap, Debug)]
+struct GraphFileGeneratorParameters {
+    output: PathBuf,
+    nodes_count: u32,
+    edges_count: u32,
+    max_weight: u32,
+}
+
+#[derive(Clap, Debug)]
+struct TaskData {
+    task_file: PathBuf,
 }
 
 /// Builds graph from given file and calculates weight of it's minimum spanning tree, returns [`anyhow::Result`]
 fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
-    let graph = graph::build_graph(&cmd_args.task_file)?;
-    let output = algorithms::calculate_min_total_weight(graph);
-    println!("{}", output);
+    match cmd_args.subcommand {
+        SubCommand::Task(task_data) => {
+            let graph = graph::build_graph(&task_data.task_file)?;
+            let output = algorithms::calculate_min_total_weight(graph);
+            println!("{}", output);
+        }
 
+        SubCommand::GraphFileGenerator(params) => generate_graph(params),
+    }
     Ok(())
 }
+
+fn generate_graph(parameters: GraphFileGeneratorParameters) {
+    println!("RANDOM_GRAPH");
+}
+
