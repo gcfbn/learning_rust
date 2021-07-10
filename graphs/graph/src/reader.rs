@@ -2,11 +2,52 @@
 
 use super::structures::{Edge, Graph, GraphBuilder, GraphParameters};
 use crate::{BuildGraphError, GraphParametersParsingError, Result};
+use std::convert::From;
 use std::convert::TryFrom;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+pub enum DataSource<'r> {
+    String(&'r str),
+    File(&'r Path),
+}
+
+impl<'r> From<&'r str> for DataSource<'r> {
+    fn from(s: &'r str) -> Self {
+        DataSource::String(s)
+    }
+}
+
+impl<'r> From<&'r Path> for DataSource<'r> {
+    fn from(filename: &'r Path) -> Self {
+        DataSource::File(filename)
+    }
+}
+
+impl<'r> From<&'r PathBuf> for DataSource<'r> {
+    fn from(filename: &'r PathBuf) -> Self {
+        DataSource::File(filename.as_path())
+    }
+}
+
+/// Builds a directed graph from the data source with specific format
+///
+/// Data source: string or file with graph description
+///
+/// # Arguments
+///
+/// * `data_source` - a reference to String, Path or PathBuf
+pub fn build_graph<'r, DS>(data_source: DS) -> Result<Graph>
+where
+    DS: Into<DataSource<'r>>,
+{
+    let data_source: DataSource = data_source.into();
+    match data_source {
+        DataSource::String(s) => build_graph_from_string(s),
+        DataSource::File(filename) => build_graph_from_file(filename),
+    }
+}
 
 /// Builds a directed graph from txt file with specific format
 ///
@@ -15,7 +56,7 @@ use std::str::FromStr;
 /// # Arguments
 ///
 /// * `filename` - path to file containing input
-pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
+fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
     let filename = filename.as_ref();
     let input = fs::read_to_string(filename)?;
     build_graph_from_string(input.as_str())
@@ -34,7 +75,7 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 ///
 /// # Example
 /// ```
-/// use graph::{build_graph_from_string, Graph};
+/// use graph::Graph;
 ///
 /// let graph: Graph = "4 3
 ///     1 2 100
@@ -52,7 +93,7 @@ pub fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 /// # Arguments
 ///
 /// * `input` - string containing graph data
-pub fn build_graph_from_string(input: &str) -> Result<Graph> {
+fn build_graph_from_string(input: &str) -> Result<Graph> {
     let mut graph_file_reader = GraphFileReader::new(input);
 
     let graph_parameters = graph_file_reader.graph_parameters()?;
