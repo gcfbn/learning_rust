@@ -1,16 +1,36 @@
+#![warn(missing_docs)]
+
 use super::dfs::dfs;
 use crate::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
+/// Basic element of an directed graph, connects ordered pair of nodes(`from_index`, `to_index`)
+///
+/// # Example
+/// ```
+/// use graph::Edge;
+///
+/// let edge = Edge::new(1, 2, 200);
+///
+/// assert_eq!(edge.from_index, 1);
+/// assert_eq!(edge.to_index, 2);
+/// assert_eq!(edge.weight, 200);
+/// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Edge {
+    /// Number of the node, where edge starts
     pub from_index: u32,
+
+    /// Number of the node, where edge ends
     pub to_index:   u32,
+
+    /// Edge weight
     pub weight:     i32,
 }
 
 impl Edge {
+    /// Edge constructor
     pub fn new(from_index: u32, to_index: u32, weight: i32) -> Edge {
         Edge {
             from_index,
@@ -29,10 +49,17 @@ impl FromStr for Edge {
     }
 }
 
+/// Struct containing slices, might be converted to [`Edge`]
+/// only if slices are parsable to u32 or i32 (depending on the field)
 #[derive(Debug)]
 pub struct EdgeDescription<'a> {
+    /// Number of the node, where edge starts
     pub from_index: &'a str,
+
+    /// Number of the node, where edge ends
     pub to_index:   &'a str,
+
+    /// Edge weight
     pub weight:     &'a str,
 }
 
@@ -86,25 +113,88 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
     }
 }
 
+/// Directed graph, containing edges list and number of nodes
+///
+/// Could be built using [`crate::build_graph_from_string`], [`crate::build_graph_from_file`] or [`GraphBuilder::build`]
+///
+/// # Example
+/// ```
+/// use graph::Graph;
+///
+/// let graph: Graph = "3 2
+///     1 3 250
+///     2 1 120"
+///     .parse()
+///     .unwrap();
+///
+/// assert_eq!(graph.nodes_count, 3);
+/// assert_eq!(graph.edges.len(), 2);
+/// assert_eq!(graph.edges[0], "1 3 250".parse().unwrap());
+/// assert_eq!(graph.edges[1], "2 1 120".parse().unwrap());
+/// ```
 #[derive(Debug)]
 pub struct Graph {
+    /// Number of nodes in graph (indexed from 1 to `nodes_count`)
     pub nodes_count: u32,
+
+    /// Vector of edges
     pub edges:       Vec<Edge>,
 }
 
 impl Graph {
+    /// Creates graph from number of nodes and vector of edges
+    ///
+    /// # Arguments
+    ///
+    /// * `nodes_count` - number of nodes in the graph
+    /// * `edges` - vector of [`crate::Edge`]
     pub fn new(nodes_count: u32, edges: Vec<Edge>) -> Graph {
         Graph { nodes_count, edges }
     }
 }
 
+/// Structure used for building a graph (adding edges from input file/string)
+///
+/// # Example
+/// ```
+/// use graph::{GraphParameters, GraphBuilder, Edge};
+///
+/// let graph_parameters = GraphParameters {
+///     nodes_count: 3,
+///     edges_count: 2,
+/// };
+///
+/// let mut graph_builder = GraphBuilder::new(graph_parameters);
+///
+/// let first_edge = Edge::new(1, 3, 250);
+/// graph_builder.add_edge(first_edge);
+///
+/// let second_edge = Edge::new(2, 3, 180);
+/// graph_builder.add_edge(second_edge);
+///
+/// let graph = graph_builder.build().unwrap();
+///
+/// assert_eq!(graph.nodes_count, 3);
+/// assert_eq!(graph.edges[0], first_edge);
+/// assert_eq!(graph.edges[1], second_edge);
+/// ```
 pub struct GraphBuilder {
+    /// Number of nodes in graph
     nodes_count:     u32,
+
+    /// Max number of edges in graph
     max_edges_count: usize,
+
+    /// Vector of edges
     edges:           Vec<Edge>,
 }
 
 impl GraphBuilder {
+    /// Creates empty graph builder using [`GraphParameters`]
+    ///
+    /// # Arguments
+    ///
+    /// * `gp` - [`crate::GraphParameters`] containing number of nodes and edges in the graph
     pub fn new(gp: GraphParameters) -> GraphBuilder {
         let GraphParameters {
             nodes_count,
@@ -118,6 +208,14 @@ impl GraphBuilder {
         }
     }
 
+    /// Adds edge to the graph
+    ///
+    /// Returns empty result or [`crate::BuildGraphError`] if GraphBuilder is full or
+    /// one of the indices is invalid
+    ///
+    /// # Arguments
+    ///
+    /// * `edge` - edge that will be added to the builder
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
         if self.edges.len() >= self.max_edges_count {
             return Err(BuildGraphError::from(AddingEdgeError::TooManyEdges {
@@ -164,6 +262,10 @@ impl GraphBuilder {
         true
     }
 
+    /// Builds [`Graph`] from GraphBuilder
+    ///
+    /// Returns [`Graph`] wrapped in result or wrapped [`crate::BuildGraphError`] if builder contains less edges than
+    /// declared or graph isn't connected
     pub fn build(self) -> Result<Graph> {
         if self.edges.len() < self.max_edges_count {
             return Err(BuildGraphError::TooFewEdges {
@@ -182,13 +284,33 @@ impl GraphBuilder {
 
 // -----------------------------------------------------------------------------
 
+/// Number of nodes and edges in the graph
+///
+/// # Example
+/// ```
+/// use graph::GraphParameters;
+///
+/// let graph_parameters = GraphParameters::new(4, 3);
+///
+/// assert_eq!(graph_parameters.nodes_count, 4);
+/// assert_eq!(graph_parameters.edges_count, 3);
+/// ```
 #[derive(Debug)]
 pub struct GraphParameters {
+    /// Number of nodes in the graph (indexed from 1 to `nodes_count`)
     pub nodes_count: u32,
+
+    /// Number of edges in the graph
     pub edges_count: usize,
 }
 
 impl GraphParameters {
+    /// Creates GraphParameters from two integers
+    ///
+    /// # Arguments
+    ///
+    /// * `nodes_count` - positive integer indicating, how many nodes graph contains
+    /// * `max_edges_count` - positive integer indicating, how many edges graph might contain
     pub fn new(nodes_count: u32, max_edges_count: usize) -> GraphParameters {
         GraphParameters {
             nodes_count,
