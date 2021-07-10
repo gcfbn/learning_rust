@@ -94,7 +94,7 @@ fn build_graph_from_file<P: AsRef<Path>>(filename: P) -> Result<Graph> {
 ///
 /// * `input` - string containing graph data
 fn build_graph_from_string(input: &str) -> Result<Graph> {
-    let mut graph_file_reader = GraphFileReader::new(input);
+    let mut graph_file_reader = GraphDescriptionReader::new(input);
 
     let graph_parameters = graph_file_reader.graph_parameters()?;
 
@@ -122,11 +122,11 @@ impl FromStr for Graph {
 
 type DataIter<'a> = std::str::Lines<'a>;
 
-struct GraphFileReader<'a> {
+struct GraphDescriptionReader<'a> {
     iter: DataIter<'a>,
 }
 
-impl<'a> GraphFileReader<'a> {
+impl<'a> GraphDescriptionReader<'a> {
     pub fn new(input: &'a str) -> Self {
         Self { iter: input.lines() }
     }
@@ -140,7 +140,7 @@ impl<'a> GraphFileReader<'a> {
     }
 }
 
-impl<'a> Iterator for GraphFileReader<'a> {
+impl<'a> Iterator for GraphDescriptionReader<'a> {
     type Item = Result<Edge>;
 
     fn next(&mut self) -> Option<Self::Item> {
