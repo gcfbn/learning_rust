@@ -1,8 +1,10 @@
-use clap::{AppSettings, Clap};
 use anyhow::{anyhow, Result as aResult};
-use graph::Result;
-use std::path::{PathBuf, Path};
+use clap::{AppSettings, Clap};
+use graph_file_generator::generate_graph;
+use std::path::{Path, PathBuf};
 use std::process;
+
+mod graph_file_generator;
 
 /// Main function that is called when the app starts
 ///
@@ -39,8 +41,8 @@ enum SubCommand {
 
 /// Subcommand generating random graph file, which could be used in algorithms
 #[derive(Clap, Debug)]
-#[clap(setting=AppSettings::ColoredHelp)]
-struct GraphFileGenerator {
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct GraphFileGenerator {
     /// Output filename
     graph_file: PathBuf,
 
@@ -56,7 +58,7 @@ struct GraphFileGenerator {
 
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
-#[clap(setting=AppSettings::ColoredHelp)]
+#[clap(setting = AppSettings::ColoredHelp)]
 struct Task {
     /// Name of file containing graph data
     #[clap(long, short, parse(from_os_str), validator(file_exists))]
@@ -77,7 +79,7 @@ fn file_exists(p: &str) -> aResult<()> {
 }
 
 /// Builds graph from given file and calculates weight of it's minimum spanning tree, returns [`anyhow::Result`]
-fn run() -> Result<()> {
+fn run() -> aResult<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
     match cmd_args.subcommand {
@@ -87,12 +89,10 @@ fn run() -> Result<()> {
             println!("{}", output);
         }
 
-        SubCommand::GraphFileGenerator(params) => generate_graph(params),
+        SubCommand::GraphFileGenerator(params) => {
+            generate_graph(&params)?;
+            println!("Graph file with path {:?} successfully generated!", params.graph_file);
+        }
     }
     Ok(())
 }
-
-fn generate_graph(parameters: GraphFileGenerator) {
-    println!("RANDOM_GRAPH");
-}
-
