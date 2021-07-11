@@ -39,7 +39,10 @@ use std::io::Write;
 /// 1 1 11
 /// 1 3 2
 /// ```
-
+///
+/// # Arguments
+///
+/// * `parameters` - parameters of the graph
 pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
     if impossible_to_generate_connected_graph(parameters) {
         bail!(
@@ -83,7 +86,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
 ///
 /// # Arguments
 ///
-/// * `parameters` - parameters used for generating graph file
+/// * `parameters` - parameters of the graph
 fn impossible_to_generate_connected_graph(parameters: &GraphFileGenerator) -> bool {
     parameters.edges_count + 1 < parameters.nodes_count
 }
