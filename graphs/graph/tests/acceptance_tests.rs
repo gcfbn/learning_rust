@@ -5,7 +5,8 @@ use test_case::test_case;
 // -----------------------------------------------------------------------------
 
 fn build_path(dir: &str, graph_file: &str) -> PathBuf {
-    let mut path = PathBuf::from(dir);
+    let mut path = PathBuf::from("tests/data");
+    path.push(dir);
     path.push(graph_file);
     path.set_extension("txt");
 
@@ -17,6 +18,23 @@ fn validate_graph_file(dir_name: &str, graph_file: &str, expected_error: BuildGr
     let actual_error = build_graph(&path).unwrap_err();
 
     assert_eq!(actual_error.to_string(), expected_error.to_string());
+}
+
+// Copied from: https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
+macro_rules! function {
+    () => {{
+        fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+        let name = type_name_of(f);
+
+        // Find and cut the rest of the path
+        match &name[..name.len() - 3].rfind(':') {
+            Some(pos) => &name[pos + 1..name.len() - 3],
+            None => &name[..name.len() - 3],
+        }
+    }};
 }
 
 // -----------------------------------------------------------------------------
@@ -39,12 +57,8 @@ fn validate_graph_file(dir_name: &str, graph_file: &str, expected_error: BuildGr
             GraphParametersParsingError::EdgesCountValueIsNotInteger("X".to_owned());
             "error_parsing_graph_parameters_edges_count"
 )]
-fn test_parsing_graph_parameters_errors(graph_file: &str, expected_error: GraphParametersParsingError) {
-    validate_graph_file(
-        "tests/data/parsing_graph_parameters_errors",
-        graph_file,
-        BuildGraphError::from(expected_error),
-    );
+fn parsing_graph_parameters_errors(graph_file: &str, expected_error: GraphParametersParsingError) {
+    validate_graph_file(function!(), graph_file, BuildGraphError::from(expected_error));
 }
 
 // -----------------------------------------------------------------------------
@@ -96,10 +110,10 @@ fn test_parsing_graph_parameters_errors(graph_file: &str, expected_error: GraphP
             };
             "error_adding_edge_wrong_to_index"
 )]
-fn test_edge_errors<E: Into<BuildGraphError>>(graph_file: &str, expected_line_no_with_error: usize, expected_error: E) {
+fn edge_errors<E: Into<BuildGraphError>>(graph_file: &str, expected_line_no_with_error: usize, expected_error: E) {
     let expected_error = expected_error.into();
 
-    let path = build_path("tests/data/edge_errors", graph_file);
+    let path = build_path(function!(), graph_file);
     let actual_error = build_graph(&path).unwrap_err();
 
     if let BuildGraphError::ErrorInGraphDescriptionFile {
@@ -118,6 +132,6 @@ fn test_edge_errors<E: Into<BuildGraphError>>(graph_file: &str, expected_line_no
 
 #[test_case("error_graph_not_connected", BuildGraphError::GraphNotConnected; "error_graph_not_connected")]
 #[test_case("error_too_few_edges", BuildGraphError::TooFewEdges{current_count: 3, declared: 4}; "error_too_few_edges")]
-fn test_graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
-    validate_graph_file("tests/data/graph_building_errors", graph_file, expected_error);
+fn graph_building_errors(graph_file: &str, expected_error: BuildGraphError) {
+    validate_graph_file(function!(), graph_file, expected_error);
 }
