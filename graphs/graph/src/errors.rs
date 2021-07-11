@@ -13,9 +13,10 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 /// Some errors contain variant of more specific enums.
 ///
 /// # Examples
-/// Input contains edge that connects nodes '2' and '4', but declared number of nodes is 3
+/// 1. Input contains edge that connects nodes '2' and '4', but declared number of nodes is 3
 ///
-/// [`crate::build_graph_from_string`] should return an [`BuildGraphError::AddingEdgeError`]
+/// > "...".parse() should return an [`BuildGraphError::AddingEdgeError`]
+///
 /// ```
 /// use graph::{Graph, BuildGraphError, AddingEdgeError, Result};
 ///
@@ -35,9 +36,10 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 /// }.to_string());
 /// ```
 ///
-/// Input contains only 2 edges, but declared number of edges is 3
+/// 2. Input contains only 2 edges, but declared number of edges is 3
 ///
-/// [`crate::build_graph_from_string`] should return [`BuildGraphError::TooFewEdges`]
+/// > "...".parse() should return [`BuildGraphError::TooFewEdges`]
+///
 /// ```
 /// use graph::{Graph, BuildGraphError, Result};
 ///

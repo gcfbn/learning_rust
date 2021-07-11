@@ -23,10 +23,10 @@ pub struct Edge {
     pub from_index: u32,
 
     /// Number of the node, where edge ends
-    pub to_index:   u32,
+    pub to_index: u32,
 
     /// Edge weight
-    pub weight:     i32,
+    pub weight: i32,
 }
 
 impl Edge {
@@ -57,10 +57,9 @@ pub struct EdgeDescription<'a> {
     pub from_index: &'a str,
 
     /// Number of the node, where edge ends
-    pub to_index:   &'a str,
-
+    pub to_index: &'a str,
     /// Edge weight
-    pub weight:     &'a str,
+    pub weight:   &'a str,
 }
 
 impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
@@ -115,7 +114,7 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
 
 /// Directed graph, containing edges list and number of nodes
 ///
-/// Could be built using [`crate::build_graph_from_string`], [`crate::build_graph_from_file`] or [`GraphBuilder::build`]
+/// Could be built using [`crate::build_graph`] or [`GraphBuilder::build`]
 ///
 /// # Example
 /// ```
@@ -138,7 +137,7 @@ pub struct Graph {
     pub nodes_count: u32,
 
     /// Vector of edges
-    pub edges:       Vec<Edge>,
+    pub edges: Vec<Edge>,
 }
 
 impl Graph {
@@ -180,13 +179,13 @@ impl Graph {
 /// ```
 pub struct GraphBuilder {
     /// Number of nodes in graph
-    nodes_count:     u32,
+    nodes_count: u32,
 
     /// Max number of edges in graph
     max_edges_count: usize,
 
     /// Vector of edges
-    edges:           Vec<Edge>,
+    edges: Vec<Edge>,
 }
 
 impl GraphBuilder {
