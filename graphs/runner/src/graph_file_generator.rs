@@ -4,9 +4,44 @@ use rand::prelude::*;
 use std::fs::File;
 use std::io::Write;
 
+/// Generates txt file containing multi-graph data using `parameters`
+///
+/// Graph file is generated using [`rand`], so two nodes might be connected by more than one edge
+///
+/// Most of the graph theory algorithms require the graph to be connected,
+/// so function checks if it's possible to generate connected graph from given parameters.
+/// If it's not, function returns an error.
+///
+/// First line in the file contains `nodes_count` and `edges_count`
+/// Then, file contains `nodes_count - 1` lines describing edges
+/// connecting first node with every other node, so graph is for sure connected
+/// After that, the rest of the edges is generated randomly.
+///
+/// # Example
+/// ```
+/// let parameters = GraphFileGenerator {
+///     test_graph_file.txt,
+///     3,
+///     5,
+///     20,
+/// }
+///
+///  generate_graph(&parameters)
+/// ```
+///
+/// # Possible output
+/// ```text
+/// test_graph_file.txt:
+/// 3 5
+/// 1 2 13
+/// 1 3 1
+/// 2 3 1
+/// 1 1 11
+/// 1 3 2
+/// ```
+
 pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
-    // check if it's possible to generate connected graph with given parameters
-    if parameters.edges_count + 1 < parameters.nodes_count {
+    if impossible_to_generate_connected_graph(parameters) {
         bail!(
             "`edges_count` must be at least {}, because `nodes_count` is {}, otherwise graph won't be connected",
             parameters.nodes_count - 1,
@@ -42,4 +77,13 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
         )?;
     }
     Ok(())
+}
+
+/// Check if it's possible to generate connected graph with given parameters
+///
+/// # Arguments
+///
+/// * `parameters` - parameters used for generating graph file
+fn impossible_to_generate_connected_graph(parameters: &GraphFileGenerator) -> bool {
+    parameters.edges_count + 1 < parameters.nodes_count
 }
