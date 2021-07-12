@@ -90,7 +90,7 @@ fn file_exists(p: &str) -> aResult<()> {
 fn is_txt(p: &str) -> aResult<()> {
     if Path::new(p)
         .extension()
-        .ok_or(anyhow!("missing final '.' in filename: {}", p))?
+        .ok_or_else(|| anyhow!("missing final '.' in filename: {}", p))?
         == "txt"
     {
         Ok(())
