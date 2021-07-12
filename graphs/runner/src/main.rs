@@ -44,15 +44,19 @@ enum SubCommand {
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct GraphFileGenerator {
     /// Output filename
+    #[clap(long, short, validator(is_txt))]
     graph_file: PathBuf,
 
     /// Number of nodes in graph (indexed from 1 to `nodes_count`)
+    #[clap(long, short, validator(nodes_count_valid))]
     nodes_count: u32,
 
     /// Number of edges in graph
+    #[clap(long, short)]
     edges_count: u32,
 
     /// Maximum weight of an edge in graph
+    #[clap(long, short, validator(max_weight_valid))]
     max_weight: u32,
 }
 
@@ -75,6 +79,57 @@ fn file_exists(p: &str) -> aResult<()> {
         Ok(())
     } else {
         Err(anyhow!("the file does not exist: {}", p))
+    }
+}
+
+/// Checks if file is a txt file
+///
+/// # Arguments
+///
+/// `p` - Path to file including it's name and format
+fn is_txt(p: &str) -> aResult<()> {
+    if Path::new(p)
+        .extension()
+        .ok_or(anyhow!("missing final '.' in filename: {}", p))?
+        == "txt"
+    {
+        Ok(())
+    } else {
+        Err(anyhow!("the file isn't a txt file: {}", p))
+    }
+}
+
+/// Checks if given number of nodes is correct (has to be a positive integer)
+///
+/// # Arguments
+///
+/// `nodes_count` - Number of nodes given by user
+fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
+    let nodes_count = nodes_count.parse::<u32>()?;
+    if nodes_count > 0 {
+        Ok(())
+    } else {
+        Err(anyhow!(
+            "given number of nodes has to be a positive integer, but is: {}",
+            nodes_count
+        ))
+    }
+}
+
+/// Checks if given edge weight is correct (has to be a positive integer)
+///
+/// # Arguments
+///
+/// `max_weight` - Max weight given by user
+fn max_weight_valid(max_weight: &str) -> aResult<()> {
+    let max_weight = max_weight.parse::<u32>()?;
+    if max_weight > 0 {
+        Ok(())
+    } else {
+        Err(anyhow!(
+            "given max edge weight has to be a positive integer, but is: {}",
+            max_weight
+        ))
     }
 }
 
