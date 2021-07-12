@@ -47,7 +47,7 @@ pub struct GraphFileGenerator {
     #[clap(long, short, validator(is_txt))]
     graph_file: PathBuf,
 
-    /// Number of nodes in graph (indexed from 1 to `nodes_count`)
+    /// Number of nodes in graph (indexed from 1 to `nodes_count`, so must be positive)
     #[clap(long, short, validator(nodes_count_valid))]
     nodes_count: u32,
 
@@ -55,7 +55,7 @@ pub struct GraphFileGenerator {
     #[clap(long, short)]
     edges_count: u32,
 
-    /// Maximum weight of an edge in graph
+    /// Maximum weight of an edge in graph (must be an positive integer)
     #[clap(long, short, validator(max_weight_valid))]
     max_weight: u32,
 }

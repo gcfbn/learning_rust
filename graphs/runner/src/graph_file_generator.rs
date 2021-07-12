@@ -1,8 +1,10 @@
 use crate::GraphFileGenerator;
 use anyhow::{bail, Result as aResult};
 use rand::prelude::*;
+use std::fs;
 use std::fs::File;
-use std::io::Write;
+use std::io::{Result as ioResult, Write};
+use std::path::PathBuf;
 
 /// Generates txt file containing multi-graph data using `parameters`
 ///
@@ -52,6 +54,9 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
         );
     }
 
+    // probably not the best solution (clone)
+    create_directory_if_necessary(parameters.graph_file.clone())?;
+
     let mut output = File::create(&parameters.graph_file)?;
 
     // write `nodes_count` and `edges_count` to the first line of file
@@ -89,4 +94,14 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
 /// * `parameters` - parameters of the graph
 fn impossible_to_generate_connected_graph(parameters: &GraphFileGenerator) -> bool {
     parameters.edges_count + 1 < parameters.nodes_count
+}
+
+/// Consumes given filepath and creates directory specified in the path if it doesn't exist
+///
+/// # Arguments
+///
+/// * `path` - path to file
+fn create_directory_if_necessary(mut path: PathBuf) -> ioResult<()> {
+    path.pop();
+    fs::create_dir_all(path)
 }
