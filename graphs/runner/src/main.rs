@@ -102,7 +102,7 @@ fn file_exists(p: &str) -> aResult<()> {
 fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
     let nodes_count = nodes_count
         .parse::<u32>()
-        .with_context(|| format!("'{}' has to be a number", nodes_count))?;
+        .with_context(|| format!("'{}' has to be a not negative integer", nodes_count))?;
     if nodes_count > 0 {
         Ok(())
     } else {
@@ -121,7 +121,7 @@ fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
 fn max_weight_valid(max_weight: &str) -> aResult<()> {
     let max_weight = max_weight
         .parse::<u32>()
-        .with_context(|| format!("'{}' has to be a number", max_weight))?;
+        .with_context(|| format!("'{}' has to be a not negative integer", max_weight))?;
     if max_weight > 0 {
         Ok(())
     } else {
@@ -149,4 +149,42 @@ fn run() -> aResult<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
+
+    #[test]
+    fn nodes_count_ok() {
+        let nodes_count = "200";
+        let actual = nodes_count_valid(nodes_count).unwrap();
+        assert_eq!(actual, ());
+    }
+
+    #[test_case("200a", "'200a' has to be a not negative integer"; "not_a_number")]
+    #[test_case("0", "given number of nodes has to be a positive integer, but is: 0"; "zero")]
+    #[test_case("-123", "'-123' has to be a not negative integer"; "negative")]
+    #[test_case("3,5", "'3,5' has to be a not negative integer"; "not an integer")]
+    fn nodes_count_invalid(nodes_count: &str, expected: &str) {
+        let actual = nodes_count_valid(nodes_count).unwrap_err().to_string();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn max_weight_ok() {
+        let max_weight = "300";
+        let actual = nodes_count_valid(max_weight).unwrap();
+        assert_eq!(actual, ());
+    }
+
+    #[test_case("100a0", "'100a0' has to be a not negative integer"; "not_a_number")]
+    #[test_case("0", "given max edge weight has to be a positive integer, but is: 0"; "zero")]
+    #[test_case("-3", "'-3' has to be a not negative integer"; "negative")]
+    #[test_case("7,25", "'7,25' has to be a not negative integer"; "not an integer")]
+    fn max_weight_invalid(max_weight: &str, expected: &str) {
+        let actual = max_weight_valid(max_weight).unwrap_err().to_string();
+        assert_eq!(actual, expected);
+    }
 }
