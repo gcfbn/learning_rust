@@ -4,7 +4,7 @@ use rand::prelude::*;
 use std::fs;
 use std::fs::File;
 use std::io::{Result as ioResult, Write};
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Generates txt file containing multi-graph data using `parameters`
 ///
@@ -68,6 +68,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
         output.write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight)).as_ref())?;
     }
 
+    // edges left after connecting first node with other nodes
     let edges_left = calculate_edges_left(parameters.nodes_count, parameters.edges_count);
 
     // generate rest of edges using `rng`
@@ -101,8 +102,8 @@ fn impossible_to_generate_connected_graph(parameters: &GraphFileGenerator) -> bo
 /// # Arguments
 ///
 /// * `path` - path to file
-fn create_directory_if_necessary(path: &PathBuf) -> ioResult<()> {
-    let mut path = path.clone();
+fn create_directory_if_necessary(path: &Path) -> ioResult<()> {
+    let mut path = path.to_path_buf();
     path.pop();
     fs::create_dir_all(path)
 }
