@@ -6,6 +6,8 @@ use std::process;
 
 mod graph_file_generator;
 
+const APP_NAME: &str = "kruskal_algorithm";
+
 /// Main function that is called when the app starts
 ///
 /// Calls run() function and kills process if it returns an error
@@ -19,7 +21,7 @@ fn main() {
 /// Arguments read from console by Clap
 #[derive(Debug, Clap)]
 #[clap(
-name = "kruskal_algorithm",
+name = APP_NAME,
 version = "1.0",
 about = "Algorithms & Data structures task from graph theory",
 author = "Bartek M. <bmekarski@interia.pl>",
@@ -37,6 +39,26 @@ enum SubCommand {
     GraphFileGenerator(GraphFileGenerator),
     #[clap(visible_alias = "t")]
     Task(Task),
+}
+
+impl SubCommand {
+    pub fn try_from_name_and_args(command_name: &str, args: &str) -> aResult<Self> {
+        let cli_string = format!(
+            "{app} {command} {args}",
+            app = APP_NAME,
+            command = command_name,
+            args = args
+        );
+
+        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).with_context(|| {
+            format!(
+                "failed creating command with command_name='{}' and args={}",
+                command_name, args
+            )
+        })?;
+
+        Ok(cmd_args.subcommand)
+    }
 }
 
 /// Subcommand generating random graph file, which could be used in algorithms
@@ -68,6 +90,14 @@ impl GraphFileGenerator {
             nodes_count,
             edges_count,
             max_weight,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn try_from_args(args: &str) -> aResult<Self> {
+        match SubCommand::try_from_name_and_args("graph-file-generator", args)? {
+            SubCommand::GraphFileGenerator(cmd) => Ok(cmd),
+            _ => panic!("this should never happen !"),
         }
     }
 }
@@ -155,6 +185,36 @@ fn run() -> aResult<()> {
 mod tests {
     use super::*;
     use test_case::test_case;
+
+    mod subcommand_graph_file_generator {
+        use super::*;
+
+        use anyhow::Result;
+
+        mod failing_tests {
+            use super::*;
+
+            #[test]
+            fn fails_because_edges_count_is_to_small() -> Result<()> {
+                let result = GraphFileGenerator::try_from_args(
+                    "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100",
+                );
+
+                assert!(result.is_err());
+                Ok(())
+            }
+
+            #[test]
+            fn fails_because_edges_count_is_not_integer() -> Result<()> {
+                let result = GraphFileGenerator::try_from_args(
+                    "--graph-file aaa.txt --nodes-count 5 --edges-count 3a --max-weight 100",
+                );
+
+                assert!(result.is_err());
+                Ok(())
+            }
+        }
+    }
 
     #[test]
     fn nodes_count_ok() {
