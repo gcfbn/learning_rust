@@ -117,3 +117,49 @@ fn create_directory_if_necessary(path: &Path) -> ioResult<()> {
 fn calculate_edges_left(nodes_count: u32, edges_count: u32) -> u32 {
     edges_count - (nodes_count - 1)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+    use test_case::test_case;
+    //
+    // const TOO_FEW_EDGES_PARAMETERS: GraphFileGenerator = GraphFileGenerator {
+    //     graph_file:  PathBuf::from("test_file.txt"),
+    //     nodes_count: 30,
+    //     edges_count: 28,
+    //     max_weight:  100,
+    // };
+
+    #[test_case("test_file.txt", 100, 98, 100, false;
+    "too small edges_count")]
+    #[test_case("test_file.txt", 100, 99, 100, true; "ok")]
+    fn test_if_possible_to_create_connected_graph(
+        filepath: &str,
+        nodes_count: u32,
+        edges_count: u32,
+        max_weight: u32,
+        expected: bool,
+    ) {
+        let parameters = GraphFileGenerator::new(PathBuf::from(filepath), nodes_count, edges_count, max_weight);
+        assert_eq!(possible_to_create_connected_graph(&parameters), expected);
+    }
+
+    #[test]
+    fn graph_generating_fails_because_of_too_small_edges_number() {
+        // let parameters = GraphFileGenerator {
+        //     graph_file:  PathBuf::from("test_file.txt"),
+        //     nodes_count: 30,
+        //     edges_count: 28,
+        //     max_weight:  100,
+        // };
+
+        let parameters = GraphFileGenerator::new(PathBuf::from("test_file.txt"), 30, 28, 100);
+
+        let expected =
+            "`edges_count` must be at least 29, because `nodes_count` is 30, otherwise graph won't be connected";
+        let actual = generate_graph(&parameters).unwrap_err().to_string();
+
+        assert_eq!(actual, expected);
+    }
+}
