@@ -46,7 +46,7 @@ use std::path::Path;
 ///
 /// * `parameters` - parameters of the graph
 pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
-    if impossible_to_generate_connected_graph(parameters) {
+    if !possible_to_create_connected_graph(parameters) {
         bail!(
             "`edges_count` must be at least {}, because `nodes_count` is {}, otherwise graph won't be connected",
             parameters.nodes_count - 1,
@@ -91,8 +91,8 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
 /// # Arguments
 ///
 /// * `parameters` - parameters of the graph
-fn impossible_to_generate_connected_graph(parameters: &GraphFileGenerator) -> bool {
-    parameters.edges_count + 1 < parameters.nodes_count
+fn possible_to_create_connected_graph(parameters: &GraphFileGenerator) -> bool {
+    parameters.edges_count + 1 >= parameters.nodes_count
 }
 
 /// Takes a reference to a filepath and creates directory specified in the path if it doesn't exist

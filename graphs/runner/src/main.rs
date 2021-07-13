@@ -60,6 +60,18 @@ pub struct GraphFileGenerator {
     max_weight: u32,
 }
 
+impl GraphFileGenerator {
+    /// Constructor
+    pub fn new(graph_file: PathBuf, nodes_count: u32, edges_count: u32, max_weight: u32) -> GraphFileGenerator {
+        GraphFileGenerator {
+            graph_file,
+            nodes_count,
+            edges_count,
+            max_weight,
+        }
+    }
+}
+
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
 #[clap(setting = AppSettings::ColoredHelp)]
