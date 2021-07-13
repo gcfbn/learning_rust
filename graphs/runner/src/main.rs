@@ -1,19 +1,23 @@
+use crate::errors::RunnerError;
 use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
 use graph_file_generator::generate_graph;
 use std::path::{Path, PathBuf};
 use std::process;
 
+mod errors;
 mod graph_file_generator;
 
 const APP_NAME: &str = "kruskal_algorithm";
+
+type Result<T, E = RunnerError> = std::result::Result<T, E>;
 
 /// Main function that is called when the app starts
 ///
 /// Calls run() function and kills process if it returns an error
 fn main() {
     if let Err(err) = run() {
-        println!("Error: {:?}", err);
+        println!("Error: {}", err);
         process::exit(1);
     }
 }
@@ -163,7 +167,7 @@ fn max_weight_valid(max_weight: &str) -> aResult<()> {
 }
 
 /// Builds graph from given file and calculates weight of it's minimum spanning tree, returns [`anyhow::Result`]
-fn run() -> aResult<()> {
+fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
     match cmd_args.subcommand {

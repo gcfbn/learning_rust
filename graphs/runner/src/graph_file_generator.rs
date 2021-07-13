@@ -1,10 +1,12 @@
+use crate::errors::GraphFileGeneratorError;
 use crate::GraphFileGenerator;
-use anyhow::{bail, Result as aResult};
 use rand::prelude::*;
 use std::fs;
 use std::fs::File;
 use std::io::{Result as ioResult, Write};
 use std::path::Path;
+
+pub type Result<T, E = GraphFileGeneratorError> = std::result::Result<T, E>;
 
 /// Generates txt file containing multi-graph data using `parameters`
 ///
@@ -45,27 +47,30 @@ use std::path::Path;
 /// # Arguments
 ///
 /// * `parameters` - parameters of the graph
-pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
+pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
     if !possible_to_create_connected_graph(parameters) {
-        bail!(
-            "`edges_count` must be at least {}, because `nodes_count` is {}, otherwise graph won't be connected",
-            parameters.nodes_count - 1,
-            parameters.nodes_count
-        );
+        return Err(GraphFileGeneratorError::TooFewEdgesForConnectedGraph {
+            edges_count: parameters.edges_count,
+            nodes_count: parameters.nodes_count,
+        });
     }
 
-    create_directory_if_necessary(&parameters.graph_file)?;
+    create_directory_if_necessary(&parameters.graph_file).map_err(GraphFileGeneratorError::CreatingDirectoryError)?;
 
-    let mut output = File::create(&parameters.graph_file)?;
+    let mut output = File::create(&parameters.graph_file).map_err(GraphFileGeneratorError::CreatingFileError)?;
 
     // write `nodes_count` and `edges_count` to the first line of file
-    output.write_all(format!("{} {}\n", parameters.nodes_count, parameters.edges_count).as_ref())?;
+    output
+        .write_all(format!("{} {}\n", parameters.nodes_count, parameters.edges_count).as_ref())
+        .map_err(GraphFileGeneratorError::WritingError)?;
 
     let mut rng = thread_rng();
 
     // add edges connecting first node with every other node so the graph will be connected
     for i in 2..=parameters.nodes_count {
-        output.write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight)).as_ref())?;
+        output
+            .write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight)).as_ref())
+            .map_err(GraphFileGeneratorError::WritingError)?;
     }
 
     // edges left after connecting first node with other nodes
@@ -73,15 +78,17 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
 
     // generate rest of edges using `rng`
     for _ in 0..=edges_left {
-        output.write_all(
-            format!(
-                "{} {} {}\n",
-                rng.gen_range(1..=parameters.nodes_count),
-                rng.gen_range(1..=parameters.nodes_count),
-                rng.gen_range(1..=parameters.max_weight)
+        output
+            .write_all(
+                format!(
+                    "{} {} {}\n",
+                    rng.gen_range(1..=parameters.nodes_count),
+                    rng.gen_range(1..=parameters.nodes_count),
+                    rng.gen_range(1..=parameters.max_weight)
+                )
+                .as_ref(),
             )
-            .as_ref(),
-        )?;
+            .map_err(GraphFileGeneratorError::WritingError)?;
     }
     Ok(())
 }
