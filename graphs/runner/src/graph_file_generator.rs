@@ -164,7 +164,7 @@ mod tests {
         let parameters = GraphFileGenerator::new(PathBuf::from("test_file.txt"), 30, 28, 100);
 
         let expected =
-            "`edges_count` must be at least 29, because `nodes_count` is 30, otherwise graph won't be connected";
+            "given number of edges `28` is to small to generate connected graph containing given number of nodes `30`";
         let actual = generate_graph(&parameters).unwrap_err().to_string();
 
         assert_eq!(actual, expected);

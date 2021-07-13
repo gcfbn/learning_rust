@@ -29,8 +29,8 @@ impl From<GraphFileGeneratorError> for RunnerError {
 #[derive(Debug, Display)]
 pub enum GraphFileGeneratorError {
     #[display(
-        "given number of edges `{edges_count}` is to small to generate connected graph with given number of nodes \
-         `{nodes_count}`"
+        "given number of edges `{edges_count}` is to small to generate connected graph containing given number of \
+         nodes `{nodes_count}`"
     )]
     TooFewEdgesForConnectedGraph { edges_count: u32, nodes_count: u32 },
 
