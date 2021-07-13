@@ -54,8 +54,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
         );
     }
 
-    // probably not the best solution (clone)
-    create_directory_if_necessary(parameters.graph_file.clone())?;
+    create_directory_if_necessary(&parameters.graph_file)?;
 
     let mut output = File::create(&parameters.graph_file)?;
 
@@ -69,8 +68,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> aResult<()> {
         output.write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight)).as_ref())?;
     }
 
-    // calculate how many edges left
-    let edges_left = parameters.edges_count - parameters.nodes_count;
+    let edges_left = calculate_edges_left(parameters.nodes_count, parameters.edges_count);
 
     // generate rest of edges using `rng`
     for _ in 0..=edges_left {
@@ -96,12 +94,25 @@ fn impossible_to_generate_connected_graph(parameters: &GraphFileGenerator) -> bo
     parameters.edges_count + 1 < parameters.nodes_count
 }
 
-/// Consumes given filepath and creates directory specified in the path if it doesn't exist
+/// Takes a reference to a filepath and creates directory specified in the path if it doesn't exist
+///
+/// Clones `path`, because `pop()` removes filename from the path
 ///
 /// # Arguments
 ///
 /// * `path` - path to file
-fn create_directory_if_necessary(mut path: PathBuf) -> ioResult<()> {
+fn create_directory_if_necessary(path: &PathBuf) -> ioResult<()> {
+    let mut path = path.clone();
     path.pop();
     fs::create_dir_all(path)
+}
+
+/// Calculates, how many edges left after connecting first graph node with other nodes
+///
+/// # Arguments
+///
+/// * `nodes_count` - number of nodes in the graph
+/// * `edges_count` - total number of edges in the graph
+fn calculate_edges_left(nodes_count: u32, edges_count: u32) -> u32 {
+    edges_count - (nodes_count - 1)
 }

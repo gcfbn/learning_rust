@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result as aResult};
+use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
 use graph_file_generator::generate_graph;
 use std::path::{Path, PathBuf};
@@ -44,7 +44,7 @@ enum SubCommand {
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct GraphFileGenerator {
     /// Output filename
-    #[clap(long, short, validator(is_txt))]
+    #[clap(long, short)]
     graph_file: PathBuf,
 
     /// Number of nodes in graph (indexed from 1 to `nodes_count`, so must be positive)
@@ -82,30 +82,15 @@ fn file_exists(p: &str) -> aResult<()> {
     }
 }
 
-/// Checks if file is a txt file
-///
-/// # Arguments
-///
-/// `p` - Path to file including it's name and format
-fn is_txt(p: &str) -> aResult<()> {
-    if Path::new(p)
-        .extension()
-        .ok_or_else(|| anyhow!("missing final '.' in filename: {}", p))?
-        == "txt"
-    {
-        Ok(())
-    } else {
-        Err(anyhow!("the file isn't a txt file: {}", p))
-    }
-}
-
 /// Checks if given number of nodes is correct (has to be a positive integer)
 ///
 /// # Arguments
 ///
 /// `nodes_count` - Number of nodes given by user
 fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
-    let nodes_count = nodes_count.parse::<u32>()?;
+    let nodes_count = nodes_count
+        .parse::<u32>()
+        .with_context(|| format!("'{}' has to be a number", nodes_count))?;
     if nodes_count > 0 {
         Ok(())
     } else {
@@ -122,7 +107,9 @@ fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
 ///
 /// `max_weight` - Max weight given by user
 fn max_weight_valid(max_weight: &str) -> aResult<()> {
-    let max_weight = max_weight.parse::<u32>()?;
+    let max_weight = max_weight
+        .parse::<u32>()
+        .with_context(|| format!("'{}' has to be a number", max_weight))?;
     if max_weight > 0 {
         Ok(())
     } else {
