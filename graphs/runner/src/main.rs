@@ -231,6 +231,24 @@ mod tests {
                 Ok(())
             }
         }
+
+        mod passing_tests {
+            use super::*;
+
+            #[test]
+            fn ok() -> Result<()> {
+                let parameters = GraphFileGenerator::try_from_args(
+                    "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100",
+                )
+                .unwrap();
+
+                let result = generate_graph(&parameters);
+
+                assert!(result.is_ok());
+
+                Ok(())
+            }
+        }
     }
 
     #[test]
