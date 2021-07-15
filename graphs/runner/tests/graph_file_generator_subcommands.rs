@@ -1,6 +1,5 @@
 use runner_lib::*;
 
-use super::*;
 use anyhow::Result;
 
 mod failing_tests {
