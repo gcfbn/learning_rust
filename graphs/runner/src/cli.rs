@@ -1,6 +1,7 @@
+#![warn(missing_docs)]
+use crate::errors::RunnerError;
 use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
-use core::result::Result::{Err, Ok};
 use std::path::{Path, PathBuf};
 
 const APP_NAME: &str = "kruskal_algorithm";
@@ -16,20 +17,32 @@ setting = AppSettings::ColoredHelp,
 setting = AppSettings::ArgRequiredElseHelp,
 )]
 pub struct CmdArgs {
+    /// Program subcommand
     #[clap(subcommand)]
     pub subcommand: SubCommand,
 }
 
+/// All available subcommands
 #[derive(Clap, Debug)]
 pub enum SubCommand {
+    /// Generates file containing random graph data
     #[clap(visible_alias = "gfg")]
     GraphFileGenerator(GraphFileGenerator),
+    /// Runs algorithm using data from chosen file
     #[clap(visible_alias = "t")]
     Task(Task),
 }
 
 impl SubCommand {
-    pub fn try_from_name_and_args(command_name: &str, args: &str) -> aResult<Self> {
+    /// Tries to build [`SubCommand`] variant from command line arguments
+    ///
+    /// Returns [`CommandLineSubcommandCreatingError`] on fail
+    ///
+    /// # Arguments
+    ///
+    /// * `command_name` - name of command used in command line
+    /// * `args` - arguments passed with command
+    pub fn try_from_name_and_args(command_name: &str, args: &str) -> Result<Self, RunnerError> {
         let cli_string = format!(
             "{app} {command} {args}",
             app = APP_NAME,
@@ -37,11 +50,11 @@ impl SubCommand {
             args = args
         );
 
-        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).with_context(|| {
-            format!(
-                "failed creating command with command_name='{}' and args={}",
-                command_name, args
-            )
+        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).map_err({
+            |_| RunnerError::SubcommandCreatingError {
+                command_name: String::from(command_name),
+                args:         String::from(args),
+            }
         })?;
 
         Ok(cmd_args.subcommand)

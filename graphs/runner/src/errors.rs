@@ -12,6 +12,9 @@ pub enum RunnerError {
 
     #[error("graph file generator error - {0}")]
     GraphFileGeneratorError(GraphFileGeneratorError),
+
+    #[error("failed creating command with command_name='{command_name}' and args={args}")]
+    SubcommandCreatingError { command_name: String, args: String },
 }
 
 impl From<BuildGraphError> for RunnerError {
