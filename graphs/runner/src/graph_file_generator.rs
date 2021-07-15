@@ -1,8 +1,7 @@
 use crate::errors::GraphFileGeneratorError;
 use crate::GraphFileGenerator;
 use rand::prelude::*;
-use std::fs;
-use std::fs::File;
+use std::fs::{create_dir_all, File};
 use std::io::{Result as ioResult, Write};
 use std::path::Path;
 
@@ -23,14 +22,11 @@ pub type Result<T, E = GraphFileGeneratorError> = std::result::Result<T, E>;
 ///
 /// # Example
 /// ```
-/// let parameters = GraphFileGenerator {
-///     test_graph_file.txt,
-///     3,
-///     5,
-///     20,
-/// }
+/// use runner_lib::{GraphFileGenerator, generate_graph};
+/// use std::path::PathBuf;
+/// let parameters = GraphFileGenerator::try_from_args( "--graph-file test_graph.file.txt --nodes-count 3 --edges-count 5 --max-weight 20").unwrap();
 ///
-///  generate_graph(&parameters)
+/// let output = generate_graph(&parameters);
 /// ```
 ///
 /// # Possible output
@@ -112,7 +108,7 @@ fn possible_to_create_connected_graph(parameters: &GraphFileGenerator) -> bool {
 fn create_directory_if_necessary(path: &Path) -> ioResult<()> {
     let mut path = path.to_path_buf();
     path.pop();
-    fs::create_dir_all(path)
+    create_dir_all(path)
 }
 
 /// Calculates, how many edges left after connecting first graph node with other nodes
