@@ -80,11 +80,15 @@ impl GraphFileGenerator {
         }
     }
 
-    #[cfg(test)]
     pub fn try_from_args(args: &str) -> aResult<Self> {
         match SubCommand::try_from_name_and_args("graph-file-generator", args)? {
             SubCommand::GraphFileGenerator(cmd) => Ok(cmd),
-            _ => panic!("this should never happen !"),
+            // temporary solution
+            _ => Err(anyhow!(
+                "Invalid arguments: `{}` for command `{}`",
+                args,
+                "graph_file_generator"
+            )),
         }
     }
 }
