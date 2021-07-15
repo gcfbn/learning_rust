@@ -42,7 +42,7 @@ use std::path::Path;
 ///
 /// * `parameters` - parameters of the graph
 pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
-    if !possible_to_create_connected_graph(parameters) {
+    if !is_possible_to_create_connected_graph(parameters) {
         return Err(GraphFileGeneratorError::TooFewEdgesForConnectedGraph {
             edges_count: parameters.edges_count,
             nodes_count: parameters.nodes_count,
@@ -92,7 +92,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
 /// # Arguments
 ///
 /// * `parameters` - parameters of the graph
-fn possible_to_create_connected_graph(parameters: &GraphFileGenerator) -> bool {
+fn is_possible_to_create_connected_graph(parameters: &GraphFileGenerator) -> bool {
     parameters.edges_count + 1 >= parameters.nodes_count
 }
 
@@ -143,7 +143,7 @@ mod tests {
         expected: bool,
     ) {
         let parameters = GraphFileGenerator::new(PathBuf::from(filepath), nodes_count, edges_count, max_weight);
-        assert_eq!(possible_to_create_connected_graph(&parameters), expected);
+        assert_eq!(is_possible_to_create_connected_graph(&parameters), expected);
     }
 
     #[test]
@@ -157,9 +157,12 @@ mod tests {
 
         let parameters = GraphFileGenerator::new(PathBuf::from("test_file.txt"), 30, 28, 100);
 
-        let expected = "28 edges is not enough to generate connected graph with 30 nodes";
-        let actual = generate_graph(&parameters).unwrap_err().to_string();
+        let expected_error = GraphFileGeneratorError::TooFewEdgesForConnectedGraph {
+            edges_count: 28,
+            nodes_count: 30,
+        };
+        let actual_error = generate_graph(&parameters).unwrap_err();
 
-        assert_eq!(actual, expected);
+        assert_eq!(actual_error.to_string(), expected_error.to_string());
     }
 }

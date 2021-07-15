@@ -1,10 +1,10 @@
 mod cli;
 mod errors;
-mod graph_file_generator;
+mod generate_graph;
 
 pub use cli::*;
 pub use errors::{GraphFileGeneratorError, RunnerError};
-pub use graph_file_generator::generate_graph;
+pub use generate_graph::generate_graph;
 
 pub fn test() {
     println!("TEST");
