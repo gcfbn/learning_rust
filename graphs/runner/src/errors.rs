@@ -3,7 +3,7 @@ use parse_display::Display;
 use std::io::Error as ioError;
 use thiserror::Error;
 
-pub type Result<T, E = GraphFileGeneratorError> = std::result::Result<T, E>;
+pub type Result<T, E = GenerateGraphError> = std::result::Result<T, E>;
 
 #[derive(Error, Debug)]
 pub enum RunnerError {
@@ -11,7 +11,7 @@ pub enum RunnerError {
     BuildGraphError(BuildGraphError),
 
     #[error("graph file generator error - {0}")]
-    GraphFileGeneratorError(GraphFileGeneratorError),
+    GraphFileGeneratorError(GenerateGraphError),
 
     #[error("failed creating command with command_name='{command_name}' and args={args}")]
     SubcommandCreatingError { command_name: String, args: String },
@@ -23,8 +23,8 @@ impl From<BuildGraphError> for RunnerError {
     }
 }
 
-impl From<GraphFileGeneratorError> for RunnerError {
-    fn from(e: GraphFileGeneratorError) -> Self {
+impl From<GenerateGraphError> for RunnerError {
+    fn from(e: GenerateGraphError) -> Self {
         RunnerError::GraphFileGeneratorError(e)
     }
 }
@@ -32,7 +32,7 @@ impl From<GraphFileGeneratorError> for RunnerError {
 // -----------------------------------------------------------------------------
 
 #[derive(Debug, Display)]
-pub enum GraphFileGeneratorError {
+pub enum GenerateGraphError {
     #[display("{edges_count} edges is not enough to generate connected graph with {nodes_count} nodes")]
     TooFewEdgesForConnectedGraph { edges_count: u32, nodes_count: u32 },
 
