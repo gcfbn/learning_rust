@@ -42,6 +42,18 @@ impl SubCommand {
     ///
     /// * `command_name` - name of command used in command line
     /// * `args` - arguments passed with command
+    ///
+    /// # Example
+    /// ```
+    /// use runner_lib::SubCommand;
+    ///
+    /// let command_name = "graph-file-generator";
+    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 6 --max-weight 100";
+    ///
+    /// let gfg_subcommand = SubCommand::try_from_name_and_args(command_name, args);
+    ///
+    /// assert!(gfg_subcommand.is_ok());
+    /// ```
     pub fn try_from_name_and_args(command_name: &str, args: &str) -> Result<Self, RunnerError> {
         let cli_string = format!(
             "{app} {command} {args}",
@@ -93,15 +105,27 @@ impl GraphFileGenerator {
         }
     }
 
+    /// Tries to build [`GraphFileGenerator`] from command line args
+    ///
+    /// # Arugments
+    ///
+    /// * `args` - command line arguments for graph-file-generator subcommand
+    ///
+    /// # Example
+    /// ```
+    /// use runner_lib::GraphFileGenerator;
+    ///
+    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
+    /// let gfg = GraphFileGenerator::try_from_args(args);
+    ///
+    /// assert!(gfg.is_ok());
+    /// ```
     pub fn try_from_args(args: &str) -> aResult<Self> {
         match SubCommand::try_from_name_and_args("graph-file-generator", args)? {
             SubCommand::GraphFileGenerator(cmd) => Ok(cmd),
-            // temporary solution
-            _ => Err(anyhow!(
-                "Invalid arguments: `{}` for command `{}`",
-                args,
-                "graph_file_generator"
-            )),
+            // this should never happen, because if args aren't matching graph-file-generator arguments,
+            // error will be returned after calling `SubCommand::try_from_name_and_args`
+            _ => panic!("this should never happen !"),
         }
     }
 }
