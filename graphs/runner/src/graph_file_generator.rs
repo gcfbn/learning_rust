@@ -1,12 +1,10 @@
-use crate::errors::GraphFileGeneratorError;
+use crate::errors::{GraphFileGeneratorError, Result};
 use crate::GraphFileGenerator;
 use rand::prelude::*;
 use std::fs;
 use std::fs::File;
 use std::io::{Result as ioResult, Write};
 use std::path::Path;
-
-pub type Result<T, E = GraphFileGeneratorError> = std::result::Result<T, E>;
 
 /// Generates txt file containing multi-graph data using `parameters`
 ///
@@ -163,8 +161,7 @@ mod tests {
 
         let parameters = GraphFileGenerator::new(PathBuf::from("test_file.txt"), 30, 28, 100);
 
-        let expected =
-            "given number of edges `28` is to small to generate connected graph containing given number of nodes `30`";
+        let expected = "28 edges is not enough to generate connected graph with 30 nodes";
         let actual = generate_graph(&parameters).unwrap_err().to_string();
 
         assert_eq!(actual, expected);

@@ -3,6 +3,8 @@ use parse_display::Display;
 use std::io::Error as ioError;
 use thiserror::Error;
 
+pub type Result<T, E = GraphFileGeneratorError> = std::result::Result<T, E>;
+
 #[derive(Error, Debug)]
 pub enum RunnerError {
     #[error("graph builder error - {0}")]
@@ -28,10 +30,7 @@ impl From<GraphFileGeneratorError> for RunnerError {
 
 #[derive(Debug, Display)]
 pub enum GraphFileGeneratorError {
-    #[display(
-        "given number of edges `{edges_count}` is to small to generate connected graph containing given number of \
-         nodes `{nodes_count}`"
-    )]
+    #[display("{edges_count} edges is not enough to generate connected graph with {nodes_count} nodes")]
     TooFewEdgesForConnectedGraph { edges_count: u32, nodes_count: u32 },
 
     #[display("creating directory for output file failed with error - {0}")]
