@@ -36,7 +36,7 @@ pub enum SubCommand {
 impl SubCommand {
     /// Tries to build [`SubCommand`] variant from command line arguments
     ///
-    /// Returns [`CommandLineSubcommandCreatingError`] on fail
+    /// Returns [`RunnerError::SubcommandCreatingError`] on fail
     ///
     /// # Arguments
     ///
