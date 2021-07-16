@@ -63,9 +63,10 @@ impl SubCommand {
         );
 
         let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).map_err({
-            |_| RunnerError::SubcommandCreatingError {
+            |clap_error| RunnerError::SubcommandCreatingError {
                 command_name: String::from(command_name),
                 args:         String::from(args),
+                error:        clap_error,
             }
         })?;
 

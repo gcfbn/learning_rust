@@ -19,13 +19,16 @@ pub enum RunnerError {
     GraphFileGeneratorError(GenerateGraphError),
 
     /// Error connected with creating subcommand with given name and args
-    #[error("failed creating command with command_name='{command_name}' and args={args}")]
+    #[error("failed creating command with command_name='{command_name}' and args={args}\n{error}")]
     SubcommandCreatingError {
         /// cli subcommand name
         command_name: String,
 
         /// cli subcommand arguments
         args: String,
+
+        /// root error
+        error: clap::Error,
     },
 }
 
