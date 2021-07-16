@@ -1,22 +1,9 @@
 use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
-use graph_file_generator::generate_graph;
+use core::result::Result::{Err, Ok};
 use std::path::{Path, PathBuf};
-use std::process;
-
-mod graph_file_generator;
 
 const APP_NAME: &str = "kruskal_algorithm";
-
-/// Main function that is called when the app starts
-///
-/// Calls run() function and kills process if it returns an error
-fn main() {
-    if let Err(err) = run() {
-        println!("Error: {:?}", err);
-        process::exit(1);
-    }
-}
 
 /// Arguments read from console by Clap
 #[derive(Debug, Clap)]
@@ -28,13 +15,13 @@ author = "Bartek M. <bmekarski@interia.pl>",
 setting = AppSettings::ColoredHelp,
 setting = AppSettings::ArgRequiredElseHelp,
 )]
-struct CmdArgs {
+pub struct CmdArgs {
     #[clap(subcommand)]
     pub subcommand: SubCommand,
 }
 
 #[derive(Clap, Debug)]
-enum SubCommand {
+pub enum SubCommand {
     #[clap(visible_alias = "gfg")]
     GraphFileGenerator(GraphFileGenerator),
     #[clap(visible_alias = "t")]
@@ -67,19 +54,19 @@ impl SubCommand {
 pub struct GraphFileGenerator {
     /// Output filename
     #[clap(long, short)]
-    graph_file: PathBuf,
+    pub graph_file: PathBuf,
 
     /// Number of nodes in graph (indexed from 1 to `nodes_count`, so must be positive)
     #[clap(long, short, validator(nodes_count_valid))]
-    nodes_count: u32,
+    pub nodes_count: u32,
 
     /// Number of edges in graph
     #[clap(long, short)]
-    edges_count: u32,
+    pub edges_count: u32,
 
     /// Maximum weight of an edge in graph (must be an positive integer)
     #[clap(long, short, validator(max_weight_valid))]
-    max_weight: u32,
+    pub max_weight: u32,
 }
 
 impl GraphFileGenerator {
@@ -93,11 +80,15 @@ impl GraphFileGenerator {
         }
     }
 
-    #[cfg(test)]
     pub fn try_from_args(args: &str) -> aResult<Self> {
         match SubCommand::try_from_name_and_args("graph-file-generator", args)? {
             SubCommand::GraphFileGenerator(cmd) => Ok(cmd),
-            _ => panic!("this should never happen !"),
+            // temporary solution
+            _ => Err(anyhow!(
+                "Invalid arguments: `{}` for command `{}`",
+                args,
+                "graph_file_generator"
+            )),
         }
     }
 }
@@ -105,10 +96,10 @@ impl GraphFileGenerator {
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
 #[clap(setting = AppSettings::ColoredHelp)]
-struct Task {
+pub struct Task {
     /// Name of file containing graph data
     #[clap(long, short, parse(from_os_str), validator(file_exists))]
-    task_file: PathBuf,
+    pub task_file: PathBuf,
 }
 
 /// Checks if file exists
@@ -129,7 +120,7 @@ fn file_exists(p: &str) -> aResult<()> {
 /// # Arguments
 ///
 /// `nodes_count` - Number of nodes given by user
-fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
+pub fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
     let nodes_count = nodes_count
         .parse::<u32>()
         .with_context(|| format!("'{}' has to be a not negative integer", nodes_count))?;
@@ -148,7 +139,7 @@ fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
 /// # Arguments
 ///
 /// `max_weight` - Max weight given by user
-fn max_weight_valid(max_weight: &str) -> aResult<()> {
+pub fn max_weight_valid(max_weight: &str) -> aResult<()> {
     let max_weight = max_weight
         .parse::<u32>()
         .with_context(|| format!("'{}' has to be a not negative integer", max_weight))?;
@@ -159,92 +150,5 @@ fn max_weight_valid(max_weight: &str) -> aResult<()> {
             "given max edge weight has to be a positive integer, but is: {}",
             max_weight
         ))
-    }
-}
-
-/// Builds graph from given file and calculates weight of it's minimum spanning tree, returns [`anyhow::Result`]
-fn run() -> aResult<()> {
-    let cmd_args: CmdArgs = CmdArgs::parse();
-
-    match cmd_args.subcommand {
-        SubCommand::Task(task_data) => {
-            let graph = graph::build_graph(&task_data.task_file)?;
-            let output = algorithms::calculate_min_total_weight(graph);
-            println!("{}", output);
-        }
-
-        SubCommand::GraphFileGenerator(params) => {
-            generate_graph(&params)?;
-            println!("Graph file with path {:?} successfully generated!", params.graph_file);
-        }
-    }
-    Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use test_case::test_case;
-
-    mod subcommand_graph_file_generator {
-        use super::*;
-
-        use anyhow::Result;
-
-        mod failing_tests {
-            use super::*;
-
-            #[test]
-            fn fails_because_edges_count_is_to_small() -> Result<()> {
-                let result = GraphFileGenerator::try_from_args(
-                    "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100",
-                );
-
-                assert!(result.is_err());
-                Ok(())
-            }
-
-            #[test]
-            fn fails_because_edges_count_is_not_integer() -> Result<()> {
-                let result = GraphFileGenerator::try_from_args(
-                    "--graph-file aaa.txt --nodes-count 5 --edges-count 3a --max-weight 100",
-                );
-
-                assert!(result.is_err());
-                Ok(())
-            }
-        }
-    }
-
-    #[test]
-    fn nodes_count_ok() {
-        let nodes_count = "200";
-        let actual = nodes_count_valid(nodes_count).unwrap();
-        assert_eq!(actual, ());
-    }
-
-    #[test_case("200a", "'200a' has to be a not negative integer"; "not_a_number")]
-    #[test_case("0", "given number of nodes has to be a positive integer, but is: 0"; "zero")]
-    #[test_case("-123", "'-123' has to be a not negative integer"; "negative")]
-    #[test_case("3,5", "'3,5' has to be a not negative integer"; "not an integer")]
-    fn nodes_count_invalid(nodes_count: &str, expected: &str) {
-        let actual = nodes_count_valid(nodes_count).unwrap_err().to_string();
-        assert_eq!(actual, expected);
-    }
-
-    #[test]
-    fn max_weight_ok() {
-        let max_weight = "300";
-        let actual = nodes_count_valid(max_weight).unwrap();
-        assert_eq!(actual, ());
-    }
-
-    #[test_case("100a0", "'100a0' has to be a not negative integer"; "not_a_number")]
-    #[test_case("0", "given max edge weight has to be a positive integer, but is: 0"; "zero")]
-    #[test_case("-3", "'-3' has to be a not negative integer"; "negative")]
-    #[test_case("7,25", "'7,25' has to be a not negative integer"; "not an integer")]
-    fn max_weight_invalid(max_weight: &str, expected: &str) {
-        let actual = max_weight_valid(max_weight).unwrap_err().to_string();
-        assert_eq!(actual, expected);
     }
 }

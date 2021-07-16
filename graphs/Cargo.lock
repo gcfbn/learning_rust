@@ -309,6 +309,7 @@ dependencies = [
  "anyhow",
  "clap",
  "graph",
+ "parse-display",
  "rand",
  "test-case",
  "thiserror",
