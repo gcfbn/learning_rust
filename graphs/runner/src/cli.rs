@@ -62,8 +62,8 @@ impl SubCommand {
             args = args
         );
 
-        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).map_err({
-            |clap_error| RunnerError::SubcommandCreatingError {
+        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).map_err(|clap_error| {
+            RunnerError::SubcommandCreatingError {
                 command_name: String::from(command_name),
                 args:         String::from(args),
                 error:        clap_error,
@@ -87,7 +87,7 @@ pub struct GraphFileGenerator {
     pub nodes_count: u32,
 
     /// Number of edges in graph
-    #[clap(long, short)]
+    #[clap(long, short, validator(edges_count_valid))]
     pub edges_count: u32,
 
     /// Maximum weight of an edge in graph (must be an positive integer)
@@ -153,40 +153,84 @@ fn file_exists(p: &str) -> aResult<()> {
     }
 }
 
-/// Checks if given number of nodes is correct (has to be a positive integer)
+fn must_be_positive_integer(count: &str, field_name: &str) -> aResult<()> {
+    let count = count
+        .parse::<u32>()
+        .with_context(|| format!("number of {} cannot be negative: {}", field_name, count))?;
+
+    if count == 0 {
+        return Err(anyhow!(
+            "number of {} must be a positive integer: {}",
+            field_name,
+            count
+        ));
+    }
+
+    Ok(())
+}
+
+/// Checks if number of nodes is correct (has to be a positive integer)
 ///
 /// # Arguments
 ///
 /// `nodes_count` - Number of nodes given by user
 pub fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
-    let nodes_count = nodes_count
-        .parse::<u32>()
-        .with_context(|| format!("'{}' has to be a not negative integer", nodes_count))?;
-    if nodes_count > 0 {
-        Ok(())
-    } else {
-        Err(anyhow!(
-            "given number of nodes has to be a positive integer, but is: {}",
-            nodes_count
-        ))
-    }
+    must_be_positive_integer(nodes_count, "nodes_count")
 }
 
-/// Checks if given edge weight is correct (has to be a positive integer)
+/// Checks if number of edges is correct (has to be a positive integer)
+///
+/// # Arguments
+///
+/// `edges_count` - Number of edges given by user
+pub fn edges_count_valid(edges_count: &str) -> aResult<()> {
+    must_be_positive_integer(edges_count, "edges_count")
+}
+
+/// Checks if maximum edge weight is correct (has to be a positive integer)
 ///
 /// # Arguments
 ///
 /// `max_weight` - Max weight given by user
 pub fn max_weight_valid(max_weight: &str) -> aResult<()> {
-    let max_weight = max_weight
-        .parse::<u32>()
-        .with_context(|| format!("'{}' has to be a not negative integer", max_weight))?;
-    if max_weight > 0 {
-        Ok(())
-    } else {
-        Err(anyhow!(
-            "given max edge weight has to be a positive integer, but is: {}",
-            max_weight
-        ))
+    must_be_positive_integer(max_weight, "max_weight")
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use test_case::test_case;
+
+    #[test]
+    fn nodes_count_ok() {
+        let nodes_count = "200";
+        let result = nodes_count_valid(nodes_count);
+        assert!(result.is_ok());
+    }
+
+    #[test_case("200a"; "not_a_number")]
+    #[test_case("0"; "zero")]
+    #[test_case("-123"; "negative")]
+    #[test_case("3,5"; "not an integer")]
+    fn nodes_count_invalid(nodes_count: &str) {
+        let result = nodes_count_valid(nodes_count);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn max_weight_ok() {
+        let max_weight = "300";
+        let result = max_weight_valid(max_weight);
+        assert!(result.is_ok());
+    }
+
+    #[test_case("100a0"; "not_a_number")]
+    #[test_case("0"; "zero")]
+    #[test_case("-3"; "negative")]
+    #[test_case("7,25"; "not an integer")]
+    fn max_weight_invalid(max_weight: &str) {
+        let result = max_weight_valid(max_weight);
+        assert!(result.is_err());
     }
 }
