@@ -62,13 +62,7 @@ impl SubCommand {
             args = args
         );
 
-        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).map_err(|clap_error| {
-            RunnerError::SubcommandCreatingError {
-                command_name: String::from(command_name),
-                args:         String::from(args),
-                error:        clap_error,
-            }
-        })?;
+        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace())?;
 
         Ok(cmd_args.subcommand)
     }
@@ -143,17 +137,13 @@ fn file_exists(p: &str) -> aResult<()> {
     }
 }
 
-fn must_be_positive_integer(count: &str, field_name: &str) -> aResult<()> {
+fn must_be_positive_integer(count: &str) -> aResult<()> {
     let count = count
         .parse::<u32>()
-        .with_context(|| format!("number of {} cannot be negative: {}", field_name, count))?;
+        .with_context(|| format!("cannot be negative '{}'", count))?;
 
     if count == 0 {
-        return Err(anyhow!(
-            "number of {} must be a positive integer: {}",
-            field_name,
-            count
-        ));
+        return Err(anyhow!("must be a positive integer '{}'", count));
     }
 
     Ok(())
@@ -165,7 +155,7 @@ fn must_be_positive_integer(count: &str, field_name: &str) -> aResult<()> {
 ///
 /// `nodes_count` - Number of nodes given by user
 pub fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
-    must_be_positive_integer(nodes_count, "nodes_count")
+    must_be_positive_integer(nodes_count)
 }
 
 /// Checks if number of edges is correct (has to be a positive integer)
@@ -174,7 +164,7 @@ pub fn nodes_count_valid(nodes_count: &str) -> aResult<()> {
 ///
 /// `edges_count` - Number of edges given by user
 pub fn edges_count_valid(edges_count: &str) -> aResult<()> {
-    must_be_positive_integer(edges_count, "edges_count")
+    must_be_positive_integer(edges_count)
 }
 
 /// Checks if maximum edge weight is correct (has to be a positive integer)
@@ -183,7 +173,7 @@ pub fn edges_count_valid(edges_count: &str) -> aResult<()> {
 ///
 /// `max_weight` - Max weight given by user
 pub fn max_weight_valid(max_weight: &str) -> aResult<()> {
-    must_be_positive_integer(max_weight, "max_weight")
+    must_be_positive_integer(max_weight)
 }
 
 #[cfg(test)]
