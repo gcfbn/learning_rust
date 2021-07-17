@@ -307,10 +307,12 @@ version = "0.1.0"
 dependencies = [
  "algorithms",
  "anyhow",
+ "atty",
  "clap",
  "graph",
  "parse-display",
  "rand",
+ "termcolor",
  "test-case",
  "thiserror",
 ]
