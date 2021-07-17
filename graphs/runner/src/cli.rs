@@ -1,6 +1,7 @@
+#![warn(missing_docs)]
+use crate::errors::RunnerError;
 use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
-use core::result::Result::{Err, Ok};
 use std::path::{Path, PathBuf};
 
 const APP_NAME: &str = "kruskal_algorithm";
@@ -16,20 +17,44 @@ setting = AppSettings::ColoredHelp,
 setting = AppSettings::ArgRequiredElseHelp,
 )]
 pub struct CmdArgs {
+    /// Program subcommand
     #[clap(subcommand)]
     pub subcommand: SubCommand,
 }
 
+/// All available subcommands
 #[derive(Clap, Debug)]
 pub enum SubCommand {
+    /// Generates file containing random graph data
     #[clap(visible_alias = "gfg")]
     GraphFileGenerator(GraphFileGenerator),
+    /// Runs algorithm using data from chosen file
     #[clap(visible_alias = "t")]
     Task(Task),
 }
 
 impl SubCommand {
-    pub fn try_from_name_and_args(command_name: &str, args: &str) -> aResult<Self> {
+    /// Tries to build [`SubCommand`] variant from command line arguments
+    ///
+    /// Returns [`RunnerError::SubcommandCreatingError`] on fail
+    ///
+    /// # Arguments
+    ///
+    /// * `command_name` - name of command used in command line
+    /// * `args` - arguments passed with command
+    ///
+    /// # Example
+    /// ```
+    /// use runner_lib::SubCommand;
+    ///
+    /// let command_name = "graph-file-generator";
+    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 6 --max-weight 100";
+    ///
+    /// let gfg_subcommand = SubCommand::try_from_name_and_args(command_name, args);
+    ///
+    /// assert!(gfg_subcommand.is_ok());
+    /// ```
+    pub fn try_from_name_and_args(command_name: &str, args: &str) -> Result<Self, RunnerError> {
         let cli_string = format!(
             "{app} {command} {args}",
             app = APP_NAME,
@@ -37,11 +62,12 @@ impl SubCommand {
             args = args
         );
 
-        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).with_context(|| {
-            format!(
-                "failed creating command with command_name='{}' and args={}",
-                command_name, args
-            )
+        let cmd_args = CmdArgs::try_parse_from(cli_string.split_whitespace()).map_err({
+            |clap_error| RunnerError::SubcommandCreatingError {
+                command_name: String::from(command_name),
+                args:         String::from(args),
+                error:        clap_error,
+            }
         })?;
 
         Ok(cmd_args.subcommand)
@@ -80,15 +106,27 @@ impl GraphFileGenerator {
         }
     }
 
+    /// Tries to build [`GraphFileGenerator`] from command line args
+    ///
+    /// # Arugments
+    ///
+    /// * `args` - command line arguments for graph-file-generator subcommand
+    ///
+    /// # Example
+    /// ```
+    /// use runner_lib::GraphFileGenerator;
+    ///
+    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
+    /// let gfg = GraphFileGenerator::try_from_args(args);
+    ///
+    /// assert!(gfg.is_ok());
+    /// ```
     pub fn try_from_args(args: &str) -> aResult<Self> {
         match SubCommand::try_from_name_and_args("graph-file-generator", args)? {
             SubCommand::GraphFileGenerator(cmd) => Ok(cmd),
-            // temporary solution
-            _ => Err(anyhow!(
-                "Invalid arguments: `{}` for command `{}`",
-                args,
-                "graph_file_generator"
-            )),
+            // this should never happen, because if args aren't matching graph-file-generator arguments,
+            // error will be returned after calling `SubCommand::try_from_name_and_args`
+            _ => panic!("this should never happen !"),
         }
     }
 }

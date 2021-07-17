@@ -13,7 +13,7 @@ mod failing_tests {
                 .unwrap();
 
         let actual_error = generate_graph(&parameters).unwrap_err();
-        let expected_error = GraphFileGeneratorError::TooFewEdgesForConnectedGraph {
+        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count: 3,
             nodes_count: 5,
         };

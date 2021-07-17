@@ -1,4 +1,4 @@
-use crate::errors::{GraphFileGeneratorError, Result};
+use crate::errors::{GenerateGraphError, Result};
 use crate::GraphFileGenerator;
 use rand::prelude::*;
 use std::fs::{create_dir_all, File};
@@ -43,20 +43,20 @@ use std::path::Path;
 /// * `parameters` - parameters of the graph
 pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
     if !is_possible_to_create_connected_graph(parameters) {
-        return Err(GraphFileGeneratorError::TooFewEdgesForConnectedGraph {
+        return Err(GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count: parameters.edges_count,
             nodes_count: parameters.nodes_count,
         });
     }
 
-    create_directory_if_necessary(&parameters.graph_file).map_err(GraphFileGeneratorError::CreatingDirectoryError)?;
+    create_directory_if_necessary(&parameters.graph_file).map_err(GenerateGraphError::CreatingDirectoryError)?;
 
-    let mut output = File::create(&parameters.graph_file).map_err(GraphFileGeneratorError::CreatingFileError)?;
+    let mut output = File::create(&parameters.graph_file).map_err(GenerateGraphError::CreatingFileError)?;
 
     // write `nodes_count` and `edges_count` to the first line of file
     output
         .write_all(format!("{} {}\n", parameters.nodes_count, parameters.edges_count).as_ref())
-        .map_err(GraphFileGeneratorError::WritingError)?;
+        .map_err(GenerateGraphError::WritingError)?;
 
     let mut rng = thread_rng();
 
@@ -64,7 +64,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
     for i in 2..=parameters.nodes_count {
         output
             .write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight)).as_ref())
-            .map_err(GraphFileGeneratorError::WritingError)?;
+            .map_err(GenerateGraphError::WritingError)?;
     }
 
     // edges left after connecting first node with other nodes
@@ -82,7 +82,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
                 )
                 .as_ref(),
             )
-            .map_err(GraphFileGeneratorError::WritingError)?;
+            .map_err(GenerateGraphError::WritingError)?;
     }
     Ok(())
 }
@@ -157,7 +157,7 @@ mod tests {
 
         let parameters = GraphFileGenerator::new(PathBuf::from("test_file.txt"), 30, 28, 100);
 
-        let expected_error = GraphFileGeneratorError::TooFewEdgesForConnectedGraph {
+        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count: 28,
             nodes_count: 30,
         };
