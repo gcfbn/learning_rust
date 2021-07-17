@@ -9,8 +9,7 @@ mod failing_tests {
     #[test]
     fn fails_because_edges_count_is_to_small() -> Result<()> {
         let parameters =
-            GraphFileGenerator::try_from_args("--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100")
-                .unwrap();
+            GraphFileGenerator::try_from_args("--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100")?;
 
         let actual_error = generate_graph(&parameters).unwrap_err();
         let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
@@ -22,18 +21,52 @@ mod failing_tests {
         Ok(())
     }
 
-    #[test_case("--graph-file aaa.txt --nodes-count 5a --edges-count 3 --max-weight 100"; "nodes count is not integer")]
-    #[test_case("--graph-file aaa.txt --nodes-count 5 --edges-count 3a --max-weight 100"; "edges count is not integer")]
-    #[test_case("--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100a"; "max weight is not integer")]
-    #[test_case("--graph-file aaa.txt --nodes-count 5 --edges-count 3a"; "missing max weight")]
-    #[test_case("--graph-file aaa.txt --nodes-count 0 --edges-count 3 --max-weight 100"; "nodes count is zero")]
-    #[test_case("--graph-file aaa.txt --nodes-count -5 --edges-count 3 --max-weight 100"; "nodes count is negative")]
-    fn fails_because_of_invalid_input(args: &str) -> Result<()> {
-        let result = GraphFileGenerator::try_from_args(args);
+    fn validate_args(args: &str) -> Result<()> {
+        let result = GraphFileGenerator::try_from_args(&args);
 
-        // probably should check error type
         assert!(result.is_err());
         Ok(())
+    }
+
+    #[test_case("3a"; "nodes count is not integer")]
+    #[test_case("'-1'"; "nodes count is not a positive integer")]
+    #[test_case("0"; "nodes count is 0")]
+    fn invalid_nodes_count(nodes_count_arg: &str) -> Result<()> {
+        let args = format!(
+            "--graph-file aaa.txt --nodes-count {} --edges-count 3 --max-weight 100",
+            nodes_count_arg
+        );
+        validate_args(&args)
+    }
+
+    #[test_case("3a"; "edges count is not integer")]
+    #[test_case("'-1'"; "edges count is not a positive integer")]
+    #[test_case("0"; "edges count is 0")]
+    fn invalid_edges_count(edges_count_arg: &str) -> Result<()> {
+        let args = format!(
+            "--graph-file aaa.txt --nodes-count 3 --edges-count {} --max-weight 100",
+            edges_count_arg
+        );
+        validate_args(&args)
+    }
+
+    #[test_case("100a"; "max weight is not integer")]
+    #[test_case("'-100'"; "max weight is not a positive integer")]
+    #[test_case("0"; "max weight is 0")]
+    fn invalid_max_weight(max_weight_arg: &str) -> Result<()> {
+        let args = format!(
+            "--graph-file aaa.txt --nodes-count 3 --edges-count 3 --max-weight {}",
+            max_weight_arg
+        );
+        validate_args(&args)
+    }
+
+    #[test_case("--graph-file aaa.txt --nodes-count 5 --edges-count 3"; "1")]
+    #[test_case("--graph-file aaa.txt --nodes-count 5"; "2")]
+    #[test_case("--graph-file aaa.txt"; "3")]
+    #[test_case(""; "4")]
+    fn missing_required_options(args: &str) -> Result<()> {
+        validate_args(&args)
     }
 }
 
@@ -43,8 +76,7 @@ mod passing_tests {
     #[test]
     fn ok() -> Result<()> {
         let parameters =
-            GraphFileGenerator::try_from_args("--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100")
-                .unwrap();
+            GraphFileGenerator::try_from_args("--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100")?;
 
         let result = generate_graph(&parameters);
 
