@@ -122,42 +122,26 @@ fn calculate_edges_left(nodes_count: u32, edges_count: u32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
     use test_case::test_case;
-    //
-    // const TOO_FEW_EDGES_PARAMETERS: GraphFileGenerator = GraphFileGenerator {
-    //     graph_file:  PathBuf::from("test_file.txt"),
-    //     nodes_count: 30,
-    //     edges_count: 28,
-    //     max_weight:  100,
-    // };
 
-    #[test_case("test_file.txt", 100, 98, 100, false; "too small edges_count")]
-    #[test_case("test_file.txt", 100, 99, 100, true; "ok")]
-    fn is_possible_to_create_connected_graph(
-        filepath: &str,
-        nodes_count: u32,
-        edges_count: u32,
-        max_weight: u32,
-        expected: bool,
-    ) {
-        let parameters = GraphFileGenerator::new(PathBuf::from(filepath), nodes_count, edges_count, max_weight);
-        assert_eq!(
-            crate::generate_graph::is_possible_to_create_connected_graph(&parameters),
-            expected
+    #[test_case(98 => false; "too small edges_count")]
+    #[test_case(99 => true; "ok")]
+    fn is_possible_to_create_connected_graph(edges_count: u32) -> bool {
+        let args = format!(
+            "--graph-file test_file.txt --nodes-count 100 --edges-count {} --max-weight 100",
+            edges_count
         );
+        let parameters = GraphFileGenerator::try_from_args(&args).unwrap();
+
+        crate::generate_graph::is_possible_to_create_connected_graph(&parameters)
     }
 
     #[test]
     fn generating_graph_fails_because_number_of_edges_was_too_small() {
-        // let parameters = GraphFileGenerator {
-        //     graph_file:  PathBuf::from("test_file.txt"),
-        //     nodes_count: 30,
-        //     edges_count: 28,
-        //     max_weight:  100,
-        // };
-
-        let parameters = GraphFileGenerator::new(PathBuf::from("test_file.txt"), 30, 28, 100);
+        let parameters = GraphFileGenerator::try_from_args(
+            "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100",
+        )
+        .unwrap();
 
         let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count: 28,

@@ -96,16 +96,6 @@ pub struct GraphFileGenerator {
 }
 
 impl GraphFileGenerator {
-    /// Constructor
-    pub fn new(graph_file: PathBuf, nodes_count: u32, edges_count: u32, max_weight: u32) -> GraphFileGenerator {
-        GraphFileGenerator {
-            graph_file,
-            nodes_count,
-            edges_count,
-            max_weight,
-        }
-    }
-
     /// Tries to build [`GraphFileGenerator`] from command line args
     ///
     /// # Arugments
