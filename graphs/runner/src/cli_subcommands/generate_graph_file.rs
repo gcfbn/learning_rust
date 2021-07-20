@@ -1,9 +1,8 @@
-use core::result::Result::Ok;
-use std::path::PathBuf;
-
 use anyhow::Result as aResult;
 use anyhow::{anyhow, Context};
 use clap::{AppSettings, Clap};
+use core::result::Result::Ok;
+use std::path::PathBuf;
 
 use crate::SubCommand;
 

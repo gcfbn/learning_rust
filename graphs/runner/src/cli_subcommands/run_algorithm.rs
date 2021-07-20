@@ -1,7 +1,6 @@
-use std::path::{Path, PathBuf};
-
 use anyhow::{anyhow, Result as aResult};
 use clap::{AppSettings, Clap};
+use std::path::{Path, PathBuf};
 
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
