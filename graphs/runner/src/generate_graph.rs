@@ -1,5 +1,5 @@
 use crate::errors::{GenerateGraphError, Result};
-use crate::GraphFileGenerator;
+use crate::GenerateGraphFileArgs;
 use rand::prelude::*;
 use std::fs::{create_dir_all, File};
 use std::io::{Result as ioResult, Write};
@@ -20,10 +20,10 @@ use std::path::Path;
 ///
 /// # Example
 /// ```
-/// use runner_lib::{GraphFileGenerator, generate_graph};
+/// use runner_lib::{GenerateGraphFileArgs, generate_graph};
 /// use std::path::PathBuf;
 ///
-/// let parameters = GraphFileGenerator::try_from_args( "--graph-file test_graph.file.txt --nodes-count 3 --edges-count 5 --max-weight 20").unwrap();
+/// let parameters = GenerateGraphFileArgs::try_from_args( "--graph-file test_graph.file.txt --nodes-count 3 --edges-count 5 --max-weight 20").unwrap();
 /// let output = generate_graph(&parameters);
 /// ```
 ///
@@ -41,7 +41,7 @@ use std::path::Path;
 /// # Arguments
 ///
 /// * `parameters` - parameters of the graph
-pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
+pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
     if !is_possible_to_create_connected_graph(parameters) {
         return Err(GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count: parameters.edges_count,
@@ -92,7 +92,7 @@ pub fn generate_graph(parameters: &GraphFileGenerator) -> Result<()> {
 /// # Arguments
 ///
 /// * `parameters` - parameters of the graph
-fn is_possible_to_create_connected_graph(parameters: &GraphFileGenerator) -> bool {
+fn is_possible_to_create_connected_graph(parameters: &GenerateGraphFileArgs) -> bool {
     parameters.edges_count + 1 >= parameters.nodes_count
 }
 
@@ -131,14 +131,14 @@ mod tests {
             "--graph-file test_file.txt --nodes-count 100 --edges-count {} --max-weight 100",
             edges_count
         );
-        let parameters = GraphFileGenerator::try_from_args(&args).unwrap();
+        let parameters = GenerateGraphFileArgs::try_from_args(&args).unwrap();
 
         crate::generate_graph::is_possible_to_create_connected_graph(&parameters)
     }
 
     #[test]
     fn generating_graph_fails_because_number_of_edges_was_too_small() {
-        let parameters = GraphFileGenerator::try_from_args(
+        let parameters = GenerateGraphFileArgs::try_from_args(
             "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100",
         )
         .unwrap();

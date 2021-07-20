@@ -8,8 +8,9 @@ mod failing_tests {
 
     #[test]
     fn fails_because_edges_count_is_to_small() -> Result<()> {
-        let parameters =
-            GraphFileGenerator::try_from_args("--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100")?;
+        let parameters = GenerateGraphFileArgs::try_from_args(
+            "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100",
+        )?;
 
         let actual_error = generate_graph(&parameters).unwrap_err();
         let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
@@ -22,7 +23,7 @@ mod failing_tests {
     }
 
     fn validate_args(args: &str) -> Result<()> {
-        let result = GraphFileGenerator::try_from_args(&args);
+        let result = GenerateGraphFileArgs::try_from_args(&args);
 
         assert!(result.is_err());
         Ok(())
@@ -75,8 +76,9 @@ mod passing_tests {
 
     #[test]
     fn ok() -> Result<()> {
-        let parameters =
-            GraphFileGenerator::try_from_args("--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100")?;
+        let parameters = GenerateGraphFileArgs::try_from_args(
+            "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100",
+        )?;
 
         let result = generate_graph(&parameters);
 

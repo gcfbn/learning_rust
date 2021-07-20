@@ -36,13 +36,13 @@ fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
     match cmd_args.subcommand {
-        SubCommand::Task(task_data) => {
+        SubCommand::RunAlgorithm(task_data) => {
             let graph = graph::build_graph(&task_data.task_file)?;
             let output = algorithms::calculate_min_total_weight(graph);
             println!("{}", output);
         }
 
-        SubCommand::GraphFileGenerator(params) => {
+        SubCommand::GenerateGraphFile(params) => {
             generate_graph(&params)?;
             println!("Graph file with path {:?} successfully generated!", params.graph_file);
         }
