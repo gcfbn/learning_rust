@@ -3,6 +3,7 @@ use crate::errors::RunnerError;
 use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 const APP_NAME: &str = "kruskal_algorithm";
 
@@ -26,7 +27,7 @@ pub struct CmdArgs {
 #[derive(Clap, Debug)]
 pub enum SubCommand {
     /// Generates file containing random graph data
-    #[clap(visible_alias = "gfg")]
+    #[clap(visible_alias = "ggf")]
     GenerateGraphFile(GenerateGraphFileArgs),
     /// Runs algorithm using data from chosen file
     #[clap(visible_alias = "t")]
@@ -50,9 +51,9 @@ impl SubCommand {
     /// let command_name = "generate-graph-file";
     /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 6 --max-weight 100";
     ///
-    /// let gfg_subcommand = SubCommand::try_from_name_and_args(command_name, args);
+    /// let ggf_subcommand = SubCommand::try_from_name_and_args(command_name, args);
     ///
-    /// assert!(gfg_subcommand.is_ok());
+    /// assert!(ggf_subcommand.is_ok());
     /// ```
     pub fn try_from_name_and_args(command_name: &str, args: &str) -> Result<Self, RunnerError> {
         let cli_string = format!(
@@ -89,24 +90,26 @@ pub struct GenerateGraphFileArgs {
     pub max_weight: u32,
 }
 
-impl GenerateGraphFileArgs {
-    /// Tries to build [`GraphFileGenerator`] from command line args
-    ///
-    /// # Arugments
-    ///
-    /// * `args` - command line arguments for graph-file-generator subcommand
-    ///
-    /// # Example
-    /// ```
-    /// use runner_lib::GenerateGraphFileArgs;
-    ///
-    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
-    /// let gfg = GenerateGraphFileArgs::try_from_args(args);
-    ///
-    /// assert!(gfg.is_ok());
-    /// ```
-    pub fn try_from_args(args: &str) -> aResult<Self> {
-        match SubCommand::try_from_name_and_args("generate-graph-file", args)? {
+/// Tries to build [`GenerateGraphFileArgs`] from command line args
+///
+/// # Arugments
+///
+/// * `args` - command line arguments for graph-file-generator subcommand
+///
+/// # Example
+/// ```
+/// use runner_lib::GenerateGraphFileArgs;
+///
+/// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
+/// let ggf = args.parse::<GenerateGraphFileArgs>();
+///
+/// assert!(ggf.is_ok());
+/// ```
+impl FromStr for GenerateGraphFileArgs {
+    type Err = RunnerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match SubCommand::try_from_name_and_args("generate-graph-file", s)? {
             SubCommand::GenerateGraphFile(cmd) => Ok(cmd),
             // this should never happen, because if args aren't matching graph-file-generator arguments,
             // error will be returned after calling `SubCommand::try_from_name_and_args`
