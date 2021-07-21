@@ -73,19 +73,26 @@ mod failing_tests {
 
 mod passing_tests {
     use super::*;
+    use std::path::PathBuf;
+    use tempfile::tempdir_in;
 
     #[test]
     fn ok() -> Result<()> {
-        // let parameters = GenerateGraphFileArgs::try_from_args(
-        //     "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100",
-        // )?;
-        let parameters = "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100"
-            .parse::<GenerateGraphFileArgs>()
-            .unwrap();
+        let temp_dir = tempdir_in(".")?;
+        let file_path = PathBuf::from(temp_dir.path()).push("test_graph_file.txt");
+
+        let parameters = format!(
+            "--graph-file {:?} --nodes-count 5 --edges-count 4 --max-weight 100",
+            file_path
+        )
+        .parse::<GenerateGraphFileArgs>()
+        .unwrap();
 
         let result = generate_graph(&parameters);
 
         assert!(result.is_ok());
+
+        temp_dir.close()?;
 
         Ok(())
     }
