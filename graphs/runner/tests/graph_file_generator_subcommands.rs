@@ -73,23 +73,37 @@ mod failing_tests {
 
 mod passing_tests {
     use super::*;
+    use algorithms::calculate_min_total_weight;
+    use graph::build_graph;
     use std::path::PathBuf;
     use tempfile::tempdir_in;
 
     #[test]
     fn ok() -> Result<()> {
         let temp_dir = tempdir_in(".")?;
-        let file_path = PathBuf::from(temp_dir.path()).push("test_graph_file.txt");
+        let mut temp_file = PathBuf::from(temp_dir.path());
+        temp_file.push("test_graph_file.txt");
+
+        // let file_path = PathBuf::from(temp_dir.path()).push("test_graph_file.txt");
+
+        println!("{:?}", temp_file);
 
         let parameters = format!(
-            "--graph-file {:?} --nodes-count 5 --edges-count 4 --max-weight 100",
-            file_path
+            "--graph-file {} --nodes-count 5 --edges-count 4 --max-weight 100",
+            temp_file.clone().into_os_string().into_string().unwrap()
         )
         .parse::<GenerateGraphFileArgs>()?;
 
         let result = generate_graph(&parameters);
 
+        print!("{:?}", result);
+
         assert!(result.is_ok());
+        assert!(temp_file.exists());
+
+        // doesn't work yet
+        // let graph_result = build_graph(temp_file.into_os_string().into_string().unwrap().as_str());
+        // assert!(graph_result.is_ok());
 
         temp_dir.close()?;
 
