@@ -2,8 +2,8 @@
 
 use clap::{AppSettings, Clap};
 
-use crate::cli_subcommands::*;
 use crate::errors::RunnerError;
+use crate::subcommands::*;
 
 const APP_NAME: &str = "kruskal_algorithm";
 
