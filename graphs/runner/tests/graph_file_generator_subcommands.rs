@@ -85,8 +85,7 @@ mod passing_tests {
             "--graph-file {:?} --nodes-count 5 --edges-count 4 --max-weight 100",
             file_path
         )
-        .parse::<GenerateGraphFileArgs>()
-        .unwrap();
+        .parse::<GenerateGraphFileArgs>()?;
 
         let result = generate_graph(&parameters);
 
