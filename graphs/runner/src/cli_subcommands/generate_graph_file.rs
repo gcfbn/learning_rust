@@ -4,7 +4,8 @@ use clap::{AppSettings, Clap};
 use core::result::Result::Ok;
 use std::path::PathBuf;
 
-use crate::SubCommand;
+use crate::{RunnerError, SubCommand};
+use std::str::FromStr;
 
 /// Subcommand generating random graph file, which could be used in algorithms
 #[derive(Clap, Debug)]
@@ -27,24 +28,11 @@ pub struct GenerateGraphFileArgs {
     pub max_weight: u32,
 }
 
-impl GenerateGraphFileArgs {
-    /// Tries to build [`GraphFileGenerator`] from command line args
-    ///
-    /// # Arugments
-    ///
-    /// * `args` - command line arguments for graph-file-generator subcommand
-    ///
-    /// # Example
-    /// ```
-    /// use runner_lib::GenerateGraphFileArgs;
-    ///
-    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
-    /// let gfg = GenerateGraphFileArgs::try_from_args(args);
-    ///
-    /// assert!(gfg.is_ok());
-    /// ```
-    pub fn try_from_args(args: &str) -> aResult<Self> {
-        match SubCommand::try_from_name_and_args("generate-graph-file", args)? {
+impl FromStr for GenerateGraphFileArgs {
+    type Err = RunnerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match SubCommand::try_from_name_and_args("generate-graph-file", s)? {
             SubCommand::GenerateGraphFile(cmd) => Ok(cmd),
             // this should never happen, because if args aren't matching graph-file-generator arguments,
             // error will be returned after calling `SubCommand::try_from_name_and_args`

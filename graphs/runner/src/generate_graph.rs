@@ -23,7 +23,7 @@ use std::path::Path;
 /// use runner_lib::{GenerateGraphFileArgs, generate_graph};
 /// use std::path::PathBuf;
 ///
-/// let parameters = GenerateGraphFileArgs::try_from_args( "--graph-file test_graph.file.txt --nodes-count 3 --edges-count 5 --max-weight 20").unwrap();
+/// let parameters = "--graph-file test_graph.file.txt --nodes-count 3 --edges-count 5 --max-weight 20".parse::<GenerateGraphFileArgs>().unwrap();
 /// let output = generate_graph(&parameters);
 /// ```
 ///
@@ -131,17 +131,21 @@ mod tests {
             "--graph-file test_file.txt --nodes-count 100 --edges-count {} --max-weight 100",
             edges_count
         );
-        let parameters = GenerateGraphFileArgs::try_from_args(&args).unwrap();
+        let parameters = args.parse::<GenerateGraphFileArgs>().unwrap();
 
         crate::generate_graph::is_possible_to_create_connected_graph(&parameters)
     }
 
     #[test]
     fn generating_graph_fails_because_number_of_edges_was_too_small() {
-        let parameters = GenerateGraphFileArgs::try_from_args(
-            "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100",
-        )
-        .unwrap();
+        // let parameters = GenerateGraphFileArgs::try_from_args(
+        //     "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100",
+        // )
+        // .unwrap();
+
+        let parameters = "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100"
+            .parse::<GenerateGraphFileArgs>()
+            .unwrap();
 
         let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count: 28,

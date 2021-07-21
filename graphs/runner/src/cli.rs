@@ -27,7 +27,7 @@ pub struct CmdArgs {
 #[derive(Clap, Debug)]
 pub enum SubCommand {
     /// Generates file containing random graph data
-    #[clap(visible_alias = "gfg")]
+    #[clap(visible_alias = "ggf")]
     GenerateGraphFile(GenerateGraphFileArgs),
     /// Runs algorithm using data from chosen file
     #[clap(visible_alias = "t")]
@@ -37,7 +37,7 @@ pub enum SubCommand {
 impl SubCommand {
     /// Tries to build [`SubCommand`] variant from command line arguments
     ///
-    /// Returns [`RunnerError::SubcommandCreatingError`] on fail
+    /// Returns [`RunnerError::CommandLineArgsError`] on fail
     ///
     /// # Arguments
     ///
@@ -51,9 +51,9 @@ impl SubCommand {
     /// let command_name = "generate-graph-file";
     /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 6 --max-weight 100";
     ///
-    /// let gfg_subcommand = SubCommand::try_from_name_and_args(command_name, args);
+    /// let ggf_subcommand = SubCommand::try_from_name_and_args(command_name, args);
     ///
-    /// assert!(gfg_subcommand.is_ok());
+    /// assert!(ggf_subcommand.is_ok());
     /// ```
     pub fn try_from_name_and_args(command_name: &str, args: &str) -> Result<Self, RunnerError> {
         let cli_string = format!(
