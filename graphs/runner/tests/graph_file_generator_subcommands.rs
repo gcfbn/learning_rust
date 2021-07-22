@@ -80,8 +80,7 @@ mod passing_tests {
         //     "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100",
         // )?;
         let parameters = "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100"
-            .parse::<GenerateGraphFileArgs>()
-            .unwrap();
+            .parse::<GenerateGraphFileArgs>()?
 
         let result = generate_graph(&parameters);
 
