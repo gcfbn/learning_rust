@@ -23,7 +23,7 @@ use std::path::Path;
 /// use runner_lib::{GenerateGraphFileArgs, generate_graph};
 /// use std::path::PathBuf;
 ///
-/// let parameters = "--graph-file test_graph.file.txt --nodes-count 3 --edges-count 5 --max-weight 20".parse::<GenerateGraphFileArgs>().unwrap();
+/// let parameters = "--graph-file test_graph.file.txt --nodes-count 5 --edges-count 5 --max-weight 20".parse::<GenerateGraphFileArgs>().unwrap();
 /// let output = generate_graph(&parameters);
 /// ```
 ///
@@ -93,7 +93,9 @@ pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
 ///
 /// * `parameters` - parameters of the graph
 fn is_possible_to_create_connected_graph(parameters: &GenerateGraphFileArgs) -> bool {
-    parameters.edges_count + 1 >= parameters.nodes_count
+    let diff = parameters.nodes_count - parameters.edges_count;
+
+    (0..=1).contains(&diff)
 }
 
 /// Takes a reference to a filepath and creates directory specified in the path if it doesn't exist
@@ -124,12 +126,16 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case(98 => false; "too small edges_count")]
-    #[test_case(99 => true; "ok")]
-    fn is_possible_to_create_connected_graph(edges_count: u32) -> bool {
+    #[test_case(2 => false; "too big difference between nodes_count and edges_count (max=1)")]
+    #[test_case(1 => true; "ok - diff 1")]
+    #[test_case(0 => true; "ok - diff 0")]
+    fn is_possible_to_create_connected_graph(diff_nodes_and_edges_count: u32) -> bool {
+        let nodes_count = 100;
+        let edges_count = nodes_count - diff_nodes_and_edges_count;
+
         let args = format!(
-            "--graph-file test_file.txt --nodes-count 100 --edges-count {} --max-weight 100",
-            edges_count
+            "--graph-file test_file.txt --nodes-count {} --edges-count {} --max-weight 100",
+            nodes_count, edges_count
         );
         let parameters = args.parse::<GenerateGraphFileArgs>().unwrap();
 
@@ -137,21 +143,22 @@ mod tests {
     }
 
     #[test]
-    fn generating_graph_fails_because_number_of_edges_was_too_small() {
-        // let parameters = GenerateGraphFileArgs::try_from_args(
-        //     "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100",
-        // )
-        // .unwrap();
+    fn fails_because_diff_between_nodes_and_edges_count_is_to_big() {
+        let nodes_count = 5;
+        let diff_between_nodes_and_edges_count = 2;
+        let edges_count = nodes_count - diff_between_nodes_and_edges_count;
 
-        let parameters = "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100"
-            .parse::<GenerateGraphFileArgs>()
-            .unwrap();
+        let args_str = format!(
+            "--graph-file aaa.txt --nodes-count {} --edges-count {} --max-weight 100",
+            nodes_count, edges_count
+        );
+        let parameters = args_str.parse::<GenerateGraphFileArgs>().unwrap();
 
-        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
-            edges_count: 28,
-            nodes_count: 30,
-        };
         let actual_error = generate_graph(&parameters).unwrap_err();
+        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
+            edges_count,
+            nodes_count,
+        };
 
         assert_eq!(actual_error.to_string(), expected_error.to_string());
     }
