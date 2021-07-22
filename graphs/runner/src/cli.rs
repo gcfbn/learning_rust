@@ -3,6 +3,7 @@ use crate::errors::RunnerError;
 use anyhow::{anyhow, Context, Result as aResult};
 use clap::{AppSettings, Clap};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 const APP_NAME: &str = "kruskal_algorithm";
 
@@ -26,17 +27,17 @@ pub struct CmdArgs {
 #[derive(Clap, Debug)]
 pub enum SubCommand {
     /// Generates file containing random graph data
-    #[clap(visible_alias = "gfg")]
-    GraphFileGenerator(GraphFileGenerator),
+    #[clap(visible_alias = "ggf")]
+    GenerateGraphFile(GenerateGraphFileArgs),
     /// Runs algorithm using data from chosen file
     #[clap(visible_alias = "t")]
-    Task(Task),
+    RunAlgorithm(RunAlgorithmArgs),
 }
 
 impl SubCommand {
     /// Tries to build [`SubCommand`] variant from command line arguments
     ///
-    /// Returns [`RunnerError::SubcommandCreatingError`] on fail
+    /// Returns [`RunnerError::CommandLineArgsError`] on fail
     ///
     /// # Arguments
     ///
@@ -47,12 +48,12 @@ impl SubCommand {
     /// ```
     /// use runner_lib::SubCommand;
     ///
-    /// let command_name = "graph-file-generator";
+    /// let command_name = "generate-graph-file";
     /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 6 --max-weight 100";
     ///
-    /// let gfg_subcommand = SubCommand::try_from_name_and_args(command_name, args);
+    /// let ggf_subcommand = SubCommand::try_from_name_and_args(command_name, args);
     ///
-    /// assert!(gfg_subcommand.is_ok());
+    /// assert!(ggf_subcommand.is_ok());
     /// ```
     pub fn try_from_name_and_args(command_name: &str, args: &str) -> Result<Self, RunnerError> {
         let cli_string = format!(
@@ -71,7 +72,7 @@ impl SubCommand {
 /// Subcommand generating random graph file, which could be used in algorithms
 #[derive(Clap, Debug)]
 #[clap(setting = AppSettings::ColoredHelp)]
-pub struct GraphFileGenerator {
+pub struct GenerateGraphFileArgs {
     /// Output filename
     #[clap(long, short)]
     pub graph_file: PathBuf,
@@ -89,25 +90,27 @@ pub struct GraphFileGenerator {
     pub max_weight: u32,
 }
 
-impl GraphFileGenerator {
-    /// Tries to build [`GraphFileGenerator`] from command line args
-    ///
-    /// # Arugments
-    ///
-    /// * `args` - command line arguments for graph-file-generator subcommand
-    ///
-    /// # Example
-    /// ```
-    /// use runner_lib::GraphFileGenerator;
-    ///
-    /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
-    /// let gfg = GraphFileGenerator::try_from_args(args);
-    ///
-    /// assert!(gfg.is_ok());
-    /// ```
-    pub fn try_from_args(args: &str) -> aResult<Self> {
-        match SubCommand::try_from_name_and_args("graph-file-generator", args)? {
-            SubCommand::GraphFileGenerator(cmd) => Ok(cmd),
+/// Tries to build [`GenerateGraphFileArgs`] from command line args
+///
+/// # Arugments
+///
+/// * `args` - command line arguments for graph-file-generator subcommand
+///
+/// # Example
+/// ```
+/// use runner_lib::GenerateGraphFileArgs;
+///
+/// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100";
+/// let ggf = args.parse::<GenerateGraphFileArgs>();
+///
+/// assert!(ggf.is_ok());
+/// ```
+impl FromStr for GenerateGraphFileArgs {
+    type Err = RunnerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match SubCommand::try_from_name_and_args("generate-graph-file", s)? {
+            SubCommand::GenerateGraphFile(cmd) => Ok(cmd),
             // this should never happen, because if args aren't matching graph-file-generator arguments,
             // error will be returned after calling `SubCommand::try_from_name_and_args`
             _ => panic!("this should never happen !"),
@@ -118,7 +121,7 @@ impl GraphFileGenerator {
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
 #[clap(setting = AppSettings::ColoredHelp)]
-pub struct Task {
+pub struct RunAlgorithmArgs {
     /// Name of file containing graph data
     #[clap(long, short, parse(from_os_str), validator(file_exists))]
     pub task_file: PathBuf,
