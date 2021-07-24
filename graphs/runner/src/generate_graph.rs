@@ -71,7 +71,7 @@ pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
     let edges_left = calculate_edges_left(parameters.nodes_count, parameters.edges_count);
 
     // generate rest of edges using `rng`
-    for _ in 0..=edges_left {
+    for _ in 0..edges_left {
         output
             .write_all(
                 format!(
