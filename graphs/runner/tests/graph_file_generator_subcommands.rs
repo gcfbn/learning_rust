@@ -96,11 +96,13 @@ mod passing_tests {
 
         let graph_result = build_graph(temp_file.as_path());
 
-        println!("{:?}", graph_result);
-
-        assert!(graph_result.is_ok());
-
-        temp_dir.close()?;
+        // temp_dir is deleted even if the tests panics so I use this if statement to keep it
+        if !graph_result.is_ok() {
+            // keep temp_dir as a normal directory
+            temp_dir.into_path();
+            // panic because of an error
+            panic!("{:?}", graph_result.unwrap_err());
+        }
 
         Ok(())
     }
