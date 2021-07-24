@@ -30,15 +30,15 @@ use std::path::Path;
 /// # temp_file.push("test_graph_file.txt");
 ///
 /// // `temp_file` is temporary graph file, deleted after running the test
-/// let parameters = format!("--graph-file {} --nodes-count 3 --edges-count 5 --max-weight 20", temp_file.to_str().unwrap())
-///     .parse::<GenerateGraphFileArgs>().unwrap();
-/// let output = generate_graph(&parameters);
+/// let parameters = format!("--graph-file {} --nodes-count 3 --edges-count 5 --max-weight 20",
+/// temp_file.to_str().unwrap()).parse::<GenerateGraphFileArgs>().unwrap();
+/// let result = generate_graph(&parameters);
 ///
-/// assert!(output.is_ok());
+/// assert!(result.is_ok());
+/// assert!(temp_file.exists());
 ///
 /// // check if generated graph is correct
 /// let build_result = build_graph(temp_file.as_path());
-/// println!("{:?}", build_result);
 /// assert!(build_result.is_ok());
 /// ```
 ///
