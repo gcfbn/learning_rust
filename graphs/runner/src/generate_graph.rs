@@ -93,9 +93,7 @@ pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
 ///
 /// * `parameters` - parameters of the graph
 fn is_possible_to_create_connected_graph(parameters: &GenerateGraphFileArgs) -> bool {
-    let diff = parameters.nodes_count - parameters.edges_count;
-
-    (0..=1).contains(&diff)
+    parameters.edges_count + 1 >= parameters.nodes_count
 }
 
 /// Takes a reference to a filepath and creates directory specified in the path if it doesn't exist
@@ -126,13 +124,11 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case(2 => false; "too big difference between nodes_count and edges_count (max=1)")]
-    #[test_case(1 => true; "ok - diff 1")]
-    #[test_case(0 => true; "ok - diff 0")]
-    fn is_possible_to_create_connected_graph(diff_nodes_and_edges_count: u32) -> bool {
-        let nodes_count = 100;
-        let edges_count = nodes_count - diff_nodes_and_edges_count;
-
+    #[test_case(7, 5 => false; "no beacuse nodes_count is greater than edges_count by more than 1")]
+    #[test_case(6, 5 => true; "yes because nodes_count is greater than edges_count but only by 1")]
+    #[test_case(5, 5 => true; "yes because nodes_count is equal edges_count")]
+    #[test_case(4, 5 => true; "yes because is more edges than nodes")]
+    fn is_possible_to_create_connected_graph(nodes_count: u32, edges_count: u32) -> bool {
         let args = format!(
             "--graph-file test_file.txt --nodes-count {} --edges-count {} --max-weight 100",
             nodes_count, edges_count
@@ -143,10 +139,10 @@ mod tests {
     }
 
     #[test]
-    fn fails_because_diff_between_nodes_and_edges_count_is_to_big() {
+    fn fails_with_error_too_few_edges_for_connected_graph() {
+        // nodes_count - edges_count > 1 - triggers an error
         let nodes_count = 5;
-        let diff_between_nodes_and_edges_count = 2;
-        let edges_count = nodes_count - diff_between_nodes_and_edges_count;
+        let edges_count = 3;
 
         let args_str = format!(
             "--graph-file aaa.txt --nodes-count {} --edges-count {} --max-weight 100",
