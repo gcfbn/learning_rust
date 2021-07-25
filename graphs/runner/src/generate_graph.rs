@@ -21,24 +21,23 @@ use std::path::Path;
 /// # Example
 /// ```
 /// use runner::{GenerateGraphFileArgs, generate_graph};
-/// use std::path::PathBuf;
-/// use tempfile::tempdir_in;
+/// use tempfile::NamedTempFile;
 /// use graph::build_graph;
 ///
-/// # let temp_dir = tempdir_in("").unwrap();
-/// # let mut temp_file = PathBuf::from(temp_dir.path());
-/// # temp_file.push("test_graph_file.txt");
+/// # let output_graph_file = NamedTempFile::new().unwrap();
 ///
-/// // `temp_file` is temporary graph file, deleted after running the test
+/// // `output_graph_file` is temporary graph file, deleted after running the test
 /// let parameters = format!("--graph-file {} --nodes-count 3 --edges-count 5 --max-weight 20",
-/// temp_file.to_str().unwrap()).parse::<GenerateGraphFileArgs>().unwrap();
+///     output_graph_file.path().to_str().unwrap())
+///     .parse::<GenerateGraphFileArgs>().unwrap();
+///
 /// let result = generate_graph(&parameters);
 ///
 /// assert!(result.is_ok());
-/// assert!(temp_file.exists());
+/// assert!(output_graph_file.path().exists());
 ///
 /// // check if generated graph is correct
-/// let build_result = build_graph(temp_file.as_path());
+/// let build_result = build_graph(output_graph_file.path());
 /// assert!(build_result.is_ok());
 /// ```
 ///
