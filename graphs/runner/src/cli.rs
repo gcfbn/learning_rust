@@ -46,7 +46,7 @@ impl SubCommand {
     ///
     /// # Example
     /// ```
-    /// use runner_lib::SubCommand;
+    /// use runner::SubCommand;
     ///
     /// let command_name = "generate-graph-file";
     /// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 6 --max-weight 100";

@@ -1,9 +1,8 @@
 use clap::Clap;
+use runner::*;
 use std::io::{self, Write};
 use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-
-use runner_lib::*;
 
 type Result<T, E = RunnerError> = std::result::Result<T, E>;
 
