@@ -56,15 +56,36 @@ mod failing_tests {
 
 mod passing_tests {
     use super::*;
+    use graph::build_graph;
+    use std::path::PathBuf;
+    use tempfile::tempdir_in;
 
     #[test]
     fn ok() -> Result<()> {
-        let parameters =
-            "--graph-file aaa.txt --nodes-count 5 --edges-count 4 --max-weight 100".parse::<GenerateGraphFileArgs>()?;
+        let temp_dir = tempdir_in("")?;
+        let mut temp_file = PathBuf::from(temp_dir.path());
+        temp_file.push("test_graph_file.txt");
+
+        let parameters = format!(
+            "--graph-file {} --nodes-count 5 --edges-count 4 --max-weight 100",
+            temp_file.to_str().unwrap()
+        )
+        .parse::<GenerateGraphFileArgs>()?;
 
         let result = generate_graph(&parameters);
 
         assert!(result.is_ok());
+        assert!(temp_file.exists());
+
+        let graph_result = build_graph(temp_file.as_path());
+
+        // temp_dir is deleted even if the tests panics so I use this if statement to keep it
+        if !graph_result.is_ok() {
+            // keep temp_dir as a normal directory
+            temp_dir.into_path();
+            // panic because of an error
+            panic!("{:?}", graph_result.unwrap_err());
+        }
 
         Ok(())
     }

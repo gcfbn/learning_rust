@@ -22,9 +22,24 @@ use std::path::Path;
 /// ```
 /// use runner_lib::{GenerateGraphFileArgs, generate_graph};
 /// use std::path::PathBuf;
+/// use tempfile::tempdir_in;
+/// use graph::build_graph;
 ///
-/// let parameters = "--graph-file test_graph.file.txt --nodes-count 5 --edges-count 5 --max-weight 20".parse::<GenerateGraphFileArgs>().unwrap();
-/// let output = generate_graph(&parameters);
+/// # let temp_dir = tempdir_in("").unwrap();
+/// # let mut temp_file = PathBuf::from(temp_dir.path());
+/// # temp_file.push("test_graph_file.txt");
+///
+/// // `temp_file` is temporary graph file, deleted after running the test
+/// let parameters = format!("--graph-file {} --nodes-count 3 --edges-count 5 --max-weight 20",
+/// temp_file.to_str().unwrap()).parse::<GenerateGraphFileArgs>().unwrap();
+/// let result = generate_graph(&parameters);
+///
+/// assert!(result.is_ok());
+/// assert!(temp_file.exists());
+///
+/// // check if generated graph is correct
+/// let build_result = build_graph(temp_file.as_path());
+/// assert!(build_result.is_ok());
 /// ```
 ///
 /// # Possible output
@@ -71,7 +86,7 @@ pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
     let edges_left = calculate_edges_left(parameters.nodes_count, parameters.edges_count);
 
     // generate rest of edges using `rng`
-    for _ in 0..=edges_left {
+    for _ in 0..edges_left {
         output
             .write_all(
                 format!(
