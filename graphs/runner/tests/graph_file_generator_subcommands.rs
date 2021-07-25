@@ -6,33 +6,16 @@ mod failing_tests {
     use super::*;
     use test_case::test_case;
 
-    #[test]
-    fn fails_because_edges_count_is_to_small() -> Result<()> {
-        let parameters = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100"
-            .parse::<GenerateGraphFileArgs>()
-            .unwrap();
-
-        let actual_error = generate_graph(&parameters).unwrap_err();
-        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
-            edges_count: 3,
-            nodes_count: 5,
-        };
-
-        assert_eq!(actual_error.to_string(), expected_error.to_string());
-        Ok(())
-    }
-
-    fn validate_args(args: &str) -> Result<()> {
+    fn validate_args(args: &str) {
         let result = args.parse::<GenerateGraphFileArgs>();
 
         assert!(result.is_err());
-        Ok(())
     }
 
     #[test_case("3a"; "nodes count is not integer")]
     #[test_case("'-1'"; "nodes count is not a positive integer")]
     #[test_case("0"; "nodes count is 0")]
-    fn invalid_nodes_count(nodes_count_arg: &str) -> Result<()> {
+    fn invalid_nodes_count(nodes_count_arg: &str) {
         let args = format!(
             "--graph-file aaa.txt --nodes-count {} --edges-count 3 --max-weight 100",
             nodes_count_arg
@@ -43,7 +26,7 @@ mod failing_tests {
     #[test_case("3a"; "edges count is not integer")]
     #[test_case("'-1'"; "edges count is not a positive integer")]
     #[test_case("0"; "edges count is 0")]
-    fn invalid_edges_count(edges_count_arg: &str) -> Result<()> {
+    fn invalid_edges_count(edges_count_arg: &str) {
         let args = format!(
             "--graph-file aaa.txt --nodes-count 3 --edges-count {} --max-weight 100",
             edges_count_arg
@@ -54,7 +37,7 @@ mod failing_tests {
     #[test_case("100a"; "max weight is not integer")]
     #[test_case("'-100'"; "max weight is not a positive integer")]
     #[test_case("0"; "max weight is 0")]
-    fn invalid_max_weight(max_weight_arg: &str) -> Result<()> {
+    fn invalid_max_weight(max_weight_arg: &str) {
         let args = format!(
             "--graph-file aaa.txt --nodes-count 3 --edges-count 3 --max-weight {}",
             max_weight_arg
@@ -66,7 +49,7 @@ mod failing_tests {
     #[test_case("--graph-file aaa.txt --nodes-count 5"; "2")]
     #[test_case("--graph-file aaa.txt"; "3")]
     #[test_case(""; "4")]
-    fn missing_required_options(args: &str) -> Result<()> {
+    fn missing_required_options(args: &str) {
         validate_args(&args)
     }
 }

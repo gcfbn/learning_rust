@@ -139,12 +139,14 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case(98 => false; "too small edges_count")]
-    #[test_case(99 => true; "ok")]
-    fn is_possible_to_create_connected_graph(edges_count: u32) -> bool {
+    #[test_case(7, 5 => false; "no beacuse nodes_count is greater than edges_count by more than 1")]
+    #[test_case(6, 5 => true; "yes because nodes_count is greater than edges_count but only by 1")]
+    #[test_case(5, 5 => true; "yes because nodes_count is equal edges_count")]
+    #[test_case(4, 5 => true; "yes because is more edges than nodes")]
+    fn is_possible_to_create_connected_graph(nodes_count: u32, edges_count: u32) -> bool {
         let args = format!(
-            "--graph-file test_file.txt --nodes-count 100 --edges-count {} --max-weight 100",
-            edges_count
+            "--graph-file test_file.txt --nodes-count {} --edges-count {} --max-weight 100",
+            nodes_count, edges_count
         );
         let parameters = args.parse::<GenerateGraphFileArgs>().unwrap();
 
@@ -152,21 +154,22 @@ mod tests {
     }
 
     #[test]
-    fn generating_graph_fails_because_number_of_edges_was_too_small() {
-        // let parameters = GenerateGraphFileArgs::try_from_args(
-        //     "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100",
-        // )
-        // .unwrap();
+    fn fails_with_error_too_few_edges_for_connected_graph() {
+        // nodes_count - edges_count > 1 - triggers an error
+        let nodes_count = 5;
+        let edges_count = 3;
 
-        let parameters = "--graph-file test_file.txt --nodes-count 30 --edges-count 28 --max-weight 100"
-            .parse::<GenerateGraphFileArgs>()
-            .unwrap();
+        let args_str = format!(
+            "--graph-file aaa.txt --nodes-count {} --edges-count {} --max-weight 100",
+            nodes_count, edges_count
+        );
+        let parameters = args_str.parse::<GenerateGraphFileArgs>().unwrap();
 
-        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
-            edges_count: 28,
-            nodes_count: 30,
-        };
         let actual_error = generate_graph(&parameters).unwrap_err();
+        let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
+            edges_count,
+            nodes_count,
+        };
 
         assert_eq!(actual_error.to_string(), expected_error.to_string());
     }
