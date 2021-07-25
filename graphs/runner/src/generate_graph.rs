@@ -139,7 +139,7 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case(7, 5 => false; "no beacuse nodes_count is greater than edges_count by more than 1")]
+    #[test_case(7, 5 => false; "no because nodes_count is greater than edges_count by more than 1")]
     #[test_case(6, 5 => true; "yes because nodes_count is greater than edges_count but only by 1")]
     #[test_case(5, 5 => true; "yes because nodes_count is equal edges_count")]
     #[test_case(4, 5 => true; "yes because is more edges than nodes")]
