@@ -20,7 +20,7 @@ use std::path::Path;
 ///
 /// # Example
 /// ```
-/// use runner_lib::{GenerateGraphFileArgs, generate_graph};
+/// use runner::{GenerateGraphFileArgs, generate_graph};
 /// use std::path::PathBuf;
 /// use tempfile::tempdir_in;
 /// use graph::build_graph;
