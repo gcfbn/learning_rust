@@ -38,6 +38,7 @@ impl From<GenerateGraphError> for RunnerError {
 pub type Result<T, E = GenerateGraphError> = std::result::Result<T, E>;
 
 /// Enum containing variants of errors that might occur during generating graph
+///
 /// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`]).
 /// Some errors contain variant of more specific enums.
 ///
