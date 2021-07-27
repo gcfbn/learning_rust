@@ -1,6 +1,8 @@
+use crate::{RunnerError, SubCommand};
 use anyhow::{anyhow, Result as aResult};
 use clap::{AppSettings, Clap};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
@@ -21,5 +23,18 @@ fn file_exists(p: &str) -> aResult<()> {
         Ok(())
     } else {
         Err(anyhow!("the file does not exist: {}", p))
+    }
+}
+
+impl FromStr for RunAlgorithmArgs {
+    type Err = RunnerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match SubCommand::try_from_name_and_args("run-algorithm", s)? {
+            SubCommand::RunAlgorithm(cmd) => Ok(cmd),
+            // this should never happen, because if args aren't matching run-algorithm arguments,
+            // error will be returned after calling `SubCommand::try_from_name_and_args`
+            _ => panic!("this should never happen !"),
+        }
     }
 }
