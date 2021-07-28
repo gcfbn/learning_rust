@@ -21,11 +21,9 @@ thiserror = "1.0.25"
 parse-display = "0.5.0"
 rand = "0.8.4"
 
-termcolor = { version = "1.1" }
-atty = "0.2"
-
 algorithms = { path = "../algorithms" }
 graph = { path = "../graph" }
+utils = { path = "../../utils"}
 
 [dependencies.clap]
 version = "~3.0.0-beta.2"
