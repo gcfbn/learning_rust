@@ -3,15 +3,6 @@ name = "runner"
 version = "0.1.0"
 edition = "2018"
 
-# Copied from https://stackoverflow.com/questions/26946646/rust-package-with-both-a-library-and-a-binary
-#[lib]
-#name = "runner_lib"
-#path = "src/lib.rs"
-#
-#[[bin]]
-#name = "runner_bin"
-#path = "src/bin/main.rs"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
