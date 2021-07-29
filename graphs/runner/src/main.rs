@@ -1,24 +1,11 @@
 use clap::Clap;
 use runner::*;
-use std::io::{self, Write};
+// use std::io::{self, Write};
 use std::process;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+// use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use utils::write_error_message;
 
 type Result<T, E = RunnerError> = std::result::Result<T, E>;
-
-fn write_error_message(msg: &str) -> io::Result<()> {
-    let choice = if atty::is(atty::Stream::Stderr) {
-        ColorChoice::Auto
-    } else {
-        ColorChoice::Never
-    };
-
-    let mut out = StandardStream::stderr(choice);
-    out.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
-    write!(&mut out, "error: ")?;
-    out.set_color(ColorSpec::new().set_fg(Some(Color::White)))?;
-    writeln!(&mut out, "{}", msg)
-}
 
 /// Main function that is called when the app starts
 ///
