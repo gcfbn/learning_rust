@@ -4,10 +4,31 @@ use parse_display::Display;
 use std::io::Error as ioError;
 use thiserror::Error;
 
-/// Result returned by graph generator
-pub type Result<T, E = GenerateGraphError> = std::result::Result<T, E>;
-
-/// Enum containing variants of errors that could occur in bin/main.rs  
+/// Enum containing variants of errors that could occur in bin/main.rs
+/// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`]).
+///
+/// # Example
+/// Building graph from non-existing file should return an error. Clap checks if source file exists, so returned variant
+/// should be [`RunnerError::CommandLineArgsError`]. We use `run-algorithm` subcommand, because it builds graph from given path and then
+/// runs Kruskal's algoritm.
+///
+/// ```
+/// use runner::{SubCommand, RunnerError};
+/// use anyhow::anyhow;
+///
+/// let non_existing_file = "non_existing_file.txt";
+///
+/// let command_name = "run-algorithm";
+/// let args = format!("graph-file {}", non_existing_file);
+///
+/// let result = SubCommand::try_from_name_and_args(command_name, &args);
+/// assert!(result.is_err());
+///
+/// let expected_error = RunnerError::from(
+///     clap::Error::with_description(format!("the file does not exist: {}", non_existing_file),
+///     clap::ErrorKind::ValueValidation));
+/// assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+/// ```
 #[derive(Error, Debug)]
 pub enum RunnerError {
     /// Error connected with building graph from file or string
@@ -37,7 +58,34 @@ impl From<GenerateGraphError> for RunnerError {
 
 // -----------------------------------------------------------------------------
 
+/// Result returned by graph generator
+pub type Result<T, E = GenerateGraphError> = std::result::Result<T, E>;
+
 /// Enum containing variants of errors that might occur during generating graph
+///
+/// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`]).
+/// Some errors contain variant of more specific enums.
+///
+/// # Example
+/// Input contains invalid argument - edges_count is to small to create connected graph.
+///
+/// > runner::generate_graph() should return [`GenerateGraphError::TooFewEdgesForConnectedGraph`]
+/// ```
+/// use runner::{SubCommand, RunnerError, GenerateGraphError, GenerateGraphFileArgs};
+/// use SubCommand::GenerateGraphFile;
+///
+/// let args = "--graph-file aaa.txt --nodes-count 5 --edges-count 3 --max-weight 100".parse::<GenerateGraphFileArgs>().unwrap();
+/// let result = runner::generate_graph(&args);
+///
+/// assert!(result.is_err());
+///
+/// let expected_error = GenerateGraphError::TooFewEdgesForConnectedGraph {
+///     edges_count: 3,
+///     nodes_count: 5,
+/// };
+///
+/// assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+/// ```
 #[derive(Debug, Display)]
 pub enum GenerateGraphError {
     /// Connected graph must contain at least n-1 edges (where `n` is number of nodes in the graph)

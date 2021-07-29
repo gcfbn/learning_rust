@@ -30,7 +30,7 @@ pub enum SubCommand {
     #[clap(visible_alias = "ggf")]
     GenerateGraphFile(GenerateGraphFileArgs),
     /// Runs algorithm using data from chosen file
-    #[clap(visible_alias = "t")]
+    #[clap(visible_alias = "ra")]
     RunAlgorithm(RunAlgorithmArgs),
 }
 
