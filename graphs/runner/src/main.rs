@@ -1,8 +1,6 @@
 use clap::Clap;
 use runner::*;
-// use std::io::{self, Write};
 use std::process;
-// use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use utils::write_error_message;
 
 type Result<T, E = RunnerError> = std::result::Result<T, E>;

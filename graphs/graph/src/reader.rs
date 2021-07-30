@@ -1,5 +1,3 @@
-#![warn(missing_docs)]
-
 use super::structures::{Edge, Graph, GraphBuilder, GraphParameters};
 use crate::{BuildGraphError, GraphParametersParsingError, Result};
 use std::convert::From;

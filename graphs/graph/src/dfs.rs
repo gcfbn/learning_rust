@@ -1,5 +1,3 @@
-#![warn(missing_docs)]
-
 /// Recursive implementation of Depth First Search algorithm
 ///
 /// # Arguments

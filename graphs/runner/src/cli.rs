@@ -1,5 +1,3 @@
-#![warn(missing_docs)]
-
 use clap::{AppSettings, Clap};
 
 use crate::errors::RunnerError;
