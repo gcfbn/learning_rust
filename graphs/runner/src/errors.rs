@@ -1,4 +1,3 @@
-#![warn(missing_docs)]
 use graph::BuildGraphError;
 use parse_display::Display;
 use std::io::Error as ioError;

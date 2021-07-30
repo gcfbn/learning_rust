@@ -1,5 +1,3 @@
-#![warn(missing_docs)]
-
 use super::dfs::dfs;
 use crate::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
 use std::convert::TryFrom;

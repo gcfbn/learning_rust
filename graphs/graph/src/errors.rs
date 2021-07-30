@@ -1,5 +1,3 @@
-#![warn(missing_docs)]
-
 use crate::Edge;
 use parse_display::Display;
 use thiserror::Error;
