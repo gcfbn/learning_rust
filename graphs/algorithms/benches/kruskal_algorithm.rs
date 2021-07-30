@@ -4,7 +4,7 @@ extern crate test;
 
 use algorithms::calculate_min_total_weight;
 use graph::{build_graph, Graph};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 use test::Bencher;
 
