@@ -21,34 +21,38 @@ pub fn calculate_min_total_weight(mut graph: Graph) -> i32 {
 
     // remove edges that connect nodes with the same parental node and map vector to weights
     // then calculate the weight by calling sum()
-    graph.edges.iter().filter_map(|&e| {
-        let from_parent = find_parent(&parents, e.from_index);
-        let to_parent = find_parent(&parents, e.to_index);
-        if from_parent != to_parent {
-            parents[to_parent as usize] = from_parent;
-            return Some(e.weight as i32);
-        }
-        None
-    }).sum()
+    graph
+        .edges
+        .iter()
+        .filter_map(|&e| {
+            let from_parent = find_parent(&parents, e.from_index);
+            let to_parent = find_parent(&parents, e.to_index);
+            if from_parent != to_parent {
+                parents[to_parent as usize] = from_parent;
+                return Some(e.weight as i32);
+            }
+            None
+        })
+        .sum()
 }
 
-fn find_parent(parents: &[u32], index: u32) -> u32 {
+/*
+fn find_parent_recursion(parents: &[u32], index: u32) -> u32 {
     if parents[index as usize] != index {
         find_parent(parents, parents[index as usize])
     } else {
         index
     }
 }
+ */
 
-/*
-fn _find_parent_no_recursion(parents: &[u32], index: u32) -> u32 {
+fn find_parent(parents: &[u32], index: u32) -> u32 {
     let mut current_index = index;
     while parents[current_index as usize] != current_index {
         current_index = parents[current_index as usize];
     }
     current_index
 }
-*/
 
 #[cfg(test)]
 #[cfg(test)]
