@@ -131,7 +131,7 @@ impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
 /// assert_eq!(graph.edges[0], "1 3 250".parse().unwrap());
 /// assert_eq!(graph.edges[1], "2 1 120".parse().unwrap());
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Graph {
     /// Number of nodes in graph (indexed from 1 to `nodes_count`)
     pub nodes_count: u32,
