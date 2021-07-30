@@ -1,7 +1,7 @@
 use clap::Clap;
 use runner::*;
 use std::process;
-use utils::write_error_message;
+use utils::write_colored_error_message;
 
 type Result<T, E = RunnerError> = std::result::Result<T, E>;
 
@@ -10,7 +10,7 @@ type Result<T, E = RunnerError> = std::result::Result<T, E>;
 /// Calls run() function and kills process if it returns an error
 fn main() {
     if let Err(err) = run() {
-        write_error_message(&err.to_string()).unwrap();
+        write_colored_error_message(&err.to_string()).unwrap();
         process::exit(1);
     }
 }
