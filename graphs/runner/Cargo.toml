@@ -8,8 +8,17 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0"
 thiserror = "1.0.25"
+
+parse-display = "0.5.0"
+rand = "0.8.4"
+
 algorithms = { path = "../algorithms" }
 graph = { path = "../graph" }
+utils = { path = "../../utils"}
 
 [dependencies.clap]
 version = "~3.0.0-beta.2"
+
+[dev-dependencies]
+test-case = "1.1.0"
+tempfile = "3.2.0"

@@ -1,44 +1,17 @@
-use anyhow::{anyhow, Result as aResult};
-use clap::{AppSettings, Clap};
-use graph::Result;
-use std::path::{Path, PathBuf};
+use clap::Clap;
+use runner::*;
 use std::process;
+use utils::write_error_message;
+
+type Result<T, E = RunnerError> = std::result::Result<T, E>;
 
 /// Main function that is called when the app starts
 ///
 /// Calls run() function and kills process if it returns an error
 fn main() {
     if let Err(err) = run() {
-        println!("Error: {:?}", err);
+        write_error_message(&err.to_string()).unwrap();
         process::exit(1);
-    }
-}
-
-/// Arguments read from console by Clap
-#[derive(Debug, Clap)]
-#[clap(
-    name = "kruskal_algorithm",
-    version = "1.0",
-    about = "Algorithms & Data structures task from graph theory",
-    author = "Bartek M. <bmekarski@interia.pl>",
-    setting=AppSettings::ColoredHelp,
-)]
-struct CmdArgs {
-    /// Task file with task data
-    #[clap(long, short, parse(from_os_str), validator(file_exists))]
-    pub task_file: PathBuf,
-}
-
-/// Checks if file exists
-///
-/// # Arguments
-///
-/// `p` - Path to file including it's name and format
-fn file_exists(p: &str) -> aResult<()> {
-    if Path::new(p).exists() {
-        Ok(())
-    } else {
-        Err(anyhow!("the file does not exist: {}", p))
     }
 }
 
@@ -46,9 +19,17 @@ fn file_exists(p: &str) -> aResult<()> {
 fn run() -> Result<()> {
     let cmd_args: CmdArgs = CmdArgs::parse();
 
-    let graph = graph::build_graph(&cmd_args.task_file)?;
-    let output = algorithms::calculate_min_total_weight(graph);
-    println!("{}", output);
+    match cmd_args.subcommand {
+        SubCommand::RunAlgorithm(task_data) => {
+            let graph = graph::build_graph(&task_data.task_file)?;
+            let output = algorithms::calculate_min_total_weight(graph);
+            println!("{}", output);
+        }
 
+        SubCommand::GenerateGraphFile(params) => {
+            generate_graph(&params)?;
+            println!("Graph file with path {:?} successfully generated!", params.graph_file);
+        }
+    }
     Ok(())
 }
