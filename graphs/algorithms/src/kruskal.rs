@@ -20,6 +20,7 @@ impl UnionFind {
         UnionFind { parent, rank }
     }
 
+    /// find parent of element with given index
     pub fn find_parent(&self, index: u32) -> u32 {
         assert!(index < self.parent.len() as u32);
 
@@ -30,6 +31,7 @@ impl UnionFind {
         current_index
     }
 
+    /// `find_parent` with path compression
     pub fn find_mut_parent(&mut self, index: u32) -> u32 {
         assert!(index < self.parent.len() as u32);
 
@@ -45,6 +47,7 @@ impl UnionFind {
         index
     }
 
+    /// call `union` method for parents of given elements
     pub fn merge_parents(&mut self, x: u32, y: u32) -> bool {
         let x_parent = self.find_parent(x);
         let y_parent = self.find_parent(y);
@@ -55,6 +58,7 @@ impl UnionFind {
         }
     }
 
+    /// merge two sets
     pub fn union(&mut self, x: u32, y: u32) -> bool {
         if x == y {
             return false;
