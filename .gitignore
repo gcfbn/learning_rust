@@ -1,3 +1,5 @@
 **/target
 **/.idea
 **/benches/data
+**/*.out
+**/*.db

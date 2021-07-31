@@ -56,12 +56,9 @@ use std::path::Path;
 ///
 /// * `parameters` - parameters of the graph
 pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
-    if !is_possible_to_create_connected_graph(parameters) {
-        return Err(GenerateGraphError::TooFewEdgesForConnectedGraph {
-            edges_count: parameters.edges_count,
-            nodes_count: parameters.nodes_count,
-        });
-    }
+    // how many edges will left after connecting first node with all other nodes - if not enough an error is returned
+    // beause we don't want to have a graph with not connected nodes
+    let edges_left = try_calculate_edges_left(parameters.nodes_count.value(), parameters.edges_count.value())?;
 
     create_directory_if_necessary(&parameters.graph_file).map_err(GenerateGraphError::CreatingDirectoryError)?;
 
@@ -75,14 +72,11 @@ pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
     let mut rng = thread_rng();
 
     // add edges connecting first node with every other node so the graph will be connected
-    for i in 2..=parameters.nodes_count {
+    for i in 2..=parameters.nodes_count.value() {
         output
-            .write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight)).as_ref())
+            .write_all(format!("1 {} {}\n", i, rng.gen_range(1..=parameters.max_weight.value())).as_ref())
             .map_err(GenerateGraphError::WritingError)?;
     }
-
-    // edges left after connecting first node with other nodes
-    let edges_left = calculate_edges_left(parameters.nodes_count, parameters.edges_count);
 
     // generate rest of edges using `rng`
     for _ in 0..edges_left {
@@ -90,24 +84,15 @@ pub fn generate_graph(parameters: &GenerateGraphFileArgs) -> Result<()> {
             .write_all(
                 format!(
                     "{} {} {}\n",
-                    rng.gen_range(1..=parameters.nodes_count),
-                    rng.gen_range(1..=parameters.nodes_count),
-                    rng.gen_range(1..=parameters.max_weight)
+                    rng.gen_range(1..=parameters.nodes_count.value()),
+                    rng.gen_range(1..=parameters.nodes_count.value()),
+                    rng.gen_range(1..=parameters.max_weight.value())
                 )
                 .as_ref(),
             )
             .map_err(GenerateGraphError::WritingError)?;
     }
     Ok(())
-}
-
-/// Check if it's possible to generate connected graph with given parameters
-///
-/// # Arguments
-///
-/// * `parameters` - parameters of the graph
-fn is_possible_to_create_connected_graph(parameters: &GenerateGraphFileArgs) -> bool {
-    parameters.edges_count + 1 >= parameters.nodes_count
 }
 
 /// Takes a reference to a filepath and creates directory specified in the path if it doesn't exist
@@ -129,28 +114,18 @@ fn create_directory_if_necessary(path: &Path) -> ioResult<()> {
 ///
 /// * `nodes_count` - number of nodes in the graph
 /// * `edges_count` - total number of edges in the graph
-fn calculate_edges_left(nodes_count: u32, edges_count: u32) -> u32 {
-    edges_count - (nodes_count - 1)
+fn try_calculate_edges_left(nodes_count: u32, edges_count: u32) -> Result<u32> {
+    Ok((1 + edges_count)
+        .checked_sub(nodes_count)
+        .ok_or(GenerateGraphError::TooFewEdgesForConnectedGraph {
+            edges_count,
+            nodes_count,
+        })?)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_case::test_case;
-
-    #[test_case(7, 5 => false; "no because nodes_count is greater than edges_count by more than 1")]
-    #[test_case(6, 5 => true; "yes because nodes_count is greater than edges_count but only by 1")]
-    #[test_case(5, 5 => true; "yes because nodes_count is equal edges_count")]
-    #[test_case(4, 5 => true; "yes because is more edges than nodes")]
-    fn is_possible_to_create_connected_graph(nodes_count: u32, edges_count: u32) -> bool {
-        let args = format!(
-            "--graph-file test_file.txt --nodes-count {} --edges-count {} --max-weight 100",
-            nodes_count, edges_count
-        );
-        let parameters = args.parse::<GenerateGraphFileArgs>().unwrap();
-
-        crate::generate_graph::is_possible_to_create_connected_graph(&parameters)
-    }
 
     #[test]
     fn fails_with_error_too_few_edges_for_connected_graph() {
