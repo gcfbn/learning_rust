@@ -32,6 +32,12 @@ mod errors;
 mod reader;
 mod structures;
 
-pub use crate::errors::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
+pub use crate::errors::{
+    AddingEdgeError,
+    BuildGraphError,
+    BuildGraphResult,
+    GraphParametersParsingError,
+    ParsingEdgeError,
+};
 pub use crate::reader::build_graph;
 pub use crate::structures::{Edge, EdgeDescription, Graph, GraphBuilder, GraphParameters};

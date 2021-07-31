@@ -3,6 +3,12 @@ use parse_display::Display;
 use std::io::Error as ioError;
 use thiserror::Error;
 
+/// Result returned by the application
+pub type RunnerResult<T, E = RunnerError> = std::result::Result<T, E>;
+
+/// Result returned by graph generator
+pub type GenerateGraphResult<T, E = GenerateGraphError> = std::result::Result<T, E>;
+
 /// Enum containing variants of errors that could occur in bin/main.rs
 /// Derives [`thiserror::Error`] and [`core::fmt::Debug`], so errors could be easily printed out (using [`parse_display::Display`]).
 ///
@@ -56,9 +62,6 @@ impl From<GenerateGraphError> for RunnerError {
 }
 
 // -----------------------------------------------------------------------------
-
-/// Result returned by graph generator
-pub type Result<T, E = GenerateGraphError> = std::result::Result<T, E>;
 
 /// Enum containing variants of errors that might occur during generating graph
 ///

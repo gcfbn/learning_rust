@@ -1,5 +1,5 @@
 use super::structures::{Edge, Graph, GraphBuilder, GraphParameters};
-use crate::{BuildGraphError, GraphParametersParsingError, Result};
+use crate::{BuildGraphError, BuildGraphResult as Result, GraphParametersParsingError};
 use std::convert::From;
 use std::convert::TryFrom;
 use std::fs;
