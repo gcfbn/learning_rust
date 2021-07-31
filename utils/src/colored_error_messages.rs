@@ -1,7 +1,8 @@
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::io::{self, Write};
 
-pub fn write_error_message(msg: &str) -> io::Result<()> {
+/// Writes messages using colors the same as in `anyhow` crate
+pub fn write_colored_error_message(msg: &str) -> io::Result<()> {
     let choice = if atty::is(atty::Stream::Stderr) {
         ColorChoice::Auto
     } else {
