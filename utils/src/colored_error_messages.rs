@@ -1,5 +1,5 @@
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::io::{self, Write};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// Writes messages using colors the same as in `anyhow` crate
 pub fn write_colored_error_message(msg: &str) -> io::Result<()> {

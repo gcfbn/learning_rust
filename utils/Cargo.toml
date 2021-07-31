@@ -9,3 +9,4 @@ edition = "2018"
 # colored_error_messages
 termcolor = { version = "1.1" }
 atty = "0.2"
+clap = "~3.0.0-beta.2"
