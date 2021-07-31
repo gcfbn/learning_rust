@@ -1,5 +1,5 @@
 use super::dfs::dfs;
-use crate::{AddingEdgeError, BuildGraphError, GraphParametersParsingError, ParsingEdgeError, Result};
+use crate::{AddingEdgeError, BuildGraphError, BuildGraphResult, GraphParametersParsingError, ParsingEdgeError};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -41,7 +41,7 @@ impl Edge {
 impl FromStr for Edge {
     type Err = BuildGraphError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> BuildGraphResult<Self, Self::Err> {
         let edge_description = EdgeDescription::try_from(s)?;
         Edge::try_from(edge_description)
     }
@@ -63,7 +63,7 @@ pub struct EdgeDescription<'a> {
 impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
     type Error = BuildGraphError;
 
-    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+    fn try_from(s: &'a str) -> BuildGraphResult<Self, Self::Error> {
         let mut iter = s.split_whitespace();
 
         let from_index = iter
@@ -87,7 +87,7 @@ impl<'a> TryFrom<&'a str> for EdgeDescription<'a> {
 impl<'a> TryFrom<EdgeDescription<'a>> for Edge {
     type Error = BuildGraphError;
 
-    fn try_from(edge_description: EdgeDescription<'a>) -> Result<Self, Self::Error> {
+    fn try_from(edge_description: EdgeDescription<'a>) -> BuildGraphResult<Self, Self::Error> {
         let parsed_from_index = edge_description.from_index.parse::<u32>().map_err(|_| {
             BuildGraphError::from(ParsingEdgeError::FromIndexValueMustBeInteger(
                 edge_description.from_index.to_owned(),
@@ -213,7 +213,7 @@ impl GraphBuilder {
     /// # Arguments
     ///
     /// * `edge` - edge that will be added to the builder
-    pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
+    pub fn add_edge(&mut self, edge: Edge) -> BuildGraphResult<()> {
         if self.edges.len() >= self.max_edges_count {
             return Err(BuildGraphError::from(AddingEdgeError::TooManyEdges {
                 edges_count: self.edges.len(),
@@ -263,7 +263,7 @@ impl GraphBuilder {
     ///
     /// Returns [`Graph`] wrapped in result or wrapped [`crate::BuildGraphError`] if builder contains less edges than
     /// declared or graph isn't connected
-    pub fn build(self) -> Result<Graph> {
+    pub fn build(self) -> BuildGraphResult<Graph> {
         if self.edges.len() < self.max_edges_count {
             return Err(BuildGraphError::TooFewEdges {
                 current_count: self.edges.len(),
@@ -319,7 +319,7 @@ impl GraphParameters {
 impl TryFrom<&str> for GraphParameters {
     type Error = BuildGraphError;
 
-    fn try_from(line: &str) -> Result<Self, Self::Error> {
+    fn try_from(line: &str) -> BuildGraphResult<Self, Self::Error> {
         let mut inner_iter = line.split_whitespace();
 
         let nodes_count = inner_iter.next().unwrap(); // cannot fail !
@@ -416,7 +416,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn too_many_edges() -> Result<()> {
+        fn too_many_edges() -> BuildGraphResult<()> {
             let mut graph_builder = create_test_graph_builder();
             graph_builder.add_edge("1 3 200".parse()?)?;
             graph_builder.add_edge("2 1 50".parse()?)?;
@@ -469,7 +469,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn ok() -> Result<()> {
+        fn ok() -> BuildGraphResult<()> {
             let mut graph_builder = create_test_graph_builder();
             let first_edge = "1 3 100".parse()?;
             let second_edge = "2 3 130".parse()?;

@@ -3,7 +3,7 @@ use parse_display::Display;
 use thiserror::Error;
 
 /// Type returned by functions in this crate
-pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
+pub type BuildGraphResult<T, E = BuildGraphError> = std::result::Result<T, E>;
 
 /// Enum containing all possible variants of errors returned by functions in this crate.
 ///
@@ -16,9 +16,9 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 /// > "...".parse() should return an [`BuildGraphError::AddingEdgeError`]
 ///
 /// ```
-/// use graph::{Graph, BuildGraphError, AddingEdgeError, Result};
+/// use graph::{Graph, BuildGraphError, AddingEdgeError, BuildGraphResult};
 ///
-/// let maybe_graph: Result<Graph> = "3 2
+/// let maybe_graph: BuildGraphResult<Graph> = "3 2
 ///     1 2 100
 ///     2 4 100"
 ///     .parse();
@@ -39,9 +39,9 @@ pub type Result<T, E = BuildGraphError> = std::result::Result<T, E>;
 /// > "...".parse() should return [`BuildGraphError::TooFewEdges`]
 ///
 /// ```
-/// use graph::{Graph, BuildGraphError, Result};
+/// use graph::{Graph, BuildGraphError, BuildGraphResult};
 ///
-/// let maybe_graph: Result<Graph> = "4 3
+/// let maybe_graph: BuildGraphResult<Graph> = "4 3
 ///     1 2 500
 ///     1 4 350"
 ///     .parse();

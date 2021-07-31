@@ -3,7 +3,7 @@ use clap::{AppSettings, Clap};
 use crate::errors::RunnerError;
 use crate::subcommands::*;
 
-const APP_NAME: &str = "kruskal_algorithm";
+const APP_NAME: &str = "runner";
 
 /// Arguments read from console by Clap
 #[derive(Debug, Clap)]

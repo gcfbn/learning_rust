@@ -1,4 +1,4 @@
-use crate::errors::{GenerateGraphError, Result};
+use crate::errors::{GenerateGraphError, GenerateGraphResult as Result};
 use crate::GenerateGraphFileArgs;
 use rand::prelude::*;
 use std::fs::{create_dir_all, File};
