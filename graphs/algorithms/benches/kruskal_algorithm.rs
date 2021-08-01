@@ -43,10 +43,8 @@ fn bench_10000_nodes(b: &mut Bencher) {
 }
 
 // causes stack overflow
-/*
 #[bench]
 fn bench_100000_nodes(b: &mut Bencher) {
     let graph = generate_file_and_build_graph(100000);
     b.iter(|| calculate_min_total_weight(graph.clone()));
 }
-*/
