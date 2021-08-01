@@ -115,12 +115,12 @@ fn create_directory_if_necessary(path: &Path) -> ioResult<()> {
 /// * `nodes_count` - number of nodes in the graph
 /// * `edges_count` - total number of edges in the graph
 fn try_calculate_edges_left(nodes_count: u32, edges_count: u32) -> Result<u32> {
-    Ok((1 + edges_count)
+    (1 + edges_count)
         .checked_sub(nodes_count)
         .ok_or(GenerateGraphError::TooFewEdgesForConnectedGraph {
             edges_count,
             nodes_count,
-        })?)
+        })
 }
 
 #[cfg(test)]
