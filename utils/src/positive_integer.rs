@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::cmp::{Eq, PartialEq, PartialOrd};
 use std::convert::TryFrom;
-use std::convert::TryInto;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
 use thiserror::Error;
@@ -21,10 +20,10 @@ impl PositiveInteger {
 }
 
 impl TryFrom<u32> for PositiveInteger {
-    type Error = PositiveIntegerParseError;
+    type Error = PositiveIntegerError;
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         if val == 0 {
-            return Err(PositiveIntegerParseError::InputNumberIsEqZeroError);
+            return Err(PositiveIntegerError::InputNumberIsEqZeroError);
         }
         Ok(PositiveInteger(val))
     }
@@ -42,7 +41,12 @@ impl Sub<u32> for PositiveInteger {
     type Output = Self;
 
     fn sub(self, other: u32) -> Self {
-        Self(self.value() - other)
+        let new_value = self.value() - other;
+        if new_value == 0 {
+            panic!("0 is not allowed - it must be a positive integer");
+        }
+
+        Self(new_value)
     }
 }
 
@@ -59,7 +63,7 @@ impl PartialEq<u32> for PositiveInteger {
 }
 
 #[derive(Debug, Error)]
-pub enum PositiveIntegerParseError {
+pub enum PositiveIntegerError {
     #[error("cannot be negative - {0}")]
     InputNumberIsNegativeError(String),
 
@@ -74,28 +78,24 @@ pub enum PositiveIntegerParseError {
 }
 
 impl FromStr for PositiveInteger {
-    type Err = PositiveIntegerParseError;
+    type Err = PositiveIntegerError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let ivalue: isize =
             s.parse().map_err(
-                |err| PositiveIntegerParseError::InputNumberIsNotIntegerError {
+                |err| PositiveIntegerError::InputNumberIsNotIntegerError {
                     input: s.to_string(),
                     parse_error_message: format!("{}", err),
                 },
             )?;
 
         if ivalue < 0 {
-            return Err(PositiveIntegerParseError::InputNumberIsNegativeError(
+            return Err(PositiveIntegerError::InputNumberIsNegativeError(
                 s.to_string(),
             ));
         }
 
-        if ivalue == 0 {
-            return Err(PositiveIntegerParseError::InputNumberIsEqZeroError);
-        }
-
-        Ok(PositiveInteger(ivalue.try_into().unwrap()))
+        Self::try_from(ivalue as u32)
     }
 }
 
@@ -168,6 +168,7 @@ mod tests {
 
     mod arithmetic {
         use super::*;
+        use test_case::test_case;
 
         #[test]
         fn add() {
@@ -188,8 +189,15 @@ mod tests {
 
         #[test]
         fn sub_primitive() {
-            assert_eq!(PositiveInteger(1) - 1, 0);
-            assert_eq!(PositiveInteger(1) - 1, PositiveInteger(0));
+            assert_eq!(PositiveInteger(2) - 1, 1);
+            assert_eq!(PositiveInteger(2) - 1, PositiveInteger(1));
+        }
+
+        #[test_case(2, 2; "zero is not allowed")]
+        #[test_case(2, 3; "negative value is not allowed")]
+        #[should_panic]
+        fn failing_sub(u1: u32, u2: u32) {
+            let _ = PositiveInteger(u1) - u2;
         }
     }
 
