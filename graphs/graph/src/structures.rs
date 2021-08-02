@@ -1,4 +1,5 @@
 use super::dfs::dfs;
+use crate::adjacency_list::adjacency_list;
 use crate::{AddingEdgeError, BuildGraphError, BuildGraphResult, GraphParametersParsingError, ParsingEdgeError};
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -241,12 +242,7 @@ impl GraphBuilder {
 
     // checks if there is a path from any node to any other node
     fn is_connected(&self) -> bool {
-        let mut adjacency_list: Vec<Vec<usize>> = vec![Vec::new(); (self.nodes_count + 1) as usize];
-
-        for edge in &self.edges {
-            adjacency_list[edge.from_index as usize].push(edge.to_index as usize);
-            adjacency_list[edge.to_index as usize].push(edge.from_index as usize);
-        }
+        let adjacency_list = adjacency_list(&self.edges, self.nodes_count);
 
         let mut visited: Vec<bool> = vec![false; (self.nodes_count + 1) as usize];
         dfs(1, &adjacency_list, &mut visited);
