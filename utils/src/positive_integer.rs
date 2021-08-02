@@ -48,14 +48,7 @@ impl Sub<u32> for PositiveInteger {
 
 impl PartialOrd<u32> for PositiveInteger {
     fn partial_cmp(&self, other: &u32) -> Option<Ordering> {
-        let ordering = if self.0 < *other {
-            Ordering::Less
-        } else if self.0 == *other {
-            Ordering::Equal
-        } else {
-            Ordering::Greater
-        };
-        Some(ordering)
+        self.0.partial_cmp(other)
     }
 }
 
