@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 graph = { path = "../graph" }
+utils = { path = "../../utils" }
 
 [dev-dependencies]
 test-case = "1.1.0"
