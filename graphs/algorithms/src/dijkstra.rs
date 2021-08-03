@@ -31,7 +31,7 @@ impl PartialOrd for NodeDistance {
 }
 
 #[derive(Error, Debug)]
-enum DijkstraAlgorithmError {
+pub enum DijkstraAlgorithmError {
     #[error("start_node `{start_node}` is greater than nodes_count `{nodes_count}`")]
     InvalidStartNode { start_node: u32, nodes_count: u32 },
 

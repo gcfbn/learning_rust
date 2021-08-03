@@ -29,5 +29,5 @@ extern crate test_case;
 mod dijkstra;
 mod kruskal;
 
-pub use dijkstra::find_shortest_path_length;
+pub use dijkstra::{find_shortest_path_length, DijkstraAlgorithmError};
 pub use kruskal::calculate_min_total_weight;

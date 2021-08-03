@@ -1,4 +1,3 @@
-use algorithms::calculate_min_total_weight;
 use graph::{build_graph, Graph};
 use std::path::PathBuf;
 
@@ -14,6 +13,7 @@ fn build_graph_from_dataset_number(dataset_number: u32) -> Graph {
 
 mod kruskal {
     use super::*;
+    use algorithms::calculate_min_total_weight;
     use test_case::test_case;
 
     #[test_case(1 => 280)]
@@ -25,7 +25,7 @@ mod kruskal {
     #[test_case(7 => 1500)]
     #[test_case(8 => 400)]
     fn passing(dataset_number: u32) -> i32 {
-        let graph = build_graph_from_dataset_number(dataset_number).unwrap();
+        let graph = build_graph_from_dataset_number(dataset_number);
 
         calculate_min_total_weight(graph)
     }
@@ -33,5 +33,20 @@ mod kruskal {
 
 mod dijkstra {
     use super::*;
+    use algorithms::{find_shortest_path_length, DijkstraAlgorithmError};
+    use std::convert::TryFrom;
     use test_case::test_case;
+    use utils::PositiveInteger;
+
+    #[test_case(1, 1, 2 => 50)]
+    fn passing(dataset_number: u32, start_node: u32, end_node: u32) -> u32 {
+        let graph = build_graph_from_dataset_number(dataset_number);
+
+        find_shortest_path_length(
+            &graph,
+            PositiveInteger::try_from(start_node).unwrap(),
+            PositiveInteger::try_from(end_node).unwrap(),
+        )
+        .unwrap()
+    }
 }
