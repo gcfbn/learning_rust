@@ -45,7 +45,10 @@ fn is_node_index_valid(index: u32, nodes_count: u32) -> bool {
 
 fn validate_nodes(start_node: u32, end_node: u32, nodes_count: u32) -> Result<()> {
     if !is_node_index_valid(start_node, nodes_count) {
-        return Err(DijkstraAlgorithmError::InvalidEndNode { end_node, nodes_count });
+        return Err(DijkstraAlgorithmError::InvalidStartNode {
+            start_node,
+            nodes_count,
+        });
     }
     if !is_node_index_valid(end_node, nodes_count) {
         return Err(DijkstraAlgorithmError::InvalidEndNode { end_node, nodes_count });

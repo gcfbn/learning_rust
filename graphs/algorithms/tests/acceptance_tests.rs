@@ -33,7 +33,7 @@ mod kruskal {
 
 mod dijkstra {
     use super::*;
-    use algorithms::find_shortest_path_length;
+    use algorithms::{find_shortest_path_length, DijkstraAlgorithmError};
     use test_case::test_case;
     use utils::PositiveInteger;
 
@@ -47,5 +47,20 @@ mod dijkstra {
     fn passing(dataset_number: u32, start_node: u32, end_node: u32) -> u32 {
         let graph = build_graph_from_dataset_number(dataset_number);
         find_shortest_path_length(&graph, PositiveInteger::new(start_node), PositiveInteger::new(end_node)).unwrap()
+    }
+
+    #[test_case(1, 6, 1 => DijkstraAlgorithmError::InvalidStartNode {
+        start_node: 6,
+        nodes_count: 5,
+    }.to_string())]
+    #[test_case(7, 6, 7 => DijkstraAlgorithmError::InvalidEndNode {
+    end_node: 7,
+    nodes_count: 6,
+    }.to_string())]
+    fn failing(dataset_number: u32, start_node: u32, end_node: u32) -> String {
+        let graph = build_graph_from_dataset_number(dataset_number);
+        find_shortest_path_length(&graph, PositiveInteger::new(start_node), PositiveInteger::new(end_node))
+            .unwrap_err()
+            .to_string()
     }
 }
