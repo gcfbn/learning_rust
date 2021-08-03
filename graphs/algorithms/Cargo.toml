@@ -9,5 +9,7 @@ edition = "2018"
 graph = { path = "../graph" }
 utils = { path = "../../utils" }
 
+thiserror = "1.0.25"
+
 [dev-dependencies]
 test-case = "1.1.0"
