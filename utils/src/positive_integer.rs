@@ -19,6 +19,16 @@ impl PositiveInteger {
     }
 }
 
+impl PositiveInteger {
+    fn new(value: u32) -> Self {
+        if value == 0 {
+            panic!("0 is not allowed - it must be a positive integer");
+        }
+
+        Self(value)
+    }
+}
+
 impl TryFrom<u32> for PositiveInteger {
     type Error = PositiveIntegerError;
     fn try_from(val: u32) -> Result<Self, Self::Error> {
@@ -41,12 +51,7 @@ impl Sub<u32> for PositiveInteger {
     type Output = Self;
 
     fn sub(self, other: u32) -> Self {
-        let new_value = self.value() - other;
-        if new_value == 0 {
-            panic!("0 is not allowed - it must be a positive integer");
-        }
-
-        Self(new_value)
+        PositiveInteger::new(self.value() - other)
     }
 }
 
@@ -82,12 +87,11 @@ impl FromStr for PositiveInteger {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let ivalue: isize =
-            s.parse().map_err(
-                |err| PositiveIntegerError::InputNumberIsNotIntegerError {
+            s.parse()
+                .map_err(|err| PositiveIntegerError::InputNumberIsNotIntegerError {
                     input: s.to_string(),
                     parse_error_message: format!("{}", err),
-                },
-            )?;
+                })?;
 
         if ivalue < 0 {
             return Err(PositiveIntegerError::InputNumberIsNegativeError(
@@ -124,6 +128,21 @@ mod tests {
         }
     }
 
+    mod new {
+        use super::*;
+
+        #[test]
+        fn ok() {
+            assert_eq!(PositiveInteger::new(1).value(), 1);
+        }
+
+        #[test]
+        #[should_panic]
+        fn fails_because_zero_as_input_value() {
+            PositiveInteger::new(0);
+        }
+    }
+
     mod try_from {
         use super::*;
 
@@ -133,7 +152,7 @@ mod tests {
         }
 
         #[test]
-        fn fails_becuase_zero_as_input_value() {
+        fn fails_because_zero_as_input_value() {
             assert!(PositiveInteger::try_from(0).is_err());
         }
     }
