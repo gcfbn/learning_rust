@@ -54,7 +54,6 @@ impl PartialEq<&str> for MyString {
     }
 }
 
-
 fn main() {
     println!("Hello, world!");
 }
@@ -119,6 +118,33 @@ mod tests {
 
             let expected = vec![&my_string_a, &my_string_b, &my_string_c];
             assert_eq!(vector, expected);
+        }
+
+        #[test]
+        fn vector_of_newtypes_from_vector_of_strings() {
+            let vec_of_strings = vec![String::from("aaa"), String::from("bbb")];
+            let _ = Vec::from(vec_of_strings);
+        }
+
+        #[test]
+        fn vector_of_newtypes_from_vector_of_refs_to_string() {
+            let string_a = String::from("aaa");
+            let string_b = String::from("bbb");
+
+            let vec_of_refs = vec![&string_a, &string_b];
+            let _ = Vec::from(vec_of_refs);
+        }
+
+        #[test]
+        fn vector_of_newtypes_from_vector_of_slices() {
+            let vec_of_slices = vec!["aaa", "bbb"];
+            let _ = Vec::from(vec_of_slices);
+        }
+
+        #[test]
+        fn vector_of_newtypes_from_vector_of_refs_to_slices() {
+            let vec_of_refs = vec![&"aaa", &"bbb"];
+            let _ = Vec::from(vec_of_refs);
         }
     }
 }
