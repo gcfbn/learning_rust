@@ -36,6 +36,12 @@ impl From<&&str> for MyString {
     }
 }
 
+impl Into<String> for MyString {
+    fn into(self) -> String {
+        self.0
+    }
+}
+
 impl PartialEq<String> for MyString {
     fn eq(&self, other: &String) -> bool {
         self.0.eq(other)
