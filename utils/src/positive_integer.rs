@@ -20,7 +20,7 @@ impl PositiveInteger {
 }
 
 impl PositiveInteger {
-    fn new(value: u32) -> Self {
+    pub fn new(value: u32) -> Self {
         if value == 0 {
             panic!("0 is not allowed - it must be a positive integer");
         }

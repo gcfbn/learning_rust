@@ -27,11 +27,13 @@
 #[cfg(test)]
 extern crate test_case;
 
+mod adjacency_list;
 mod dfs;
 mod errors;
 mod reader;
 mod structures;
 
+pub use crate::adjacency_list::{adjacency_list, AdjacencyList};
 pub use crate::errors::{
     AddingEdgeError,
     BuildGraphError,
