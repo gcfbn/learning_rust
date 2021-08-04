@@ -89,4 +89,30 @@ mod tests {
             assert_eq!(my_string, str);
         }
     }
+
+    mod vectors {
+        use super::*;
+
+        #[test]
+        fn sort_vector() {
+            let mut vector = vec![MyString::from("bbb"), MyString::from("ccc"), MyString::from("aaa")];
+            vector.sort();
+
+            let expected = vec![MyString::from("aaa"), MyString::from("bbb"), MyString::from("ccc")];
+            assert_eq!(vector, expected);
+        }
+
+        #[test]
+        fn sort_vector_of_refs() {
+            let my_string_a = String::from("aaa");
+            let my_string_b = String::from("bbb");
+            let my_string_c = String::from("ccc");
+
+            let mut vector = vec![&my_string_c, &my_string_a, &my_string_b];
+            vector.sort();
+
+            let expected = vec![&my_string_a, &my_string_b, &my_string_c];
+            assert_eq!(vector, expected);
+        }
+    }
 }
