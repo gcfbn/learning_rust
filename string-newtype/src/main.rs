@@ -146,5 +146,9 @@ mod tests {
             let vec_of_refs = vec![&"aaa", &"bbb"];
             let _ = Vec::from(vec_of_refs);
         }
+
+        // TODO: vector_from_reference_to_vector
+        // TODO: vector_from_slice
+        // TODO: vector_from_slice_of_references
     }
 }
