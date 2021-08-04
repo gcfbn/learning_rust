@@ -56,33 +56,37 @@ fn main() {
 mod tests {
     use super::*;
 
-    #[test]
-    fn from_string() {
-        let string = String::from("aaa");
-        let _ = MyString::from(string);
-    }
+    mod from {
+        use super::*;
 
-    #[test]
-    fn from_str() {
-        let str = "aaa";
-        let my_string = MyString::from(str);
+        #[test]
+        fn from_string() {
+            let string = String::from("aaa");
+            let _ = MyString::from(string);
+        }
 
-        assert_eq!(my_string, str);
-    }
+        #[test]
+        fn from_str() {
+            let str = "aaa";
+            let my_string = MyString::from(str);
 
-    #[test]
-    fn from_string_ref() {
-        let string = String::from("aaa");
-        let my_string = MyString::from(&string);
+            assert_eq!(my_string, str);
+        }
 
-        assert_eq!(my_string, string);
-    }
+        #[test]
+        fn from_string_ref() {
+            let string = String::from("aaa");
+            let my_string = MyString::from(&string);
 
-    #[test]
-    fn from_str_ref() {
-        let str = "aaa";
-        let my_string = MyString::from(&str);
+            assert_eq!(my_string, string);
+        }
 
-        assert_eq!(my_string, str);
+        #[test]
+        fn from_str_ref() {
+            let str = "aaa";
+            let my_string = MyString::from(&str);
+
+            assert_eq!(my_string, str);
+        }
     }
 }
