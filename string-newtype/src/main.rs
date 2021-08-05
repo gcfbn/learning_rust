@@ -147,8 +147,30 @@ mod tests {
             let _ = Vec::from(vec_of_refs);
         }
 
+        #[test]
+        fn vector_of_newtypes_from_array_of_strs() {
+            let array = ["aaa", "bbb", "ccc"];
+            let _ = Vec::from(array);
+        }
+
+        #[test]
+        fn vector_of_newtypes_from_array_of_refs_to_strings() {
+            let string_a = String::from("aaa");
+            let string_b = String::from("bbb");
+
+            let array = [&string_a, &string_b];
+            let _ = Vec::from(array);
+        }
+
+        #[test]
+        fn vector_of_newtypes_from_array_of_refs_to_strs() {
+            let str_a = "aaa";
+            let str_b = "bbb";
+
+            let array = [&str_a, &str_b];
+            let _ = Vec::from(array);
+        }
+
         // TODO: vector_from_reference_to_vector
-        // TODO: vector_from_slice
-        // TODO: vector_from_slice_of_references
     }
 }
