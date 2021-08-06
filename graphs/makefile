@@ -27,7 +27,7 @@ algorithms/benches/data/200000_nodes.txt:
 
 # -----------------------------------------------------------------------------
 
-benchmarks: bench_1000_nodes bench_10000_nodes bench_100000_nodes
+benchmarks: bench_1000_nodes bench_10000_nodes bench_100000_nodes bench_200000_nodes
 
 bench_1000_nodes: generate_graph_1000_nodes
 	cargo bench 1000_nodes
