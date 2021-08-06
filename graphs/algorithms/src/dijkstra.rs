@@ -5,7 +5,7 @@ use thiserror::Error;
 use utils::PositiveInteger;
 
 /// Result type returned by Dijkstra's algorithm
-pub type Result<T> = std::result::Result<T, DijkstraAlgorithmError>;
+pub type DijkstraResult<T> = std::result::Result<T, DijkstraAlgorithmError>;
 
 /// Node index and it's distance from start_node
 #[derive(PartialEq, Eq)]
@@ -97,7 +97,7 @@ fn is_node_index_valid(index: u32, nodes_count: u32) -> bool {
 }
 
 /// Validates given nodes indexes and returns an error if at least one of them is greater than `nodes_count`
-fn validate_nodes(start_node: u32, end_node: u32, nodes_count: u32) -> Result<()> {
+fn validate_nodes(start_node: u32, end_node: u32, nodes_count: u32) -> DijkstraResult<()> {
     if !is_node_index_valid(start_node, nodes_count) {
         return Err(DijkstraAlgorithmError::InvalidStartNode {
             start_node,
@@ -112,7 +112,11 @@ fn validate_nodes(start_node: u32, end_node: u32, nodes_count: u32) -> Result<()
 }
 
 /// Calculates path with lowest weight between two given nodes
-pub fn find_shortest_path_length(graph: &Graph, start_node: PositiveInteger, end_node: PositiveInteger) -> Result<u32> {
+pub fn find_shortest_path_length(
+    graph: &Graph,
+    start_node: PositiveInteger,
+    end_node: PositiveInteger,
+) -> DijkstraResult<u32> {
     validate_nodes(start_node.value(), end_node.value(), graph.nodes_count)?;
 
     // create adjacency list describing given graph
