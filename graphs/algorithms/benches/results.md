@@ -1,4 +1,5 @@
 # Kruskal's algorithm
+
 | Implementation              | nodes_count | Result                              |
 | ----------------------------|:-----------:|:----------------------------------- |
 | find_parent_recursion       | 1000        | 904,855 ns/iter (+/- 196,901)       |
@@ -13,3 +14,4 @@
 | find_parent_no_recursion    | 100000      | Stack Overflow                      |
 | union_find                  | 100000      | Stack Overflow                      |
 | union_find_dfs_no_recursion | 100000      | 24,072,990 ns/iter (+/- 2,410,730)  |
+| union_find_dfs_no_recursion | 200000      | 54,530,730 ns/iter (+/- 10,756,471) |

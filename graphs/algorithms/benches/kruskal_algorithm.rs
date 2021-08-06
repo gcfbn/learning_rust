@@ -21,9 +21,14 @@ fn bench_10000_nodes(b: &mut Bencher) {
     b.iter(|| calculate_min_total_weight(graph.clone()));
 }
 
-// causes stack overflow
 #[bench]
 fn bench_100000_nodes(b: &mut Bencher) {
     let graph = build_graph(&PathBuf::from("benches/data/100000_nodes.txt")).unwrap();
+    b.iter(|| calculate_min_total_weight(graph.clone()));
+}
+
+#[bench]
+fn bench_200000_nodes(b: &mut Bencher) {
+    let graph = build_graph(&PathBuf::from("benches/data/200000_nodes.txt")).unwrap();
     b.iter(|| calculate_min_total_weight(graph.clone()));
 }
