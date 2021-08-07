@@ -244,8 +244,7 @@ impl GraphBuilder {
     fn is_connected(&self) -> bool {
         let adjacency_list = adjacency_list(&self.edges, self.nodes_count);
 
-        let mut visited: Vec<bool> = vec![false; (self.nodes_count + 1) as usize];
-        dfs(1, &adjacency_list, &mut visited);
+        let visited = dfs(1, &adjacency_list);
 
         for value in visited.iter().skip(1) {
             if !value {
