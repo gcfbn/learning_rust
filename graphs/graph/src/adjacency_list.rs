@@ -2,7 +2,7 @@ use crate::Edge;
 
 pub type AdjacencyList = Vec<Vec<(usize, usize)>>;
 
-pub fn adjacency_list(edges: &Vec<Edge>, nodes_count: u32) -> AdjacencyList {
+pub fn adjacency_list(edges: &[Edge], nodes_count: u32) -> AdjacencyList {
     let mut adjacency_list: AdjacencyList = vec![Vec::new(); (nodes_count + 1) as usize];
 
     for edge in edges {
