@@ -15,3 +15,11 @@
 | union_find                  | 100000      | Stack Overflow                      |
 | union_find_dfs_no_recursion | 100000      | 24,072,990 ns/iter (+/- 2,410,730)  |
 | union_find_dfs_no_recursion | 200000      | 54,530,730 ns/iter (+/- 10,756,471) |
+
+# Dijkstra's algorithm
+| Implementation | nodes_count | Result                               |
+| ---------------|:-----------:|:------------------------------------ |
+| using_heap     | 1000        | 217,798 ns/iter (+/- 40,840)         |
+| using_heap     | 10000       | 2,571,782 ns/iter (+/- 448,269)      |
+| using_heap     | 100000      | 62,593,490 ns/iter (+/- 41,026,910)  |
+| using_heap     | 200000      | 175,201,080 ns/iter (+/- 61,371,414) |
