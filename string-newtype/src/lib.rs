@@ -4,7 +4,7 @@ use std::ops::Deref;
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Deserialize)]
-struct MyString(String);
+pub struct MyString(String);
 
 impl FromStr for MyString {
     type Err = ();
@@ -74,10 +74,6 @@ impl PartialOrd<&str> for MyString {
     fn partial_cmp(&self, other: &&str) -> Option<Ordering> {
         self.0.partial_cmp(&other.to_string())
     }
-}
-
-fn main() {
-    println!("Hello, world!");
 }
 
 #[cfg(test)]
