@@ -175,6 +175,90 @@ mod tests {
         }
     }
 
+    mod le {
+        use super::*;
+
+        #[test]
+        fn le_str() {
+            let my_string = MyString::from("aaa");
+            let str = "bbb";
+
+            assert!(my_string <= str);
+        }
+
+        #[test]
+        fn le_string() {
+            let my_string = MyString::from("aaa");
+            let string = String::from("bbb");
+
+            assert!(my_string <= string);
+        }
+
+        #[test]
+        fn le_self() {
+            let first = MyString::from("aaa");
+            let second = MyString::from("bbb");
+
+            assert!(first <= second);
+        }
+    }
+
+    mod gt {
+        use super::*;
+
+        #[test]
+        fn le_str() {
+            let my_string = MyString::from("bbb");
+            let str = "aaa";
+
+            assert!(my_string > str);
+        }
+
+        #[test]
+        fn le_string() {
+            let my_string = MyString::from("bbb");
+            let string = String::from("aaa");
+
+            assert!(my_string > string);
+        }
+
+        #[test]
+        fn le_self() {
+            let first = MyString::from("bbb");
+            let second = MyString::from("aaa");
+
+            assert!(first > second);
+        }
+    }
+
+    mod ge {
+        use super::*;
+
+        #[test]
+        fn ge_str() {
+            let my_string = MyString::from("bbb");
+            let str = "aaa";
+
+            assert!(my_string >= str);
+        }
+
+        #[test]
+        fn ge_string() {
+            let my_string = MyString::from("bbb");
+            let string = String::from("aaa");
+
+            assert!(my_string >= string);
+        }
+
+        #[test]
+        fn ge_self() {
+            let first = MyString::from("bbb");
+            let second = MyString::from("bbb");
+
+            assert!(first >= second);
+        }
+    }
+
     mod vectors {
         use super::*;
 
