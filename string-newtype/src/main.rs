@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use core::str::FromStr;
 use std::ops::Deref;
+use std::cmp::Ordering;
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Deserialize)]
 struct MyString(String);
@@ -63,6 +64,18 @@ impl PartialEq<&str> for MyString {
     }
 }
 
+impl PartialOrd<String> for MyString {
+    fn partial_cmp(&self, other: &String) -> Option<Ordering> {
+        self.0.partial_cmp(other)
+    }
+}
+
+impl PartialOrd<&str> for MyString {
+    fn partial_cmp(&self, other: &&str) -> Option<Ordering> {
+        self.0.partial_cmp(&other.to_string())
+    }
+}
+
 fn main() {
     println!("Hello, world!");
 }
@@ -83,19 +96,19 @@ mod tests {
         #[test]
         fn from_str() {
             let str = "aaa";
-            let my_string = MyString::from(str);
+            let _ = MyString::from(str);
         }
 
         #[test]
         fn from_string_ref() {
             let string = String::from("aaa");
-            let my_string = MyString::from(&string);
+            let _ = MyString::from(&string);
         }
 
         #[test]
         fn from_str_ref() {
             let str = "aaa";
-            let my_string = MyString::from(&str);
+            let _ = MyString::from(&str);
         }
     }
 
@@ -130,6 +143,34 @@ mod tests {
                 let second = MyString::from(string);
 
                 assert_eq!(first, second);
+            }
+        }
+
+        mod lt {
+            use super::*;
+
+            #[test]
+            fn lt_str() {
+                let my_string = MyString::from("aaa");
+                let str = "bbb";
+
+                assert!(my_string < str);
+            }
+
+            #[test]
+            fn lt_string() {
+                let my_string = MyString::from("aaa");
+                let string = String::from("bbb");
+
+                assert!(my_string < string);
+            }
+
+            #[test]
+            fn lt_self() {
+                let first = MyString::from("aaa");
+                let second = MyString::from("bbb");
+
+                assert!(first < second);
             }
         }
     }
