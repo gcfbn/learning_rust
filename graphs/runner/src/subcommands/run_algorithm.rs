@@ -3,6 +3,7 @@ use anyhow::{anyhow, Result as aResult};
 use clap::{AppSettings, Clap};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use utils::PositiveInteger;
 
 /// Subcommand running Kruskal's algorithm for graph built from `task_file`
 #[derive(Clap, Debug)]
@@ -11,6 +12,20 @@ pub struct RunAlgorithmArgs {
     /// Name of file containing graph data
     #[clap(long, short, parse(from_os_str), validator(file_exists))]
     pub task_file: PathBuf,
+
+    #[clap(subcommand)]
+    pub algorithm_args: AlgorithmArgs,
+}
+
+#[derive(Clap, Debug)]
+pub enum AlgorithmArgs {
+    Kruskals {},
+    Dijkstras {
+        #[clap(long, short)]
+        start_node: PositiveInteger,
+        #[clap(long, short)]
+        end_node:   PositiveInteger,
+    },
 }
 
 /// Checks if file exists
