@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use core::str::FromStr;
+use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Deserialize)]
 struct MyString(String);
@@ -9,6 +10,14 @@ impl FromStr for MyString {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(MyString(s.to_string()))
+    }
+}
+
+impl Deref for MyString {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -58,6 +67,7 @@ fn main() {
     println!("Hello, world!");
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
