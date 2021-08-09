@@ -1,10 +1,8 @@
+use crate::errors::{AlgorithmResult, DijkstrasError};
 use graph::{adjacency_list, Graph};
 use std::cmp::{Ordering, PartialOrd};
 use std::collections::BinaryHeap;
-use thiserror::Error;
 use utils::PositiveInteger;
-
-pub type Result<T> = std::result::Result<T, DijkstraAlgorithmError>;
 
 #[derive(PartialEq, Eq)]
 struct NodeDistance {
@@ -30,34 +28,29 @@ impl PartialOrd for NodeDistance {
     }
 }
 
-#[derive(Error, Debug)]
-pub enum DijkstraAlgorithmError {
-    #[error("start_node `{start_node}` is greater than nodes_count `{nodes_count}`")]
-    InvalidStartNode { start_node: u32, nodes_count: u32 },
-
-    #[error("end_node `{end_node}` is greater than nodes_count `{nodes_count}`")]
-    InvalidEndNode { end_node: u32, nodes_count: u32 },
-}
-
 fn is_node_index_valid(index: u32, nodes_count: u32) -> bool {
     index <= nodes_count
 }
 
-fn validate_nodes(start_node: u32, end_node: u32, nodes_count: u32) -> Result<()> {
+fn validate_nodes(start_node: u32, end_node: u32, nodes_count: u32) -> Result<(), DijkstrasError> {
     if !is_node_index_valid(start_node, nodes_count) {
-        return Err(DijkstraAlgorithmError::InvalidStartNode {
+        return Err(DijkstrasError::InvalidStartNode {
             start_node,
             nodes_count,
         });
     }
     if !is_node_index_valid(end_node, nodes_count) {
-        return Err(DijkstraAlgorithmError::InvalidEndNode { end_node, nodes_count });
+        return Err(DijkstrasError::InvalidEndNode { end_node, nodes_count });
     }
 
     Ok(())
 }
 
-pub fn find_shortest_path_length(graph: &Graph, start_node: PositiveInteger, end_node: PositiveInteger) -> Result<u32> {
+pub fn find_shortest_path_length(
+    graph: &Graph,
+    start_node: PositiveInteger,
+    end_node: PositiveInteger,
+) -> AlgorithmResult<u32> {
     validate_nodes(start_node.value(), end_node.value(), graph.nodes_count)?;
 
     // create adjacency list describing given graph
