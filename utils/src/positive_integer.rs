@@ -19,6 +19,7 @@ impl PositiveInteger {
     }
 }
 
+#[cfg(test)]
 impl PositiveInteger {
     pub fn new(value: u32) -> Self {
         if value == 0 {
@@ -51,7 +52,7 @@ impl Sub<u32> for PositiveInteger {
     type Output = Self;
 
     fn sub(self, other: u32) -> Self {
-        PositiveInteger::new(self.value() - other)
+        Self::try_from(self.value() - other).unwrap()
     }
 }
 
