@@ -144,6 +144,55 @@ mod tests {
 
                 assert_eq!(first, second);
             }
+
+            #[test]
+            fn eq_str() {
+                let str = "aaa";
+                let my_string = String::from("aaa");
+
+                assert_eq!(my_string, str);
+            }
+
+            #[test]
+            fn eq_string() {
+                let string = String::from("aaa");
+                let my_string = MyString::from("aaa");
+
+                assert_eq!(my_string, string);
+            }
+        }
+
+        mod ne {
+            use super::*;
+
+            #[test]
+            fn ne_self_from_str() {
+                let first = MyString::from("aaa");
+                let second = MyString::from("AAA");
+
+                assert_ne!(first, second);
+            }
+
+            #[test]
+            fn ne_self_from_string() {
+                let first_string = String::from("aaa");
+                let first = MyString::from(&first_string);
+
+                let second_string = String::from("AAA");
+                let second = MyString::from(second_string);
+
+                assert_ne!(first, second);
+            }
+
+            #[test]
+            fn ne_self_from_str_and_string() {
+                let str = "aaa";
+                let string = String::from("BBB");
+                let first = MyString::from(str);
+                let second = MyString::from(string);
+
+                assert_ne!(first, second);
+            }
         }
 
         mod lt {
@@ -173,89 +222,89 @@ mod tests {
                 assert!(first < second);
             }
         }
-    }
 
-    mod le {
-        use super::*;
+        mod le {
+            use super::*;
 
-        #[test]
-        fn le_str() {
-            let my_string = MyString::from("aaa");
-            let str = "bbb";
+            #[test]
+            fn le_str() {
+                let my_string = MyString::from("aaa");
+                let str = "bbb";
 
-            assert!(my_string <= str);
+                assert!(my_string <= str);
+            }
+
+            #[test]
+            fn le_string() {
+                let my_string = MyString::from("aaa");
+                let string = String::from("bbb");
+
+                assert!(my_string <= string);
+            }
+
+            #[test]
+            fn le_self() {
+                let first = MyString::from("aaa");
+                let second = MyString::from("bbb");
+
+                assert!(first <= second);
+            }
         }
 
-        #[test]
-        fn le_string() {
-            let my_string = MyString::from("aaa");
-            let string = String::from("bbb");
+        mod gt {
+            use super::*;
 
-            assert!(my_string <= string);
+            #[test]
+            fn le_str() {
+                let my_string = MyString::from("bbb");
+                let str = "aaa";
+
+                assert!(my_string > str);
+            }
+
+            #[test]
+            fn le_string() {
+                let my_string = MyString::from("bbb");
+                let string = String::from("aaa");
+
+                assert!(my_string > string);
+            }
+
+            #[test]
+            fn le_self() {
+                let first = MyString::from("bbb");
+                let second = MyString::from("aaa");
+
+                assert!(first > second);
+            }
         }
 
-        #[test]
-        fn le_self() {
-            let first = MyString::from("aaa");
-            let second = MyString::from("bbb");
+        mod ge {
+            use super::*;
 
-            assert!(first <= second);
-        }
-    }
+            #[test]
+            fn ge_str() {
+                let my_string = MyString::from("bbb");
+                let str = "aaa";
 
-    mod gt {
-        use super::*;
+                assert!(my_string >= str);
+            }
 
-        #[test]
-        fn le_str() {
-            let my_string = MyString::from("bbb");
-            let str = "aaa";
+            #[test]
+            fn ge_string() {
+                let my_string = MyString::from("bbb");
+                let string = String::from("aaa");
 
-            assert!(my_string > str);
-        }
+                assert!(my_string >= string);
+            }
 
-        #[test]
-        fn le_string() {
-            let my_string = MyString::from("bbb");
-            let string = String::from("aaa");
+            #[test]
+            fn ge_self() {
+                let first = MyString::from("bbb");
+                let second = MyString::from("bbb");
 
-            assert!(my_string > string);
-        }
-
-        #[test]
-        fn le_self() {
-            let first = MyString::from("bbb");
-            let second = MyString::from("aaa");
-
-            assert!(first > second);
-        }
-    }
-
-    mod ge {
-        use super::*;
-
-        #[test]
-        fn ge_str() {
-            let my_string = MyString::from("bbb");
-            let str = "aaa";
-
-            assert!(my_string >= str);
-        }
-
-        #[test]
-        fn ge_string() {
-            let my_string = MyString::from("bbb");
-            let string = String::from("aaa");
-
-            assert!(my_string >= string);
-        }
-
-        #[test]
-        fn ge_self() {
-            let first = MyString::from("bbb");
-            let second = MyString::from("bbb");
-
-            assert!(first >= second);
+                assert!(first >= second);
+            }
         }
     }
 
@@ -335,6 +384,15 @@ mod tests {
             let _ = Vec::from(array);
         }
 
-        // TODO: vector_from_reference_to_vector
+        #[test]
+        fn vector_of_newtypes_from_reference_to_vector_of_strings() {
+            let string_a = String::from("aaa");
+            let string_b = String::from("bbb");
+
+            let ref_to_vec = &vec![string_a, string_b];
+
+            // it's impossible to do it without `clone` call
+            let _ = Vec::from(ref_to_vec.clone());
+        }
     }
 }
