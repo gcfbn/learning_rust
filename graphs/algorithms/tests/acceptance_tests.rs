@@ -33,9 +33,21 @@ mod kruskal {
 
 mod dijkstra {
     use super::*;
-    use algorithms::{find_shortest_path_length, DijkstraAlgorithmError};
+    use algorithms::DijkstrasError;
+    use algorithms::{find_shortest_path_length, AlgorithmError};
     use test_case::test_case;
     use utils::PositiveInteger;
+
+    fn test_error(dataset_number: u32, start_node: u32, end_node: u32, expected_error: AlgorithmError) {
+        let graph = build_graph_from_dataset_number(dataset_number);
+        let actual_error =
+            find_shortest_path_length(&graph, PositiveInteger::new(start_node), PositiveInteger::new(end_node))
+                .unwrap_err();
+
+        assert_eq!(actual_error.to_string(), expected_error.to_string())
+    }
+
+    // -----------------------------------------------------------------------------
 
     #[test_case(1, 1, 2 => 50)]
     #[test_case(1, 1, 4 => 120)]
@@ -49,18 +61,20 @@ mod dijkstra {
         find_shortest_path_length(&graph, PositiveInteger::new(start_node), PositiveInteger::new(end_node)).unwrap()
     }
 
-    #[test_case(1, 6, 1 => DijkstraAlgorithmError::InvalidStartNode {
+    #[test_case(1, 6, 1, DijkstrasError::InvalidStartNode {
         start_node: 6,
         nodes_count: 5,
-    }.to_string())]
-    #[test_case(7, 6, 7 => DijkstraAlgorithmError::InvalidEndNode {
+    })]
+    #[test_case(7, 6, 7, DijkstrasError::InvalidEndNode {
     end_node: 7,
     nodes_count: 6,
-    }.to_string())]
-    fn failing(dataset_number: u32, start_node: u32, end_node: u32) -> String {
-        let graph = build_graph_from_dataset_number(dataset_number);
-        find_shortest_path_length(&graph, PositiveInteger::new(start_node), PositiveInteger::new(end_node))
-            .unwrap_err()
-            .to_string()
+    })]
+    fn failing(dataset_number: u32, start_node: u32, end_node: u32, expected_error: DijkstrasError) {
+        test_error(
+            dataset_number,
+            start_node,
+            end_node,
+            AlgorithmError::from(expected_error),
+        )
     }
 }
