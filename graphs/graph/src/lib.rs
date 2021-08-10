@@ -1,6 +1,6 @@
 //! Implementation of directed graph structure
 //!
-//! Result type for functions in this crate is [`crate::errors::Result`]
+//! Result type for functions in this crate is [`crate::errors::BuildGraphResult`]
 //!
 //! # Example
 //! ```
