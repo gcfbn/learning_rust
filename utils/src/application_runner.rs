@@ -1,5 +1,7 @@
 use clap::{AppSettings, Clap, IntoApp};
+use std::fmt::Debug;
 
+#[derive(Debug)]
 enum RunStatus {
     OK = 0,
     Error = 1,
@@ -7,17 +9,28 @@ enum RunStatus {
 
 pub trait ApplicationRunner {
     type Error: std::error::Error;
-    type CmdArgs: IntoApp + Clap;
+    type CmdArgs: IntoApp + Clap + Debug;
 
     fn main(&self) -> i32 {
+        env_logger::init();
+        info!("env_logger initialized");
+
         let cmd_args = Self::CmdArgs::parse();
+        info!("Parsed command line arguments - {:?}", cmd_args);
+
+        // maybe with application name or with chosen subcommand
+        info!("Running application...");
+
         let status = if let Err(err) = self.run(cmd_args) {
             self.write_app_error_message(&err.to_string());
+            error!("Error - {}", &err.to_string());
+
             RunStatus::Error
         } else {
             RunStatus::OK
         };
 
+        info!("Closing application with status {:?}", &status);
         std::process::exit(status as i32)
     }
 
