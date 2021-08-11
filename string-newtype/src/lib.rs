@@ -30,7 +30,7 @@ impl From<String> for MyString {
 
 impl From<&String> for MyString {
     fn from(s: &String) -> Self {
-        MyString(s.to_string())
+        MyString(s.to_owned())
     }
 }
 
@@ -46,11 +46,6 @@ impl From<&&str> for MyString {
     }
 }
 
-impl Into<String> for MyString {
-    fn into(self) -> String {
-        self.0
-    }
-}
 
 impl PartialEq<String> for MyString {
     fn eq(&self, other: &String) -> bool {
@@ -341,25 +336,25 @@ mod tests {
             let string_b = String::from("bbb");
 
             let vec_of_refs = vec![&string_a, &string_b];
-            let _ = Vec::from(vec_of_refs);
+            let _: Vec<MyString> = vec_of_refs.iter().map(|&e| MyString::from(e)).collect();
         }
 
         #[test]
         fn vector_of_newtypes_from_vector_of_slices() {
             let vec_of_slices = vec!["aaa", "bbb"];
-            let _ = Vec::from(vec_of_slices);
+            let _: Vec<MyString> = vec_of_slices.iter().map(|&e| MyString::from(e)).collect();
         }
 
         #[test]
         fn vector_of_newtypes_from_vector_of_refs_to_slices() {
             let vec_of_refs = vec![&"aaa", &"bbb"];
-            let _ = Vec::from(vec_of_refs);
+            let _: Vec<MyString> = vec_of_refs.iter().map(|&e| MyString::from(e)).collect();
         }
 
         #[test]
         fn vector_of_newtypes_from_array_of_strs() {
             let array = ["aaa", "bbb", "ccc"];
-            let _ = Vec::from(array);
+            let _: Vec<MyString> = array.iter().map(|&e| MyString::from(e)).collect();
         }
 
         #[test]
@@ -368,7 +363,7 @@ mod tests {
             let string_b = String::from("bbb");
 
             let array = [&string_a, &string_b];
-            let _ = Vec::from(array);
+            let _: Vec<MyString> = array.iter().map(|&e| MyString::from(e)).collect();
         }
 
         #[test]
@@ -377,7 +372,7 @@ mod tests {
             let str_b = "bbb";
 
             let array = [&str_a, &str_b];
-            let _ = Vec::from(array);
+            let _: Vec<MyString> = array.iter().map(|&e| MyString::from(e)).collect();
         }
 
         #[test]
@@ -386,9 +381,7 @@ mod tests {
             let string_b = String::from("bbb");
 
             let ref_to_vec = &vec![string_a, string_b];
-
-            // it's impossible to do it without `clone` call
-            let _ = Vec::from(ref_to_vec.clone());
+            let _: Vec<MyString> = ref_to_vec.iter().map(|e| MyString::from(e)).collect();
         }
     }
 }
