@@ -3,7 +3,7 @@ use crate::{BuildGraphError, BuildGraphResult as Result, GraphParametersParsingE
 use std::convert::From;
 use std::convert::TryFrom;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::str::FromStr;
 
 pub enum DataSource<'r> {
@@ -23,9 +23,12 @@ impl<'r> From<&'r Path> for DataSource<'r> {
     }
 }
 
-impl<'r> From<&'r PathBuf> for DataSource<'r> {
-    fn from(filename: &'r PathBuf) -> Self {
-        DataSource::File(filename.as_path())
+impl<'r, T> From<&'r T> for DataSource<'r>
+where
+    T: AsRef<Path>,
+{
+    fn from(filename: &'r T) -> Self {
+        DataSource::File(filename.as_ref())
     }
 }
 
