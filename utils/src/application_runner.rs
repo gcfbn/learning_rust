@@ -13,10 +13,10 @@ pub trait ApplicationRunner {
 
     fn main(&self) -> i32 {
         env_logger::init();
-        info!("env_logger initialized");
+        trace!("env_logger initialized");
 
         let cmd_args = Self::CmdArgs::parse();
-        info!("Parsed command line arguments - {:?}", cmd_args);
+        trace!("Parsed command line arguments - {:?}", cmd_args);
 
         // maybe with application name or with chosen subcommand
         info!("Running application...");
