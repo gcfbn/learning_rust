@@ -9,6 +9,12 @@ impl <T: Num + Copy> From<T> for MyNum<T> {
     }
 }
 
+impl <T: Num + Copy> From<&T> for MyNum<T> {
+    fn from(t: &T) -> Self {
+        Self(*t)
+    }
+}
+
 impl <T: Num + Copy> Deref for MyNum<T> {
     type Target = T;
 
@@ -38,5 +44,18 @@ mod tests {
             assert!(val == *my_num);
         }
     }
+
+    mod vectors {
+        use super::*;
+
+        #[test]
+        fn create_vec_from_vec_of_i32() {
+            let i32_vec: Vec<i32> = vec![1, 2, 3];
+
+            let _: Vec<MyNum<i32>> = i32_vec.iter().map(From::from).collect();
+        }
+    }
+
+
 }
 
