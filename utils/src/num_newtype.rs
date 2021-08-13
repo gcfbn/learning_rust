@@ -24,7 +24,7 @@ impl<T: Num + Copy> Deref for MyNum<T> {
     }
 }
 
-impl <T: Num + Copy> PartialEq<MyNum<T>> for MyNum<T> {
+impl<T: Num + Copy> PartialEq<MyNum<T>> for MyNum<T> {
     fn eq(&self, other: &MyNum<T>) -> bool {
         self.0 == other.0
     }
@@ -36,7 +36,7 @@ impl<T: Num + Copy> PartialEq<T> for MyNum<T> {
     }
 }
 
-impl <T: Num + Copy> Add<MyNum<T>> for MyNum<T> {
+impl<T: Num + Copy> Add<MyNum<T>> for MyNum<T> {
     type Output = MyNum<T>;
 
     fn add(self, rhs: MyNum<T>) -> Self::Output {
@@ -44,7 +44,7 @@ impl <T: Num + Copy> Add<MyNum<T>> for MyNum<T> {
     }
 }
 
-impl <T: Num + Copy> Add<&MyNum<T>> for MyNum<T> {
+impl<T: Num + Copy> Add<&MyNum<T>> for MyNum<T> {
     type Output = MyNum<T>;
 
     fn add(self, rhs: &MyNum<T>) -> Self::Output {
@@ -52,7 +52,7 @@ impl <T: Num + Copy> Add<&MyNum<T>> for MyNum<T> {
     }
 }
 
-impl <T: Num + Copy> Add<T> for MyNum<T> {
+impl<T: Num + Copy> Add<T> for MyNum<T> {
     type Output = MyNum<T>;
 
     fn add(self, rhs: T) -> Self::Output {
@@ -103,6 +103,15 @@ mod tests {
             fn add_my_num_and_my_num() {
                 let one = MyNum::from(1);
                 let two = MyNum::from(2);
+                let three = MyNum::from(3);
+
+                assert_eq!(one + two, three);
+            }
+
+            #[test]
+            fn add_my_num_and_i32() {
+                let one = MyNum::from(1);
+                let two = 2;
                 let three = MyNum::from(3);
 
                 assert_eq!(one + two, three);
