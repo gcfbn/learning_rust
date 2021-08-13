@@ -1,7 +1,7 @@
-use serde::Deserialize;
 use core::str::FromStr;
-use std::ops::Deref;
+use serde::Deserialize;
 use std::cmp::Ordering;
+use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Deserialize)]
 pub struct MyString(String);
@@ -34,6 +34,12 @@ impl From<&String> for MyString {
     }
 }
 
+impl From<&&String> for MyString {
+    fn from(s: &&String) -> Self {
+        MyString((*s).to_owned())
+    }
+}
+
 impl From<&str> for MyString {
     fn from(s: &str) -> Self {
         s.parse().unwrap()
@@ -45,7 +51,6 @@ impl From<&&str> for MyString {
         s.parse().unwrap()
     }
 }
-
 
 impl PartialEq<String> for MyString {
     fn eq(&self, other: &String) -> bool {
@@ -304,10 +309,18 @@ mod tests {
 
         #[test]
         fn sort_vector() {
-            let mut vector = vec![MyString::from("bbb"), MyString::from("ccc"), MyString::from("aaa")];
+            let mut vector = vec![
+                MyString::from("bbb"),
+                MyString::from("ccc"),
+                MyString::from("aaa"),
+            ];
             vector.sort();
 
-            let expected = vec![MyString::from("aaa"), MyString::from("bbb"), MyString::from("ccc")];
+            let expected = vec![
+                MyString::from("aaa"),
+                MyString::from("bbb"),
+                MyString::from("ccc"),
+            ];
             assert_eq!(vector, expected);
         }
 
@@ -325,63 +338,25 @@ mod tests {
         }
 
         #[test]
-        fn vector_of_newtypes_from_vector_of_strings() {
+        fn vector_of_newtypes_from_strings() {
             let vec_of_strings = vec![String::from("aaa"), String::from("bbb")];
-            let _ = Vec::from(vec_of_strings);
+            let _: Vec<MyString> = vec_of_strings.iter().map(From::from).collect();
         }
 
         #[test]
-        fn vector_of_newtypes_from_vector_of_refs_to_string() {
+        fn vector_of_newtypes_from_refs_to_string() {
             let string_a = String::from("aaa");
             let string_b = String::from("bbb");
 
             let vec_of_refs = vec![&string_a, &string_b];
-            let _: Vec<MyString> = vec_of_refs.iter().map(|&e| MyString::from(e)).collect();
+            // see: impl From<&&String> for MyString
+            let _: Vec<MyString> = vec_of_refs.iter().map(From::from).collect();
         }
 
         #[test]
-        fn vector_of_newtypes_from_vector_of_slices() {
-            let vec_of_slices = vec!["aaa", "bbb"];
-            let _: Vec<MyString> = vec_of_slices.iter().map(|&e| MyString::from(e)).collect();
-        }
-
-        #[test]
-        fn vector_of_newtypes_from_vector_of_refs_to_slices() {
-            let vec_of_refs = vec![&"aaa", &"bbb"];
-            let _: Vec<MyString> = vec_of_refs.iter().map(|&e| MyString::from(e)).collect();
-        }
-
-        #[test]
-        fn vector_of_newtypes_from_array_of_strs() {
-            let array = ["aaa", "bbb", "ccc"];
-            let _: Vec<MyString> = array.iter().map(|&e| MyString::from(e)).collect();
-        }
-
-        #[test]
-        fn vector_of_newtypes_from_array_of_refs_to_strings() {
-            let string_a = String::from("aaa");
-            let string_b = String::from("bbb");
-
-            let array = [&string_a, &string_b];
-            let _: Vec<MyString> = array.iter().map(|&e| MyString::from(e)).collect();
-        }
-
-        #[test]
-        fn vector_of_newtypes_from_array_of_refs_to_strs() {
-            let str_a = "aaa";
-            let str_b = "bbb";
-
-            let array = [&str_a, &str_b];
-            let _: Vec<MyString> = array.iter().map(|&e| MyString::from(e)).collect();
-        }
-
-        #[test]
-        fn vector_of_newtypes_from_reference_to_vector_of_strings() {
-            let string_a = String::from("aaa");
-            let string_b = String::from("bbb");
-
-            let ref_to_vec = &vec![string_a, string_b];
-            let _: Vec<MyString> = ref_to_vec.iter().map(|e| MyString::from(e)).collect();
+        fn vector_of_newtypes_from_refs_to_strs() {
+            let vec_of_refs = vec!["aaa", "bbb"];
+            let _: Vec<MyString> = vec_of_refs.iter().map(From::from).collect();
         }
     }
 }
