@@ -116,6 +116,15 @@ mod tests {
 
                 assert_eq!(one + two, three);
             }
+
+            #[test]
+            fn add_my_num_and_f32() {
+                let one = MyNum::from(1.0);
+                let two = 2.0;
+                let three = MyNum::from(3.0);
+
+                assert_eq!(one + two, three);
+            }
         }
     }
 }
