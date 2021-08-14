@@ -26,6 +26,9 @@
 #[cfg(test)]
 extern crate test_case;
 
+mod dijkstra;
+mod errors;
 mod kruskal;
-
+pub use dijkstra::find_shortest_path_length;
+pub use errors::*;
 pub use kruskal::calculate_min_total_weight;

@@ -1,3 +1,4 @@
+use algorithms::AlgorithmError;
 use graph::BuildGraphError;
 use parse_display::Display;
 use std::io::Error as ioError;
@@ -47,6 +48,9 @@ pub enum RunnerError {
     /// Error with processing command line arguments
     #[error("error processing command line arguments")]
     CommandLineArgsError(#[from] clap::Error),
+
+    #[error("algorithm error - {0}")]
+    AlgorithmError(AlgorithmError),
 }
 
 impl From<BuildGraphError> for RunnerError {
@@ -58,6 +62,12 @@ impl From<BuildGraphError> for RunnerError {
 impl From<GenerateGraphError> for RunnerError {
     fn from(e: GenerateGraphError) -> Self {
         RunnerError::GraphFileGeneratorError(e)
+    }
+}
+
+impl From<AlgorithmError> for RunnerError {
+    fn from(e: AlgorithmError) -> Self {
+        RunnerError::AlgorithmError(e)
     }
 }
 

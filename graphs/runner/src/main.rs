@@ -1,3 +1,4 @@
+use algorithms::{calculate_min_total_weight, find_shortest_path_length};
 use runner::*;
 use utils::ApplicationRunner;
 
@@ -19,8 +20,12 @@ impl ApplicationRunner for App {
         match cmd_args.subcommand {
             SubCommand::RunAlgorithm(task_data) => {
                 let graph = graph::build_graph(&task_data.task_file)?;
-                let output = algorithms::calculate_min_total_weight(graph);
-                println!("{}", output);
+                match task_data.algorithm_args {
+                    AlgorithmArgs::Kruskals { .. } => println!("{}", calculate_min_total_weight(graph)),
+                    AlgorithmArgs::Dijkstras { start_node, end_node } => {
+                        println!("{}", find_shortest_path_length(&graph, start_node, end_node)?)
+                    }
+                };
             }
 
             SubCommand::GenerateGraphFile(params) => {

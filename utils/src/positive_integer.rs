@@ -7,9 +7,7 @@ use std::ops::{Add, Sub};
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(
-    Add, Sub, Clone, Copy, Debug, Display, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize,
-)]
+#[derive(Add, Sub, Clone, Copy, Debug, Display, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[serde(try_from = "u32")]
 pub struct PositiveInteger(u32);
 
@@ -20,7 +18,7 @@ impl PositiveInteger {
 }
 
 impl PositiveInteger {
-    fn new(value: u32) -> Self {
+    pub fn new(value: u32) -> Self {
         if value == 0 {
             panic!("0 is not allowed - it must be a positive integer");
         }
@@ -31,6 +29,7 @@ impl PositiveInteger {
 
 impl TryFrom<u32> for PositiveInteger {
     type Error = PositiveIntegerError;
+
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         if val == 0 {
             return Err(PositiveIntegerError::InputNumberIsEqZeroError);
@@ -51,7 +50,7 @@ impl Sub<u32> for PositiveInteger {
     type Output = Self;
 
     fn sub(self, other: u32) -> Self {
-        PositiveInteger::new(self.value() - other)
+        Self::try_from(self.value() - other).unwrap()
     }
 }
 
@@ -77,7 +76,7 @@ pub enum PositiveIntegerError {
 
     #[error("{input} - input string is not an integer -> {parse_error_message}")]
     InputNumberIsNotIntegerError {
-        input: String,
+        input:               String,
         parse_error_message: String,
     },
 }
@@ -86,17 +85,15 @@ impl FromStr for PositiveInteger {
     type Err = PositiveIntegerError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ivalue: isize =
-            s.parse()
-                .map_err(|err| PositiveIntegerError::InputNumberIsNotIntegerError {
-                    input: s.to_string(),
-                    parse_error_message: format!("{}", err),
-                })?;
+        let ivalue: isize = s
+            .parse()
+            .map_err(|err| PositiveIntegerError::InputNumberIsNotIntegerError {
+                input:               s.to_string(),
+                parse_error_message: format!("{}", err),
+            })?;
 
         if ivalue < 0 {
-            return Err(PositiveIntegerError::InputNumberIsNegativeError(
-                s.to_string(),
-            ));
+            return Err(PositiveIntegerError::InputNumberIsNegativeError(s.to_string()));
         }
 
         Self::try_from(ivalue as u32)
