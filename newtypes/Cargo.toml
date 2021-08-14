@@ -1,5 +1,5 @@
 [package]
-name = "string-newtype"
+name = "newtypes"
 version = "0.1.0"
 edition = "2018"
 
@@ -7,3 +7,8 @@ edition = "2018"
 
 [dependencies]
 serde = {version="1.0.127", features=["derive"]}
+
+num-traits = "0.2"
+
+[dev-dependencies]
+test-case = "1.2"
