@@ -1,6 +1,9 @@
 use clap::{AppSettings, Clap, IntoApp};
 use std::fmt::Debug;
 
+// #[cfg(feature = "simple_logging")]
+// use flexi_logger;
+
 #[derive(Debug)]
 enum RunStatus {
     OK = 0,
@@ -11,8 +14,14 @@ pub trait ApplicationRunner {
     type Error: std::error::Error;
     type CmdArgs: IntoApp + Clap + Debug;
 
-    fn main(&self) -> i32 {
-        env_logger::init();
+    #[cfg(simple_logging)]
+    type AppLogger = DefaultLogger;
+
+    #[cfg(feature = "default")]
+    type AppLogger: Logger;
+
+    fn main<T>(&self) -> i32 {
+        let logger = Self::AppLogger::initialize_logger();
         trace!("env_logger initialized");
 
         let cmd_args = Self::CmdArgs::parse();
@@ -48,5 +57,26 @@ pub trait ApplicationRunner {
         } else {
             eprintln!("{}", error_message);
         }
+    }
+}
+
+pub trait Logger {
+    type InnerLogger;
+    type LoggerError;
+
+    fn initialize_logger() -> Result<Self::InnerLogger, Self::LoggerError>;
+}
+
+#[cfg(simple_logging)]
+struct DefaultLogger;
+
+#[cfg(simple_logging)]
+impl Logger for DefaultLogger {
+    pub type LoggerError = flexi_logger::FlexiLoggerError;
+    pub type InnerLogger = flexi_logger::Logger;
+
+    fn initialize_logger() -> Result<Self::InnerLogger,
+        Self::LoggerError> {
+        flexi_logger::Logger::try_with_env()
     }
 }
