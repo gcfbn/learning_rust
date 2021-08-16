@@ -16,8 +16,6 @@ algorithms = { path = "../algorithms" }
 graph = { path = "../graph" }
 utils = { path = "../../utils", features = ["simple_logging"] }
 
-env_logger = "0.9"
-
 [dependencies.clap]
 version = "~3.0.0-beta.2"
 
