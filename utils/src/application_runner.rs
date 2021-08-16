@@ -27,7 +27,6 @@ pub trait ApplicationRunner {
         #[cfg(not(feature = "simple_logging"))] {
             Self::AppLogger::initialize_logger().unwrap();
             trace!("User's logger initialized");
-            println!("AAAAA");
         }
 
         let cmd_args = Self::CmdArgs::parse();
