@@ -2,7 +2,7 @@ use clap::{AppSettings, Clap, IntoApp};
 use std::fmt::Debug;
 
 #[cfg(feature = "simple_logging")]
-use flexi_logger;
+use flexi_logger::Level;
 
 #[derive(Debug)]
 enum RunStatus {
@@ -70,6 +70,7 @@ pub trait Logger {
     type LoggerError: Debug;
 
     fn initialize_logger() -> Result<Self::InnerLogger, Self::LoggerError>;
+    fn write_message(level: log::Level, message: &str);
 }
 
 #[cfg(feature = "simple_logging")]
@@ -83,5 +84,15 @@ impl Logger for DefaultLogger {
     fn initialize_logger() -> Result<Self::InnerLogger,
         Self::LoggerError> {
         flexi_logger::Logger::try_with_env()
+    }
+
+    fn write_message(level: Level, message: &str) {
+        match level {
+            Level::Error => error!("{}", message),
+            Level::Warn => warn!("{}", message),
+            Level::Info => info!("{}", message),
+            Level::Debug => debug!("{}", message),
+            Level::Trace => trace!("{}", message),
+        }
     }
 }
