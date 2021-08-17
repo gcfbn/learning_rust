@@ -11,6 +11,10 @@ pub trait ApplicationRunner {
     type Error: std::error::Error;
     type CmdArgs: IntoApp + Clap + Debug;
 
+    /// * Configures logger (default - when using `simple_logging` feature or user defined -
+    /// when they override [`ApplicationRunner::configure_logging`] method in their trait implementation
+    /// * Parses Clap command line arguments
+    /// * Runs application, then returns OK or error status and prints possible error
     fn main(&self) -> i32 {
         self.configure_logging();
 
@@ -33,12 +37,23 @@ pub trait ApplicationRunner {
         std::process::exit(status as i32)
     }
 
+    /// Main method of the application, everything that user wants to be run must be put into this method
+    ///
+    /// # Arguments
+    ///
+    /// * cmd_args - Clap command line arguments
     fn run(&self, cmd_args: Self::CmdArgs) -> Result<(), Self::Error>;
 
+    /// Checks if error message should be printed using red color
     fn should_write_app_error_message_with_colors(&self) -> bool {
         Self::CmdArgs::into_app().is_set(AppSettings::ColoredHelp)
     }
 
+    /// Writes error message
+    ///
+    /// # Arguments
+    ///
+    /// * error_message - error text
     fn write_app_error_message(&self, error_message: &String) {
         use crate::write_colored_error_message;
 
@@ -49,6 +64,11 @@ pub trait ApplicationRunner {
         }
     }
 
+    /// Initializes logger
+    /// With feature `simple_logging` it starts `flexi_logger`
+    ///
+    /// On default, it has empty implementation, so nothing will be logged. User can use their own logger by overriding
+    /// this method
     fn configure_logging(&self) {
         #[cfg(feature = "simple_logging")] {
             flexi_logger::Logger::try_with_env().unwrap().log_to_stderr().start().unwrap();
