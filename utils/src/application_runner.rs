@@ -1,9 +1,6 @@
 use clap::{AppSettings, Clap, IntoApp};
 use std::fmt::Debug;
 
-#[cfg(feature = "simple_logging")]
-use flexi_logger::Level;
-
 #[derive(Debug)]
 enum RunStatus {
     OK = 0,
@@ -14,20 +11,8 @@ pub trait ApplicationRunner {
     type Error: std::error::Error;
     type CmdArgs: IntoApp + Clap + Debug;
 
-    #[cfg(not(feature = "simple_logging"))]
-    type AppLogger: Logger;
-
     fn main(&self) -> i32 {
-
-        #[cfg(feature = "simple_logging")] {
-            flexi_logger::Logger::try_with_env().unwrap().log_to_stdout().start().unwrap();
-            trace!("Default logger initialized");
-        }
-
-        #[cfg(not(feature = "simple_logging"))] {
-            Self::AppLogger::initialize_logger().unwrap();
-            trace!("User's logger initialized");
-        }
+        self.configure_logging();
 
         let cmd_args = Self::CmdArgs::parse();
         trace!("Parsed command line arguments - {:?}", cmd_args);
@@ -63,36 +48,11 @@ pub trait ApplicationRunner {
             eprintln!("{}", error_message);
         }
     }
-}
 
-pub trait Logger {
-    type InnerLogger;
-    type LoggerError: Debug;
-
-    fn initialize_logger() -> Result<Self::InnerLogger, Self::LoggerError>;
-    fn write_message(level: log::Level, message: &str);
-}
-
-#[cfg(feature = "simple_logging")]
-struct DefaultLogger;
-
-#[cfg(feature = "simple_logging")]
-impl Logger for DefaultLogger {
-    type LoggerError = flexi_logger::FlexiLoggerError;
-    type InnerLogger = flexi_logger::Logger;
-
-    fn initialize_logger() -> Result<Self::InnerLogger,
-        Self::LoggerError> {
-        flexi_logger::Logger::try_with_env()
-    }
-
-    fn write_message(level: Level, message: &str) {
-        match level {
-            Level::Error => error!("{}", message),
-            Level::Warn => warn!("{}", message),
-            Level::Info => info!("{}", message),
-            Level::Debug => debug!("{}", message),
-            Level::Trace => trace!("{}", message),
+    fn configure_logging(&self) {
+        #[cfg(feature = "simple_logging")] {
+            flexi_logger::Logger::try_with_env().unwrap().log_to_stderr().start().unwrap();
+            info!("Default logger initialized");
         }
     }
 }

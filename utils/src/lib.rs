@@ -6,7 +6,7 @@ mod colored_error_messages;
 mod path_validators;
 mod positive_integer;
 
-pub use application_runner::{ApplicationRunner, Logger};
+pub use application_runner::ApplicationRunner;
 pub use colored_error_messages::write_colored_error_message;
 pub use path_validators::PathBufWithFileThatMustExist;
 pub use positive_integer::PositiveInteger;
