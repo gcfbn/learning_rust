@@ -1,5 +1,6 @@
 use clap::{AppSettings, Clap, IntoApp};
 use std::fmt::Debug;
+use flexi_logger::FileSpec;
 
 #[derive(Debug)]
 enum RunStatus {
@@ -71,7 +72,7 @@ pub trait ApplicationRunner {
     /// this method
     fn configure_logging(&self) {
         #[cfg(feature = "simple_logging")] {
-            flexi_logger::Logger::try_with_env().unwrap().log_to_stderr().start().unwrap();
+            flexi_logger::Logger::try_with_env().unwrap().log_to_file(FileSpec::default()).start().unwrap();
             info!("Default logger initialized");
         }
     }
