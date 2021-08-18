@@ -1,5 +1,8 @@
 use clap::{AppSettings, Clap, IntoApp};
 use std::fmt::Debug;
+use log::{error, info, trace};
+
+#[cfg(feature = "simple_logging")]
 use flexi_logger::FileSpec;
 
 #[derive(Debug)]

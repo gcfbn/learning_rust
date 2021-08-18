@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate log;
-
 mod application_runner;
 mod colored_error_messages;
 mod path_validators;

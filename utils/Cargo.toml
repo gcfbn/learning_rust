@@ -7,10 +7,7 @@ edition = "2018"
 [features]
 default = []
 simple_logging = ["flexi_logger"]
-
-[[example]]
-name = "use_simple_logging"
-path = "examples/use_simple_logging/lib.rs"
+required-features = [ "simple_logging" ]
 
 [dependencies]
 atty = "0.2"
