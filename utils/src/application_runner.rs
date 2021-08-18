@@ -2,7 +2,7 @@ use clap::{AppSettings, Clap, IntoApp};
 use std::fmt::Debug;
 use log::{error, info, trace};
 
-#[cfg(feature = "simple_logging")]
+#[cfg(feature = "default_logging")]
 use flexi_logger::FileSpec;
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub trait ApplicationRunner {
     type Error: std::error::Error;
     type CmdArgs: IntoApp + Clap + Debug;
 
-    /// * Configures logger (default - when using `simple_logging` feature or user defined -
+    /// * Configures logger (default - when using `default_logging` feature or user defined -
     /// when they override [`ApplicationRunner::configure_logging`] method in their trait implementation
     /// * Parses Clap command line arguments
     /// * Runs application, then returns OK or error status and prints possible error
@@ -69,12 +69,12 @@ pub trait ApplicationRunner {
     }
 
     /// Initializes logger
-    /// With feature `simple_logging` it starts `flexi_logger`
+    /// With feature `default_logging` it starts `flexi_logger`
     ///
     /// On default, it has empty implementation, so nothing will be logged. User can use their own logger by overriding
     /// this method
     fn configure_logging(&self) {
-        #[cfg(feature = "simple_logging")] {
+        #[cfg(feature = "default_logging")] {
             flexi_logger::Logger::try_with_env().unwrap().log_to_file(FileSpec::default()).start().unwrap();
             info!("Default logger initialized");
         }
