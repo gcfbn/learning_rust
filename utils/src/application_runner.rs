@@ -1,6 +1,6 @@
 use clap::{AppSettings, Clap, IntoApp};
 use log::{error, info, trace};
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 #[derive(Debug)]
 enum RunStatus {
@@ -30,7 +30,7 @@ impl HasLoggerHandle for DefaultAppLoggerHandle {
 }
 
 pub trait ApplicationRunner {
-    type Error: std::error::Error;
+    type Error: Display;
     type CmdArgs: IntoApp + Clap + Debug;
     #[cfg(feature = "logger_has_state")]
     type AppLoggerHandle: HasLoggerHandle;
