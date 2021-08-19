@@ -8,19 +8,19 @@ enum RunStatus {
     Error = 1,
 }
 
-#[cfg(feature = "logger_has_state")]
+#[cfg(feature = "app_logger_has_state")]
 pub trait HasLoggerHandle {
     type Handle;
 
     fn handle(&self) -> &Self::Handle;
 }
 
-#[cfg(all(feature = "default_logging", feature = "logger_has_state"))]
+#[cfg(feature = "default_logging")]
 pub struct DefaultAppLoggerHandle {
     handle: flexi_logger::LoggerHandle,
 }
 
-#[cfg(all(feature = "default_logging", feature = "logger_has_state"))]
+#[cfg(all(feature = "default_logging", feature = "app_logger_has_state"))]
 impl HasLoggerHandle for DefaultAppLoggerHandle {
     type Handle = flexi_logger::LoggerHandle;
 
@@ -32,7 +32,7 @@ impl HasLoggerHandle for DefaultAppLoggerHandle {
 pub trait ApplicationRunner {
     type Error: Display;
     type CmdArgs: IntoApp + Clap + Debug;
-    #[cfg(feature = "logger_has_state")]
+    #[cfg(feature = "app_logger_has_state")]
     type AppLoggerHandle: HasLoggerHandle;
 
     /// * Configures logger (default - when using `default_logging` feature or user defined -
@@ -41,7 +41,7 @@ pub trait ApplicationRunner {
     /// * Runs application, then returns OK or error status and prints possible error
     fn main(&self) -> i32 {
         cfg_if::cfg_if! {
-            if #[cfg(any(feature = "default_logging", feature = "logger_has_state"))] {
+            if #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))] {
                 let _app_logger_handle = self.configure_logging();
             } else {
                 self.configure_logging();
@@ -125,7 +125,7 @@ pub trait ApplicationRunner {
                     handle: _logger_handle
                 }
             }
-        } else if #[cfg(feature = "logger_has_state")] {
+        } else if #[cfg(feature = "app_logger_has_state")] {
             fn configure_logging(&self) -> Self::AppLoggerHandle;
         } else {
             fn configure_logging(&self) {}
