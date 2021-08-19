@@ -1,9 +1,6 @@
 use clap::{AppSettings, Clap, IntoApp};
-use std::fmt::Debug;
 use log::{error, info, trace};
-
-#[cfg(feature = "default_logging")]
-use flexi_logger::FileSpec;
+use std::fmt::Debug;
 
 #[derive(Debug)]
 enum RunStatus {
@@ -16,28 +13,37 @@ pub trait ApplicationRunner {
     type CmdArgs: IntoApp + Clap + Debug;
 
     /// * Configures logger (default - when using `default_logging` feature or user defined -
-    /// when they override [`ApplicationRunner::configure_logging`] method in their trait implementation
+    ///   when they override [`ApplicationRunner::configure_logging`] method in their trait implementation
     /// * Parses Clap command line arguments
     /// * Runs application, then returns OK or error status and prints possible error
     fn main(&self) -> i32 {
-        self.configure_logging();
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "default_logging")] {
+                let _app_logger_handle: flexi_logger::LoggerHandle = self.configure_logging();
+            } else {
+                self.configure_logging();
+            }
+        }
 
         let cmd_args = Self::CmdArgs::parse();
-        trace!("Parsed command line arguments - {:?}", cmd_args);
+        trace!("parsed command line arguments - {:?}", cmd_args);
 
         // maybe with application name or with chosen subcommand
-        info!("Running application...");
+        info!("running application...");
 
         let status = if let Err(err) = self.run(cmd_args) {
-            self.write_app_error_message(&err.to_string());
-            error!("Error - {}", &err.to_string());
+            let error_message = &err.to_string();
+
+            self.write_app_error_message(error_message);
+
+            error!("{}", error_message);
 
             RunStatus::Error
         } else {
             RunStatus::OK
         };
 
-        info!("Closing application with status {:?}", &status);
+        info!("closing application with status {:?}", &status);
         std::process::exit(status as i32)
     }
 
@@ -68,15 +74,58 @@ pub trait ApplicationRunner {
         }
     }
 
-    /// Initializes logger
-    /// With feature `default_logging` it starts `flexi_logger`
-    ///
-    /// On default, it has empty implementation, so nothing will be logged. User can use their own logger by overriding
-    /// this method
-    fn configure_logging(&self) {
-        #[cfg(feature = "default_logging")] {
-            flexi_logger::Logger::try_with_env().unwrap().log_to_file(FileSpec::default()).start().unwrap();
-            info!("Default logger initialized");
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "default_logging")] {
+            /// Initializes logger
+            /// With feature `default_logging` it starts `flexi_logger`
+            ///
+            /// By default, it has empty implementation, so nothing will be logged.
+            /// User can use their own logger by overriding this method.
+            fn configure_logging(&self) -> flexi_logger::LoggerHandle {
+                use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
+
+                let _logger_handle = Logger::try_with_env_or_str("warn")
+                    .unwrap()
+                    .log_to_file(FileSpec::default().directory(".logs"))
+                    .duplicate_to_stderr(Duplicate::Warn)
+                    // .duplicate_to_stderr(Duplicate::All)
+                    .format_for_files(detailed_format)
+                    .format_for_stderr(default_colored_format)
+                    .print_message()
+                    .create_symlink("current_run") // create a symbolic link to the current log file
+                    .start()
+                    .unwrap();
+
+                info!("default logger initialized");
+
+                _logger_handle
+            }
+        } else {
+            fn configure_logging(&self) {}
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+
+#[cfg(feature = "default_logging")]
+use flexi_logger::{style, DeferredNow, Record};
+
+#[cfg(feature = "default_logging")]
+pub fn default_colored_format(
+    w: &mut dyn std::io::Write,
+    now: &mut DeferredNow,
+    record: &Record,
+) -> Result<(), std::io::Error> {
+    let level = record.level();
+
+    write!(
+        w,
+        "{} {:>5}: {}",
+        now.now().format("%Y-%m-%d %H:%M:%S%.6f"),
+        style(level, level),
+        &record.args()
+    )
+}
+
+// -----------------------------------------------------------------------------
