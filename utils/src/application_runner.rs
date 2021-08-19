@@ -8,9 +8,32 @@ enum RunStatus {
     Error = 1,
 }
 
+#[cfg(feature = "logger_has_state")]
+pub trait HasLoggerHandle {
+    type Handle;
+
+    fn handle(&self) -> &Self::Handle;
+}
+
+#[cfg(all(feature = "default_logging", feature = "logger_has_state"))]
+pub struct DefaultAppLoggerHandle {
+    handle: flexi_logger::LoggerHandle,
+}
+
+#[cfg(all(feature = "default_logging", feature = "logger_has_state"))]
+impl HasLoggerHandle for DefaultAppLoggerHandle {
+    type Handle = flexi_logger::LoggerHandle;
+
+    fn handle(&self) -> &Self::Handle {
+        &self.handle
+    }
+}
+
 pub trait ApplicationRunner {
     type Error: std::error::Error;
     type CmdArgs: IntoApp + Clap + Debug;
+    #[cfg(feature = "logger_has_state")]
+    type AppLoggerHandle: HasLoggerHandle;
 
     /// * Configures logger (default - when using `default_logging` feature or user defined -
     ///   when they override [`ApplicationRunner::configure_logging`] method in their trait implementation
@@ -18,8 +41,8 @@ pub trait ApplicationRunner {
     /// * Runs application, then returns OK or error status and prints possible error
     fn main(&self) -> i32 {
         cfg_if::cfg_if! {
-            if #[cfg(feature = "default_logging")] {
-                let _app_logger_handle: flexi_logger::LoggerHandle = self.configure_logging();
+            if #[cfg(any(feature = "default_logging", feature = "logger_has_state"))] {
+                let _app_logger_handle = self.configure_logging();
             } else {
                 self.configure_logging();
             }
@@ -81,7 +104,7 @@ pub trait ApplicationRunner {
             ///
             /// By default, it has empty implementation, so nothing will be logged.
             /// User can use their own logger by overriding this method.
-            fn configure_logging(&self) -> flexi_logger::LoggerHandle {
+            fn configure_logging(&self) -> DefaultAppLoggerHandle {
                 use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
 
                 let _logger_handle = Logger::try_with_env_or_str("warn")
@@ -98,8 +121,12 @@ pub trait ApplicationRunner {
 
                 info!("default logger initialized");
 
-                _logger_handle
+                DefaultAppLoggerHandle{
+                    handle: _logger_handle
+                }
             }
+        } else if #[cfg(feature = "logger_has_state")] {
+            fn configure_logging(&self) -> Self::AppLoggerHandle;
         } else {
             fn configure_logging(&self) {}
         }
