@@ -465,6 +465,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "atty",
+ "cfg-if",
  "clap",
  "derive_more",
  "flexi_logger",
