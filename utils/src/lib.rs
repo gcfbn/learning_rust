@@ -4,6 +4,8 @@ mod path_validators;
 mod positive_integer;
 
 pub use application_runner::ApplicationRunner;
+#[cfg(feature = "default_logging")]
+pub use application_runner::DefaultAppLoggerHandle;
 pub use colored_error_messages::write_colored_error_message;
 pub use path_validators::PathBufWithFileThatMustExist;
 pub use positive_integer::PositiveInteger;
