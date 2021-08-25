@@ -29,6 +29,11 @@ fn main() {
     App.main();
 }
 
+fn make_file_writer_for_logging() -> impl std::io::Write {
+    // log files have extension like `.2021-08-25-19-34` and aren't displayed properly, at least on my device
+    tracing_appender::rolling::minutely("./.logs", "use_logger_with_state")
+}
+
 impl ApplicationRunner for App {
     type Error = AppError;
     type CmdArgs = cmd_args::CmdArgs;
@@ -43,9 +48,11 @@ impl ApplicationRunner for App {
     fn configure_logging(&self) -> Self::AppLoggerHandle {
         let subscriber = FmtSubscriber::builder()
             .with_max_level(tracing_subscriber::filter::LevelFilter::WARN)
+            .with_writer(make_file_writer_for_logging)
             .pretty()
             .finish();
 
+        // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
         let guard = tracing::subscriber::set_default(subscriber);
 
         TracingLoggerHandle {
