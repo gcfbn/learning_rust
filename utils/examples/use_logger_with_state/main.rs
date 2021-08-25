@@ -49,7 +49,6 @@ impl ApplicationRunner for App {
         let subscriber = FmtSubscriber::builder()
             .with_max_level(tracing_subscriber::filter::LevelFilter::WARN)
             .with_writer(make_file_writer_for_logging)
-            .pretty()
             .finish();
 
         // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
