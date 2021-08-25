@@ -2,12 +2,8 @@ use utils::{ApplicationRunner, HasLoggerHandle};
 use thiserror::Error;
 use tracing_subscriber::FmtSubscriber;
 use std::fmt::Debug;
-use std::io::Stdout;
-use tracing_subscriber::fmt::format::{Pretty, Format};
-use tracing_subscriber::filter::LevelFilter;
-use tracing_subscriber::fmt::time::SystemTime;
-
 use tracing::warn;
+use tracing::dispatcher::DefaultGuard;
 
 mod cmd_args;
 
@@ -18,11 +14,11 @@ struct AppError;
 struct App;
 
 struct TracingLoggerHandle {
-    handle: FmtSubscriber<Pretty, Format<Pretty, SystemTime>, LevelFilter, fn() -> Stdout>,
+    handle: DefaultGuard,
 }
 
 impl HasLoggerHandle for TracingLoggerHandle {
-    type Handle = FmtSubscriber<Pretty, Format<Pretty, SystemTime>, LevelFilter, fn() -> Stdout>;
+    type Handle = DefaultGuard;
 
     fn handle(&self) -> &Self::Handle {
         &self.handle
@@ -50,16 +46,10 @@ impl ApplicationRunner for App {
             .pretty()
             .finish();
 
-        tracing::subscriber::set_global_default(subscriber).expect("Failed to initialize global subscriber");
-
-        // this should be rewritten
-        let subscriber2 = FmtSubscriber::builder()
-            .with_max_level(tracing_subscriber::filter::LevelFilter::WARN)
-            .pretty()
-            .finish();
+        let guard = tracing::subscriber::set_default(subscriber);
 
         TracingLoggerHandle {
-            handle: subscriber2
+            handle: guard,
         }
     }
 }
