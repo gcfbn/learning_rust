@@ -25,6 +25,18 @@ impl HasLoggerHandle for TracingLoggerHandle {
     }
 }
 
+struct EmptyType {
+    handle: (),
+}
+
+impl HasLoggerHandle for EmptyType {
+    type Handle = ();
+
+    fn handle(&self) -> &Self::Handle {
+        &self.handle
+    }
+}
+
 fn main() {
     App.main();
 }
@@ -37,7 +49,7 @@ fn make_file_writer_for_logging() -> impl std::io::Write {
 impl ApplicationRunner for App {
     type Error = AppError;
     type CmdArgs = cmd_args::CmdArgs;
-    type AppLoggerHandle = TracingLoggerHandle;
+    type AppLoggerHandle = EmptyType;
 
     fn run(&self, cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
         warn!("this method will raise an error");
@@ -46,16 +58,19 @@ impl ApplicationRunner for App {
     }
 
     fn configure_logging(&self) -> Self::AppLoggerHandle {
-        let subscriber = FmtSubscriber::builder()
-            .with_max_level(tracing_subscriber::filter::LevelFilter::WARN)
-            .with_writer(make_file_writer_for_logging)
-            .finish();
+        tracing_subscriber::fmt()
+            // .with_writer(make_file_writer_for_logging)
+            .with_writer(std::io::stdout)
+            .init();
 
         // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
-        let guard = tracing::subscriber::set_default(subscriber);
+        // let guard = tracing::subscriber::set_default(subscriber);
 
-        TracingLoggerHandle {
-            handle: guard,
+        // TracingLoggerHandle {
+        //     handle: guard,
+        // }
+        EmptyType {
+            handle: (),
         }
     }
 }

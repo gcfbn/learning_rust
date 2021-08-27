@@ -27,7 +27,7 @@ thiserror = "1.0.25"
 log = "0.4.0"
 flexi_logger = { version = "0.18", optional = true }
 tracing = { version = "0.1", optional = true }
-tracing-subscriber = { version = "0.2", optional = true }
+tracing-subscriber = { version = "0.2", optional = true, features = ["tracing-log"] }
 tracing-appender = { version = "0.1", optional = true }
 
 anyhow = "1.0"
