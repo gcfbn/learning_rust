@@ -635,6 +635,7 @@ dependencies = [
  "anyhow",
  "atty",
  "cfg-if",
+ "chrono",
  "clap",
  "derive_more",
  "flexi_logger",

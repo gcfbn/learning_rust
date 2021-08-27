@@ -7,7 +7,7 @@ edition = "2018"
 [features]
 default = []
 default_logging = ["flexi_logger", "app_logger_has_state"]
-app_logger_has_state = ["tracing", "tracing-subscriber", "tracing-appender"]
+app_logger_has_state = ["tracing", "tracing-subscriber", "tracing-appender", "chrono"]
 
 [dependencies]
 atty = "0.2"
@@ -29,6 +29,7 @@ flexi_logger = { version = "0.18", optional = true }
 tracing = { version = "0.1", optional = true }
 tracing-subscriber = { version = "0.2", optional = true, features = ["tracing-log"] }
 tracing-appender = { version = "0.1", optional = true }
+chrono = {version = "0.4", optional = true }
 
 anyhow = "1.0"
 
