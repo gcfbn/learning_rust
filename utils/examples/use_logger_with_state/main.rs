@@ -59,8 +59,7 @@ impl ApplicationRunner for App {
 
     fn configure_logging(&self) -> Self::AppLoggerHandle {
         tracing_subscriber::fmt()
-            // .with_writer(make_file_writer_for_logging)
-            .with_writer(std::io::stdout)
+            .with_writer(make_file_writer_for_logging)
             .init();
 
         // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
