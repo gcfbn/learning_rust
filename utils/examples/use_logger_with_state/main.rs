@@ -1,6 +1,10 @@
+/// You can run this program with the following command e.g.:
+///
+/// RUST_LOG=error,use_logger_with_state=warn cargo run --example use_logger_with_state --features app_logger_has_state
+///
+
 use std::fmt::Debug;
 use thiserror::Error;
-use tracing::dispatcher::DefaultGuard;
 use tracing::warn;
 use tracing_subscriber::EnvFilter;
 use utils::{ApplicationRunner, HasLoggerHandle};
@@ -13,23 +17,11 @@ struct AppError;
 
 struct App;
 
-struct TracingLoggerHandle {
-    handle: DefaultGuard,
-}
-
-impl HasLoggerHandle for TracingLoggerHandle {
-    type Handle = DefaultGuard;
-
-    fn handle(&self) -> &Self::Handle {
-        &self.handle
-    }
-}
-
-struct EmptyType {
+struct EmptyHandle {
     handle: (),
 }
 
-impl HasLoggerHandle for EmptyType {
+impl HasLoggerHandle for EmptyHandle {
     type Handle = ();
 
     fn handle(&self) -> &Self::Handle {
@@ -42,12 +34,11 @@ fn main() {
 }
 
 fn make_file_writer_for_logging() -> impl std::io::Write {
-    // log files have extension like `.2021-08-25-19-34` and aren't displayed properly, at least on my device
     tracing_appender::rolling::minutely("./.logs", "use_logger_with_state")
 }
 
 impl ApplicationRunner for App {
-    type AppLoggerHandle = EmptyType;
+    type AppLoggerHandle = EmptyHandle;
     type CmdArgs = cmd_args::CmdArgs;
     type Error = AppError;
 
@@ -65,13 +56,7 @@ impl ApplicationRunner for App {
             .with_timer(MySystemTimeFormatter)
             .init();
 
-        // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
-        // let guard = tracing::subscriber::set_default(subscriber);
-
-        // TracingLoggerHandle {
-        //     handle: guard,
-        // }
-        EmptyType { handle: () }
+        EmptyHandle { handle: () }
     }
 }
 
