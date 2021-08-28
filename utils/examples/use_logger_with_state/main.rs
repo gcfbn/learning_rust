@@ -1,9 +1,9 @@
-use utils::{ApplicationRunner, HasLoggerHandle};
-use thiserror::Error;
-use tracing_subscriber::EnvFilter;
 use std::fmt::Debug;
-use tracing::warn;
+use thiserror::Error;
 use tracing::dispatcher::DefaultGuard;
+use tracing::warn;
+use tracing_subscriber::EnvFilter;
+use utils::{ApplicationRunner, HasLoggerHandle};
 
 mod cmd_args;
 
@@ -47,24 +47,22 @@ fn make_file_writer_for_logging() -> impl std::io::Write {
 }
 
 impl ApplicationRunner for App {
-    type Error = AppError;
-    type CmdArgs = cmd_args::CmdArgs;
     type AppLoggerHandle = EmptyType;
+    type CmdArgs = cmd_args::CmdArgs;
+    type Error = AppError;
 
-    fn run(&self, cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
+    fn run(&self, _cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
         warn!("this method will raise an error");
 
         Err(AppError)
     }
 
     fn configure_logging(&self) -> Self::AppLoggerHandle {
-        let my_system_time_formatter = MySystemTimeFormatter;
-
         tracing_subscriber::fmt()
             .with_writer(make_file_writer_for_logging)
             .with_ansi(false)
             .with_env_filter(EnvFilter::from_default_env())
-            .with_timer(my_system_time_formatter)
+            .with_timer(MySystemTimeFormatter)
             .init();
 
         // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
@@ -73,9 +71,7 @@ impl ApplicationRunner for App {
         // TracingLoggerHandle {
         //     handle: guard,
         // }
-        EmptyType {
-            handle: (),
-        }
+        EmptyType { handle: () }
     }
 }
 
@@ -86,10 +82,6 @@ struct MySystemTimeFormatter;
 
 impl FormatTime for MySystemTimeFormatter {
     fn format_time(&self, w: &mut dyn fmt::Write) -> fmt::Result {
-        write!(
-            w,
-            "{}",
-            chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.6f")
-        )
+        write!(w, "{}", chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.6f"))
     }
 }
