@@ -2,11 +2,10 @@
 ///
 /// RUST_LOG=error,use_logger_with_state=warn cargo run --example use_logger_with_state --features app_logger_has_state
 ///
-
 use std::fmt::Debug;
 use thiserror::Error;
 use tracing::warn;
-use tracing_subscriber::{EnvFilter, subscribe::CollectExt, fmt::Subscriber, util::SubscriberInitExt};
+use tracing_subscriber::{fmt::Subscriber, subscribe::CollectExt, util::SubscriberInitExt, EnvFilter};
 use utils::{ApplicationRunner, HasLoggerHandle};
 
 mod cmd_args;
@@ -49,7 +48,6 @@ impl ApplicationRunner for App {
     }
 
     fn configure_logging(&self) -> Self::AppLoggerHandle {
-
         let file_subscriber = Subscriber::new()
             .with_ansi(false)
             .with_writer(make_file_writer_for_logging)
