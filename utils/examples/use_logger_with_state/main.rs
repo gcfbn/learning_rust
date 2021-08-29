@@ -6,7 +6,7 @@
 use std::fmt::Debug;
 use thiserror::Error;
 use tracing::warn;
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{EnvFilter, subscribe::CollectExt, fmt::Subscriber, util::SubscriberInitExt};
 use utils::{ApplicationRunner, HasLoggerHandle};
 
 mod cmd_args;
@@ -49,24 +49,33 @@ impl ApplicationRunner for App {
     }
 
     fn configure_logging(&self) -> Self::AppLoggerHandle {
-        tracing_subscriber::fmt()
-            .with_writer(make_file_writer_for_logging)
+
+        let file_subscriber = Subscriber::new()
             .with_ansi(false)
-            .with_env_filter(EnvFilter::from_default_env())
-            .with_timer(MySystemTimeFormatter)
+            .with_writer(make_file_writer_for_logging)
+            .with_timer(MySystemTimeFormatter);
+
+        let stdout_subscriber = Subscriber::new()
+            .with_writer(std::io::stdout)
+            .with_timer(MySystemTimeFormatter);
+
+        // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
+        tracing_subscriber::registry()
+            .with(EnvFilter::from_default_env())
+            .with(file_subscriber)
+            .with(stdout_subscriber)
             .init();
 
         EmptyHandle { handle: () }
     }
 }
 
-use std::fmt;
 use tracing_subscriber::fmt::time::FormatTime;
 
 struct MySystemTimeFormatter;
 
 impl FormatTime for MySystemTimeFormatter {
-    fn format_time(&self, w: &mut dyn fmt::Write) -> fmt::Result {
-        write!(w, "{}", chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.6f"))
+    fn format_time(&self, w: &mut dyn std::fmt::Write) -> std::fmt::Result {
+        write!(w, "{:>5}", chrono::Local::now().format("[%Y-%m-%d %H:%M:%S%.6f]"))
     }
 }
