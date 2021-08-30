@@ -433,14 +433,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "opentelemetry"
+version = "0.16.0"
+source = "git+https://github.com/open-telemetry/opentelemetry-rust#c02338a1bb29dc92226a051cc8da9f80ebb26e37"
+dependencies = [
+ "async-trait",
+ "crossbeam-channel",
+ "futures",
+ "js-sys",
+ "lazy_static",
+ "percent-encoding",
+ "pin-project",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
 name = "opentelemetry-jaeger"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db22f492873ea037bc267b35a0e8e4fb846340058cb7c864efe3d0bf23684593"
+source = "git+https://github.com/open-telemetry/opentelemetry-rust#c02338a1bb29dc92226a051cc8da9f80ebb26e37"
 dependencies = [
  "async-trait",
  "lazy_static",
- "opentelemetry",
+ "opentelemetry 0.16.0 (git+https://github.com/open-telemetry/opentelemetry-rust)",
  "opentelemetry-semantic-conventions",
  "thiserror",
  "thrift",
@@ -449,10 +464,9 @@ dependencies = [
 [[package]]
 name = "opentelemetry-semantic-conventions"
 version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffeac823339e8b0f27b961f4385057bf9f97f2863bc745bd015fd6091f2270e9"
+source = "git+https://github.com/open-telemetry/opentelemetry-rust#c02338a1bb29dc92226a051cc8da9f80ebb26e37"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.16.0 (git+https://github.com/open-telemetry/opentelemetry-rust)",
 ]
 
 [[package]]
@@ -840,24 +854,13 @@ dependencies = [
 
 [[package]]
 name = "tracing"
-version = "0.1.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09adeb8c97449311ccd28a427f96fb563e7fd31aabf994189879d9da2394b89d"
-dependencies = [
- "cfg-if",
- "pin-project-lite",
- "tracing-core 0.1.19",
-]
-
-[[package]]
-name = "tracing"
 version = "0.2.0"
 source = "git+https://github.com/tokio-rs/tracing#57fca59c0c9948c494c6bf1b6f3465df682e993c"
 dependencies = [
  "cfg-if",
  "pin-project-lite",
  "tracing-attributes",
- "tracing-core 0.2.0",
+ "tracing-core",
 ]
 
 [[package]]
@@ -867,7 +870,7 @@ source = "git+https://github.com/tokio-rs/tracing#57fca59c0c9948c494c6bf1b6f3465
 dependencies = [
  "chrono",
  "crossbeam-channel",
- "tracing-subscriber 0.3.0",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -882,30 +885,10 @@ dependencies = [
 
 [[package]]
 name = "tracing-core"
-version = "0.1.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ca517f43f0fb96e0c3072ed5c275fe5eece87e8cb52f4a77b69226d3b1c9df8"
-dependencies = [
- "lazy_static",
-]
-
-[[package]]
-name = "tracing-core"
 version = "0.2.0"
 source = "git+https://github.com/tokio-rs/tracing#57fca59c0c9948c494c6bf1b6f3465df682e993c"
 dependencies = [
  "lazy_static",
-]
-
-[[package]]
-name = "tracing-log"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6923477a48e41c1951f1999ef8bb5a3023eb723ceadafe78ffb65dc366761e3"
-dependencies = [
- "lazy_static",
- "log",
- "tracing-core 0.1.19",
 ]
 
 [[package]]
@@ -915,20 +898,19 @@ source = "git+https://github.com/tokio-rs/tracing#57fca59c0c9948c494c6bf1b6f3465
 dependencies = [
  "lazy_static",
  "log",
- "tracing-core 0.2.0",
+ "tracing-core",
 ]
 
 [[package]]
 name = "tracing-opentelemetry"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "599f388ecb26b28d9c1b2e4437ae019a7b336018b45ed911458cd9ebf91129f6"
+source = "git+https://github.com/tokio-rs/tracing#57fca59c0c9948c494c6bf1b6f3465df682e993c"
 dependencies = [
- "opentelemetry",
- "tracing 0.1.26",
- "tracing-core 0.1.19",
- "tracing-log 0.1.2",
- "tracing-subscriber 0.2.20",
+ "opentelemetry 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing",
+ "tracing-core",
+ "tracing-log",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -937,18 +919,7 @@ version = "0.2.0"
 source = "git+https://github.com/tokio-rs/tracing#57fca59c0c9948c494c6bf1b6f3465df682e993c"
 dependencies = [
  "serde",
- "tracing-core 0.2.0",
-]
-
-[[package]]
-name = "tracing-subscriber"
-version = "0.2.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9cbe87a2fa7e35900ce5de20220a582a9483a7063811defce79d7cbd59d4cfe"
-dependencies = [
- "sharded-slab",
- "thread_local",
- "tracing-core 0.1.19",
+ "tracing-core",
 ]
 
 [[package]]
@@ -966,9 +937,9 @@ dependencies = [
  "sharded-slab",
  "smallvec",
  "thread_local",
- "tracing 0.2.0",
- "tracing-core 0.2.0",
- "tracing-log 0.2.0",
+ "tracing",
+ "tracing-core",
+ "tracing-log",
  "tracing-serde",
 ]
 
@@ -1008,17 +979,17 @@ dependencies = [
  "derive_more",
  "flexi_logger",
  "log",
- "opentelemetry",
+ "opentelemetry 0.16.0 (git+https://github.com/open-telemetry/opentelemetry-rust)",
  "opentelemetry-jaeger",
  "serde",
  "serde_json",
  "termcolor",
  "test-case",
  "thiserror",
- "tracing 0.2.0",
+ "tracing",
  "tracing-appender",
  "tracing-opentelemetry",
- "tracing-subscriber 0.3.0",
+ "tracing-subscriber",
 ]
 
 [[package]]

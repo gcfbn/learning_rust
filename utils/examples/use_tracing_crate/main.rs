@@ -33,14 +33,16 @@ impl App {
     fn configure_opentelemetry(&self) -> impl opentelemetry::trace::Tracer {
         global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
 
-        // Install a new OpenTelemetry trace pipeline
-        // let tracer = stdout::new_pipeline().install_simple();
         let tracer = opentelemetry_jaeger::new_pipeline()
             .with_service_name("application_runner")
             .install_simple()
             .unwrap();
 
-        tracer
+        // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: opentelemetry::trace::tracer::Tracer` is not satisfied
+        // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: PreSampledTracer` is not satisfied
+        let telemetry = tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer);
+
+        opentelemetry_jaeger::new_pipeline().install_simple().unwrap()
     }
 }
 
@@ -56,6 +58,7 @@ impl ApplicationRunner for App {
 
     fn configure_logging(&self) {
         let tracer = self.configure_opentelemetry();
+        // let registry = tracing_subscriber::Registry::default().with(tracer);
 
         tracer.in_span("set_subscribers", |_cx| {
             let file_subscriber = tracer.in_span("set_file_subscriber", |_cx| {
