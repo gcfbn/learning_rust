@@ -24,7 +24,25 @@ struct AppError;
 
 // -----------------------------------------------------------------------------
 
+use opentelemetry::{global, trace::Tracer};
+use tracing::error;
+
 struct App;
+
+impl App {
+    fn configure_opentelemetry(&self) -> impl opentelemetry::trace::Tracer {
+        global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
+
+        // Install a new OpenTelemetry trace pipeline
+        // let tracer = stdout::new_pipeline().install_simple();
+        let tracer = opentelemetry_jaeger::new_pipeline()
+            .with_service_name("application_runner")
+            .install_simple()
+            .unwrap();
+
+        tracer
+    }
+}
 
 impl ApplicationRunner for App {
     type CmdArgs = cmd_args::CmdArgs;
@@ -37,21 +55,31 @@ impl ApplicationRunner for App {
     }
 
     fn configure_logging(&self) {
-        let file_subscriber = Subscriber::new()
-            .with_ansi(false)
-            .with_writer(|| tracing_appender::rolling::minutely("./.logs", "use_logger_with_state"))
-            .with_timer(MySystemTimeFormatter);
+        let tracer = self.configure_opentelemetry();
 
-        let stdout_subscriber = Subscriber::new()
-            .with_writer(std::io::stdout)
-            .with_timer(MySystemTimeFormatter);
+        tracer.in_span("set_subscribers", |_cx| {
+            let file_subscriber = tracer.in_span("set_file_subscriber", |_cx| {
+                Subscriber::new()
+                    .with_ansi(false)
+                    .with_writer(|| tracing_appender::rolling::minutely("./.logs", "use_logger_with_state"))
+                    .with_timer(MySystemTimeFormatter)
+            });
 
-        // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
-        tracing_subscriber::registry()
-            .with(EnvFilter::from_default_env())
-            .with(file_subscriber)
-            .with(stdout_subscriber)
-            .init();
+            let stdout_subscriber = tracer.in_span("set_stdout_subscriber", |_cx| {
+                Subscriber::new()
+                    .with_writer(std::io::stdout)
+                    .with_timer(MySystemTimeFormatter)
+            });
+
+            tracer.in_span("set_registry", |_cx| {
+                // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
+                tracing_subscriber::registry()
+                    .with(EnvFilter::from_default_env())
+                    .with(file_subscriber)
+                    .with(stdout_subscriber)
+                    .init()
+            });
+        });
     }
 }
 
