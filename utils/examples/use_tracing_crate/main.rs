@@ -1,43 +1,32 @@
 /// You can run this program with the following command e.g.:
 ///
-/// RUST_LOG=error,use_logger_with_state=warn cargo run --example use_logger_with_state --features app_logger_has_state
+/// RUST_LOG=error,use_tracing_crate=warn cargo run --example use_tracing_crate --features tracing_example
 ///
+mod cmd_args;
+
 use std::fmt::Debug;
 use thiserror::Error;
 use tracing::warn;
 use tracing_subscriber::{fmt::Subscriber, subscribe::CollectExt, util::SubscriberInitExt, EnvFilter};
-use utils::{ApplicationRunner, HasLoggerHandle};
+use utils::ApplicationRunner;
 
-mod cmd_args;
-
-#[derive(Debug, Error)]
-#[error("Application error !")]
-struct AppError;
-
-struct App;
-
-struct EmptyHandle {
-    handle: (),
-}
-
-impl HasLoggerHandle for EmptyHandle {
-    type Handle = ();
-
-    fn handle(&self) -> &Self::Handle {
-        &self.handle
-    }
-}
+// -----------------------------------------------------------------------------
 
 fn main() {
     App.main();
 }
 
-fn make_file_writer_for_logging() -> impl std::io::Write {
-    tracing_appender::rolling::minutely("./.logs", "use_logger_with_state")
-}
+// -----------------------------------------------------------------------------
+
+#[derive(Debug, Error)]
+#[error("Application error !")]
+struct AppError;
+
+// -----------------------------------------------------------------------------
+
+struct App;
 
 impl ApplicationRunner for App {
-    type AppLoggerHandle = EmptyHandle;
     type CmdArgs = cmd_args::CmdArgs;
     type Error = AppError;
 
@@ -47,10 +36,10 @@ impl ApplicationRunner for App {
         Err(AppError)
     }
 
-    fn configure_logging(&self) -> Self::AppLoggerHandle {
+    fn configure_logging(&self) {
         let file_subscriber = Subscriber::new()
             .with_ansi(false)
-            .with_writer(make_file_writer_for_logging)
+            .with_writer(|| tracing_appender::rolling::minutely("./.logs", "use_logger_with_state"))
             .with_timer(MySystemTimeFormatter);
 
         let stdout_subscriber = Subscriber::new()
@@ -63,10 +52,10 @@ impl ApplicationRunner for App {
             .with(file_subscriber)
             .with(stdout_subscriber)
             .init();
-
-        EmptyHandle { handle: () }
     }
 }
+
+// -----------------------------------------------------------------------------
 
 use tracing_subscriber::fmt::time::FormatTime;
 
@@ -74,6 +63,8 @@ struct MySystemTimeFormatter;
 
 impl FormatTime for MySystemTimeFormatter {
     fn format_time(&self, w: &mut dyn std::fmt::Write) -> std::fmt::Result {
-        write!(w, "{:>5}", chrono::Local::now().format("[%Y-%m-%d %H:%M:%S%.6f]"))
+        write!(w, "{}", chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.6f"))
     }
 }
+
+// -----------------------------------------------------------------------------

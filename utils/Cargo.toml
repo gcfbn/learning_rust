@@ -7,7 +7,8 @@ edition = "2018"
 [features]
 default = []
 default_logging = ["flexi_logger", "app_logger_has_state"]
-app_logger_has_state = ["tracing", "tracing-subscriber", "tracing-appender", "chrono"]
+app_logger_has_state = []
+tracing_example = ["tracing", "tracing-subscriber", "tracing-appender", "chrono"]
 
 [dependencies]
 atty = "0.2"
@@ -41,5 +42,5 @@ name = "use_default_logging"
 required-features = ["default_logging"]
 
 [[example]]
-name = "use_logger_with_state"
-required-features = ["app_logger_has_state"]
+name = "use_tracing_crate"
+required-features = ["tracing_example"]
