@@ -1,9 +1,12 @@
-use utils::{ApplicationRunner, HasLoggerHandle};
-use thiserror::Error;
-use tracing_subscriber::FmtSubscriber;
+/// You can run this program with the following command e.g.:
+///
+/// RUST_LOG=error,use_logger_with_state=warn cargo run --example use_logger_with_state --features app_logger_has_state
+///
 use std::fmt::Debug;
+use thiserror::Error;
 use tracing::warn;
-use tracing::dispatcher::DefaultGuard;
+use tracing_subscriber::{fmt::Subscriber, subscribe::CollectExt, util::SubscriberInitExt, EnvFilter};
+use utils::{ApplicationRunner, HasLoggerHandle};
 
 mod cmd_args;
 
@@ -13,12 +16,12 @@ struct AppError;
 
 struct App;
 
-struct TracingLoggerHandle {
-    handle: DefaultGuard,
+struct EmptyHandle {
+    handle: (),
 }
 
-impl HasLoggerHandle for TracingLoggerHandle {
-    type Handle = DefaultGuard;
+impl HasLoggerHandle for EmptyHandle {
+    type Handle = ();
 
     fn handle(&self) -> &Self::Handle {
         &self.handle
@@ -30,32 +33,47 @@ fn main() {
 }
 
 fn make_file_writer_for_logging() -> impl std::io::Write {
-    // log files have extension like `.2021-08-25-19-34` and aren't displayed properly, at least on my device
     tracing_appender::rolling::minutely("./.logs", "use_logger_with_state")
 }
 
 impl ApplicationRunner for App {
-    type Error = AppError;
+    type AppLoggerHandle = EmptyHandle;
     type CmdArgs = cmd_args::CmdArgs;
-    type AppLoggerHandle = TracingLoggerHandle;
+    type Error = AppError;
 
-    fn run(&self, cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
+    fn run(&self, _cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
         warn!("this method will raise an error");
 
         Err(AppError)
     }
 
     fn configure_logging(&self) -> Self::AppLoggerHandle {
-        let subscriber = FmtSubscriber::builder()
-            .with_max_level(tracing_subscriber::filter::LevelFilter::WARN)
+        let file_subscriber = Subscriber::new()
+            .with_ansi(false)
             .with_writer(make_file_writer_for_logging)
-            .finish();
+            .with_timer(MySystemTimeFormatter);
 
-        // "Sets the subscriber as the default for the duration of the lifetime of the returned `DefaultGuard`"
-        let guard = tracing::subscriber::set_default(subscriber);
+        let stdout_subscriber = Subscriber::new()
+            .with_writer(std::io::stdout)
+            .with_timer(MySystemTimeFormatter);
 
-        TracingLoggerHandle {
-            handle: guard,
-        }
+        // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
+        tracing_subscriber::registry()
+            .with(EnvFilter::from_default_env())
+            .with(file_subscriber)
+            .with(stdout_subscriber)
+            .init();
+
+        EmptyHandle { handle: () }
+    }
+}
+
+use tracing_subscriber::fmt::time::FormatTime;
+
+struct MySystemTimeFormatter;
+
+impl FormatTime for MySystemTimeFormatter {
+    fn format_time(&self, w: &mut dyn std::fmt::Write) -> std::fmt::Result {
+        write!(w, "{:>5}", chrono::Local::now().format("[%Y-%m-%d %H:%M:%S%.6f]"))
     }
 }

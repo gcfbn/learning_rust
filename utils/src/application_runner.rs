@@ -4,7 +4,7 @@ use std::fmt::{Debug, Display};
 
 #[derive(Debug)]
 enum RunStatus {
-    OK = 0,
+    OK    = 0,
     Error = 1,
 }
 
@@ -87,7 +87,7 @@ pub trait ApplicationRunner {
     /// # Arguments
     ///
     /// * error_message - error text
-    fn write_app_error_message(&self, error_message: &String) {
+    fn write_app_error_message(&self, error_message: &str) {
         use crate::write_colored_error_message;
 
         if self.should_write_app_error_message_with_colors() {

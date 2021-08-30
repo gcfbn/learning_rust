@@ -32,7 +32,7 @@ impl TryFrom<u32> for PositiveInteger {
 
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         if val == 0 {
-            return Err(PositiveIntegerError::InputNumberIsEqZeroError);
+            return Err(PositiveIntegerError::EqZero);
         }
         Ok(PositiveInteger(val))
     }
@@ -69,13 +69,13 @@ impl PartialEq<u32> for PositiveInteger {
 #[derive(Debug, Error)]
 pub enum PositiveIntegerError {
     #[error("cannot be negative - {0}")]
-    InputNumberIsNegativeError(String),
+    NegativeValue(String),
 
     #[error("0 is not allowed - it must be a positive integer")]
-    InputNumberIsEqZeroError,
+    EqZero,
 
     #[error("{input} - input string is not an integer -> {parse_error_message}")]
-    InputNumberIsNotIntegerError {
+    NotInteger {
         input:               String,
         parse_error_message: String,
     },
@@ -85,15 +85,13 @@ impl FromStr for PositiveInteger {
     type Err = PositiveIntegerError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ivalue: isize = s
-            .parse()
-            .map_err(|err| PositiveIntegerError::InputNumberIsNotIntegerError {
-                input:               s.to_string(),
-                parse_error_message: format!("{}", err),
-            })?;
+        let ivalue: isize = s.parse().map_err(|err| PositiveIntegerError::NotInteger {
+            input:               s.to_string(),
+            parse_error_message: format!("{}", err),
+        })?;
 
         if ivalue < 0 {
-            return Err(PositiveIntegerError::InputNumberIsNegativeError(s.to_string()));
+            return Err(PositiveIntegerError::NegativeValue(s.to_string()));
         }
 
         Self::try_from(ivalue as u32)
