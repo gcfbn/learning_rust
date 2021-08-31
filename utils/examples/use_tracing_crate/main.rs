@@ -6,9 +6,10 @@ mod cmd_args;
 
 use std::fmt::Debug;
 use thiserror::Error;
-use tracing::warn;
-use tracing_subscriber::{fmt::Subscriber, subscribe::CollectExt, util::SubscriberInitExt, EnvFilter};
+use tracing::{warn, error};
+use tracing_subscriber::{fmt::{Subscriber, Collector}, subscribe::CollectExt, util::SubscriberInitExt, EnvFilter};
 use utils::ApplicationRunner;
+use opentelemetry::{global, trace::Tracer};
 
 // -----------------------------------------------------------------------------
 
@@ -24,9 +25,6 @@ struct AppError;
 
 // -----------------------------------------------------------------------------
 
-use opentelemetry::{global, trace::Tracer};
-use tracing::error;
-
 struct App;
 
 impl App {
@@ -40,7 +38,7 @@ impl App {
 
         // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: opentelemetry::trace::tracer::Tracer` is not satisfied
         // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: PreSampledTracer` is not satisfied
-        let telemetry = tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer);
+        let telemetry: OpenTelemetrySubscriber<tracing_subscriber::Registry, opentelemetry::sdk::trace::Tracer> = tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer);
 
         opentelemetry_jaeger::new_pipeline().install_simple().unwrap()
     }
@@ -89,6 +87,7 @@ impl ApplicationRunner for App {
 // -----------------------------------------------------------------------------
 
 use tracing_subscriber::fmt::time::FormatTime;
+use tracing_opentelemetry::OpenTelemetrySubscriber;
 
 struct MySystemTimeFormatter;
 
