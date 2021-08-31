@@ -7,9 +7,9 @@ mod cmd_args;
 use std::fmt::Debug;
 use thiserror::Error;
 use tracing::{warn, error};
-use tracing_subscriber::{fmt::{Subscriber, Collector}, subscribe::CollectExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::{fmt::Subscriber, subscribe::CollectExt, EnvFilter};
 use utils::ApplicationRunner;
-use opentelemetry::{global, trace::Tracer};
+use opentelemetry::global;
 
 // -----------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ struct AppError;
 struct App;
 
 impl App {
-    fn configure_opentelemetry(&self) -> OpenTelemetrySubscriber<tracing_subscriber::Registry, opentelemetry::sdk::trace::Tracer> {
+    fn configure_opentelemetry(&self) -> OpenTelemetrySubscriber<tracing_subscriber::fmt::Collector, opentelemetry::sdk::trace::Tracer> {
         global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
 
         let tracer = opentelemetry_jaeger::new_pipeline()
@@ -36,12 +36,7 @@ impl App {
             .install_simple()
             .unwrap();
 
-        // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: opentelemetry::trace::tracer::Tracer` is not satisfied
-        // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: PreSampledTracer` is not satisfied
-        let telemetry: OpenTelemetrySubscriber<tracing_subscriber::Registry, opentelemetry::sdk::trace::Tracer> = tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer);
-
-        // opentelemetry_jaeger::new_pipeline().install_simple().unwrap()
-        telemetry
+        tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer)
     }
 }
 
@@ -56,8 +51,7 @@ impl ApplicationRunner for App {
     }
 
     fn configure_logging(&self) {
-        let tracer = self.configure_opentelemetry();
-        // let registry = tracing_subscriber::Registry::default().with(tracer);
+        let telemetry = self.configure_opentelemetry();
 
         let file_subscriber = Subscriber::new()
             .with_ansi(false)
@@ -69,11 +63,15 @@ impl ApplicationRunner for App {
             .with_timer(MySystemTimeFormatter);
 
         // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
-        let registry = tracing_subscriber::registry()
+        let registry = tracing_subscriber::Registry::default()
             .with(EnvFilter::from_default_env())
             .with(file_subscriber)
             .with(stdout_subscriber)
-            .init();
+            // ERROR: the trait Subscribe<...> is not implemented for
+            // `OpenTelemetrySubscriber<Registry, opentelemetry::sdk::trace::Tracer>`
+            //
+            // help: the following implementations were found: <OpenTelemetrySubscriber<C, T> as Subscribe<C>>
+            .with(telemetry);
     }
 }
 
