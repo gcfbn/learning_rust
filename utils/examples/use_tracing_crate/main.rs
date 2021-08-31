@@ -28,7 +28,7 @@ struct AppError;
 struct App;
 
 impl App {
-    fn configure_opentelemetry(&self) -> impl opentelemetry::trace::Tracer {
+    fn configure_opentelemetry(&self) -> OpenTelemetrySubscriber<tracing_subscriber::Registry, opentelemetry::sdk::trace::Tracer> {
         global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
 
         let tracer = opentelemetry_jaeger::new_pipeline()
@@ -40,7 +40,8 @@ impl App {
         // ERROR: the trait bound `opentelemetry::sdk::trace::Tracer: PreSampledTracer` is not satisfied
         let telemetry: OpenTelemetrySubscriber<tracing_subscriber::Registry, opentelemetry::sdk::trace::Tracer> = tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer);
 
-        opentelemetry_jaeger::new_pipeline().install_simple().unwrap()
+        // opentelemetry_jaeger::new_pipeline().install_simple().unwrap()
+        telemetry
     }
 }
 
@@ -58,29 +59,21 @@ impl ApplicationRunner for App {
         let tracer = self.configure_opentelemetry();
         // let registry = tracing_subscriber::Registry::default().with(tracer);
 
-        tracer.in_span("set_subscribers", |_cx| {
-            let file_subscriber = tracer.in_span("set_file_subscriber", |_cx| {
-                Subscriber::new()
-                    .with_ansi(false)
-                    .with_writer(|| tracing_appender::rolling::minutely("./.logs", "use_logger_with_state"))
-                    .with_timer(MySystemTimeFormatter)
-            });
+        let file_subscriber = Subscriber::new()
+            .with_ansi(false)
+            .with_writer(|| tracing_appender::rolling::minutely("./.logs", "use_logger_with_state"))
+            .with_timer(MySystemTimeFormatter);
 
-            let stdout_subscriber = tracer.in_span("set_stdout_subscriber", |_cx| {
-                Subscriber::new()
-                    .with_writer(std::io::stdout)
-                    .with_timer(MySystemTimeFormatter)
-            });
+        let stdout_subscriber = Subscriber::new()
+            .with_writer(std::io::stdout)
+            .with_timer(MySystemTimeFormatter);
 
-            tracer.in_span("set_registry", |_cx| {
-                // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
-                tracing_subscriber::registry()
-                    .with(EnvFilter::from_default_env())
-                    .with(file_subscriber)
-                    .with(stdout_subscriber)
-                    .init()
-            });
-        });
+        // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
+        let registry = tracing_subscriber::registry()
+            .with(EnvFilter::from_default_env())
+            .with(file_subscriber)
+            .with(stdout_subscriber)
+            .init();
     }
 }
 
