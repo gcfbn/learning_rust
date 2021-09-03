@@ -6,7 +6,7 @@ mod cmd_args;
 
 use std::fmt::Debug;
 use thiserror::Error;
-use tracing::{warn, error};
+use tracing::{warn, error, trace, Level, span, };
 use tracing_subscriber::{fmt::Subscriber, EnvFilter, prelude::*, util::SubscriberInitExt, registry::Registry};
 use utils::ApplicationRunner;
 use opentelemetry::{global, sdk::trace::Tracer};
@@ -67,6 +67,10 @@ impl ApplicationRunner for App {
             .with(stdout_subscriber)
             .with(telemetry)
             .init();
+
+        let test_span = span!(Level::TRACE, "test_span");
+        let _enter = test_span.enter();
+        trace!("entered test_span");
     }
 }
 
