@@ -7,9 +7,9 @@ mod cmd_args;
 use std::fmt::Debug;
 use thiserror::Error;
 use tracing::{warn, error};
-use tracing_subscriber::{fmt::Subscriber, subscribe::CollectExt, EnvFilter};
+use tracing_subscriber::{fmt::Subscriber, EnvFilter, prelude::*, util::SubscriberInitExt, registry::Registry};
 use utils::ApplicationRunner;
-use opentelemetry::global;
+use opentelemetry::{global, sdk::trace::Tracer};
 
 // -----------------------------------------------------------------------------
 
@@ -28,15 +28,11 @@ struct AppError;
 struct App;
 
 impl App {
-    fn configure_opentelemetry(&self) -> OpenTelemetrySubscriber<tracing_subscriber::fmt::Collector, opentelemetry::sdk::trace::Tracer> {
-        global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
-
-        let tracer = opentelemetry_jaeger::new_pipeline()
+    fn configure_opentelemetry(&self) -> Tracer {
+        opentelemetry_jaeger::new_pipeline()
             .with_service_name("application_runner")
             .install_simple()
-            .unwrap();
-
-        tracing_opentelemetry::OpenTelemetrySubscriber::default().with_tracer(tracer)
+            .unwrap()
     }
 }
 
@@ -51,7 +47,7 @@ impl ApplicationRunner for App {
     }
 
     fn configure_logging(&self) {
-        let telemetry = self.configure_opentelemetry();
+        global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
 
         let file_subscriber = Subscriber::new()
             .with_ansi(false)
@@ -62,16 +58,15 @@ impl ApplicationRunner for App {
             .with_writer(std::io::stdout)
             .with_timer(MySystemTimeFormatter);
 
+        let telemetry = OpenTelemetrySubscriber::new(self.configure_opentelemetry());
+
         // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
-        let registry = tracing_subscriber::Registry::default()
+        Registry::default()
             .with(EnvFilter::from_default_env())
             .with(file_subscriber)
             .with(stdout_subscriber)
-            // ERROR: the trait Subscribe<...> is not implemented for
-            // `OpenTelemetrySubscriber<Registry, opentelemetry::sdk::trace::Tracer>`
-            //
-            // help: the following implementations were found: <OpenTelemetrySubscriber<C, T> as Subscribe<C>>
-            .with(telemetry);
+            .with(telemetry)
+            .init();
     }
 }
 
