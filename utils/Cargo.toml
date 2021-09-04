@@ -8,7 +8,10 @@ edition = "2018"
 default = []
 default_logging = ["flexi_logger", "app_logger_has_state"]
 app_logger_has_state = []
-tracing_example = ["tracing", "tracing-subscriber", "tracing-appender", "chrono"]
+
+tracing_example = ["tracing_ecosystem", "opentelemetry_ecosystem", "chrono"]
+tracing_ecosystem = ["tracing", "tracing-subscriber", "tracing-appender", "tracing-opentelemetry"]
+opentelemetry_ecosystem = ["opentelemetry", "opentelemetry-jaeger"]
 
 [dependencies]
 atty = "0.2"
@@ -26,11 +29,22 @@ termcolor = { version = "1.1" }
 thiserror = "1.0.25"
 
 log = "0.4.0"
+
 flexi_logger = { version = "0.18", optional = true }
+
 tracing = { git = "https://github.com/tokio-rs/tracing", optional = true }
 tracing-subscriber = { git = "https://github.com/tokio-rs/tracing", optional = true, features = ["tracing-log"] }
 tracing-appender = { git = "https://github.com/tokio-rs/tracing", optional = true }
-chrono = {version = "0.4", optional = true }
+tracing-opentelemetry = { git = "https://github.com/tokio-rs/tracing", optional = true }
+
+
+chrono = { version = "0.4", optional = true }
+
+#opentelemetry = { git = "https://github.com/open-telemetry/opentelemetry-rust", optional = true }
+#opentelemetry-jaeger = { git = "https://github.com/open-telemetry/opentelemetry-rust", optional = true }
+
+opentelemetry = { version = "0.16", optional = true }
+opentelemetry-jaeger = { version = "0.15", optional = true }
 
 anyhow = "1.0"
 
