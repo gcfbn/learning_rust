@@ -7,7 +7,7 @@ mod cmd_args;
 use cmd_args::CmdArgs;
 use log::warn;
 use thiserror::Error;
-use utils::{ApplicationRunner, DefaultAppLoggerHandle};
+use utils::{ApplicationRunner, DefaultAppLoggerState};
 
 #[derive(Debug, Error)]
 #[error("Application error !")]
@@ -20,7 +20,7 @@ fn main() {
 }
 
 impl ApplicationRunner for App {
-    type AppLoggerHandle = DefaultAppLoggerHandle;
+    type AppLoggerState = DefaultAppLoggerState;
     type CmdArgs = CmdArgs;
     type Error = AppError;
 

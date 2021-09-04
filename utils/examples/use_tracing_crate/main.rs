@@ -15,7 +15,7 @@ use std::fmt::Debug;
 use thiserror::Error;
 use tracing::{error, span, trace, warn, Level};
 use tracing_subscriber::{fmt::Subscriber, prelude::*, registry::Registry, util::SubscriberInitExt, EnvFilter};
-use utils::{ApplicationRunner, HasLoggerHandle};
+use utils::{AppLoggerHasState, ApplicationRunner};
 
 // -----------------------------------------------------------------------------
 
@@ -33,16 +33,16 @@ struct AppError;
 
 struct App;
 
-pub struct AppLoggerWithStateButNoHandle {}
+pub struct AppLoggerState {}
 
-impl HasLoggerHandle for AppLoggerWithStateButNoHandle {
-    type Handle = ();
+impl AppLoggerHasState for AppLoggerState {
+    type State = ();
 
     fn new() -> Self {
         // send opentelemetry data to Jaeger
         global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
 
-        AppLoggerWithStateButNoHandle {}
+        AppLoggerState {}
     }
 
     fn finalize(&self) {
@@ -51,7 +51,7 @@ impl HasLoggerHandle for AppLoggerWithStateButNoHandle {
 }
 
 impl ApplicationRunner for App {
-    type AppLoggerHandle = AppLoggerWithStateButNoHandle;
+    type AppLoggerState = AppLoggerState;
     type CmdArgs = cmd_args::CmdArgs;
     type Error = AppError;
 
@@ -61,8 +61,8 @@ impl ApplicationRunner for App {
         Err(AppError)
     }
 
-    fn configure_logging(&self) -> Self::AppLoggerHandle {
-        let app_logger = AppLoggerWithStateButNoHandle::new();
+    fn configure_logging(&self) -> Self::AppLoggerState {
+        let app_logger = AppLoggerState::new();
 
         // write logging messages to .log file
         let file_subscriber = Subscriber::new()
