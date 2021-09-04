@@ -12,20 +12,37 @@ enum RunStatus {
 pub trait HasLoggerHandle {
     type Handle;
 
-    fn handle(&self) -> &Self::Handle;
+    fn new() -> Self;
+    fn finalize(&self) {}
 }
 
 #[cfg(feature = "default_logging")]
 pub struct DefaultAppLoggerHandle {
-    handle: flexi_logger::LoggerHandle,
+    _handle: flexi_logger::LoggerHandle,
 }
 
-#[cfg(all(feature = "default_logging", feature = "app_logger_has_state"))]
+#[cfg(feature = "default_logging")]
 impl HasLoggerHandle for DefaultAppLoggerHandle {
     type Handle = flexi_logger::LoggerHandle;
 
-    fn handle(&self) -> &Self::Handle {
-        &self.handle
+    fn new() -> Self {
+        use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
+
+        let _handle = Logger::try_with_env_or_str("warn")
+                    .unwrap()
+                    .log_to_file(FileSpec::default().directory(".logs"))
+                    .duplicate_to_stderr(Duplicate::Warn)
+                    // .duplicate_to_stderr(Duplicate::All)
+                    .format_for_files(detailed_format)
+                    .format_for_stderr(default_colored_format)
+                    .print_message()
+                    .create_symlink("current_run") // create a symbolic link to the current log file
+                    .start()
+                    .unwrap();
+
+        info!("default logger initialized");
+
+        DefaultAppLoggerHandle { _handle }
     }
 }
 
@@ -42,7 +59,7 @@ pub trait ApplicationRunner {
     fn main(&self) -> i32 {
         cfg_if::cfg_if! {
             if #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))] {
-                let _app_logger_handle = self.configure_logging();
+                let app_logger_handle = self.configure_logging();
             } else {
                 self.configure_logging();
             }
@@ -67,6 +84,10 @@ pub trait ApplicationRunner {
         };
 
         info!("closing application with status {:?}", &status);
+
+        #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))]
+        app_logger_handle.finalize();
+
         std::process::exit(status as i32)
     }
 
@@ -105,25 +126,7 @@ pub trait ApplicationRunner {
             /// By default, it has empty implementation, so nothing will be logged.
             /// User can use their own logger by overriding this method.
             fn configure_logging(&self) -> DefaultAppLoggerHandle {
-                use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
-
-                let _logger_handle = Logger::try_with_env_or_str("warn")
-                    .unwrap()
-                    .log_to_file(FileSpec::default().directory(".logs"))
-                    .duplicate_to_stderr(Duplicate::Warn)
-                    // .duplicate_to_stderr(Duplicate::All)
-                    .format_for_files(detailed_format)
-                    .format_for_stderr(default_colored_format)
-                    .print_message()
-                    .create_symlink("current_run") // create a symbolic link to the current log file
-                    .start()
-                    .unwrap();
-
-                info!("default logger initialized");
-
-                DefaultAppLoggerHandle{
-                    handle: _logger_handle
-                }
+                DefaultAppLoggerHandle::new()
             }
         } else if #[cfg(feature = "app_logger_has_state")] {
             fn configure_logging(&self) -> Self::AppLoggerHandle;

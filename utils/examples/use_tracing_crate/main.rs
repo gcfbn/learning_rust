@@ -8,15 +8,14 @@
 ///
 /// Your Jaeger UI should look like similar to this:
 /// https://imgur.com/a/5fZuLND
-
 mod cmd_args;
 
+use opentelemetry::global;
 use std::fmt::Debug;
 use thiserror::Error;
-use tracing::{warn, error, trace, Level, span};
-use tracing_subscriber::{fmt::Subscriber, EnvFilter, prelude::*, util::SubscriberInitExt, registry::Registry};
-use utils::ApplicationRunner;
-use opentelemetry::{global, sdk::trace::Tracer};
+use tracing::{error, span, trace, warn, Level};
+use tracing_subscriber::{fmt::Subscriber, prelude::*, registry::Registry, util::SubscriberInitExt, EnvFilter};
+use utils::{ApplicationRunner, HasLoggerHandle};
 
 // -----------------------------------------------------------------------------
 
@@ -34,16 +33,25 @@ struct AppError;
 
 struct App;
 
-impl App {
-    fn configure_opentelemetry(&self) -> Tracer {
-        opentelemetry_jaeger::new_pipeline()
-            .with_service_name("application_runner")
-            .install_simple()
-            .unwrap()
+pub struct AppLoggerWithStateButNoHandle {}
+
+impl HasLoggerHandle for AppLoggerWithStateButNoHandle {
+    type Handle = ();
+
+    fn new() -> Self {
+        // send opentelemetry data to Jaeger
+        global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
+
+        AppLoggerWithStateButNoHandle {}
+    }
+
+    fn finalize(&self) {
+        global::shutdown_tracer_provider(); // sending remaining spans
     }
 }
 
 impl ApplicationRunner for App {
+    type AppLoggerHandle = AppLoggerWithStateButNoHandle;
     type CmdArgs = cmd_args::CmdArgs;
     type Error = AppError;
 
@@ -53,9 +61,8 @@ impl ApplicationRunner for App {
         Err(AppError)
     }
 
-    fn configure_logging(&self) {
-        // send opentelemetry data to Jaeger
-        global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
+    fn configure_logging(&self) -> Self::AppLoggerHandle {
+        let app_logger = AppLoggerWithStateButNoHandle::new();
 
         // write logging messages to .log file
         let file_subscriber = Subscriber::new()
@@ -71,27 +78,34 @@ impl ApplicationRunner for App {
             .with_writer(std::io::stdout)
             .with_timer(MySystemTimeFormatter);
 
-        let telemetry = OpenTelemetrySubscriber::new(self.configure_opentelemetry());
+        let tracer = opentelemetry_jaeger::new_pipeline()
+            .with_service_name("application_runner")
+            .install_simple()
+            .unwrap();
+
+        let telemetry_subscriber = OpenTelemetrySubscriber::new(tracer);
 
         // see: https://github.com/tokio-rs/tracing/blob/master/examples/examples/fmt-multiple-writers.rs
         Registry::default()
             .with(EnvFilter::from_default_env())
             .with(file_subscriber)
             .with(stdout_subscriber)
-            .with(telemetry)
+            .with(telemetry_subscriber)
             .init();
 
         // create and enter test_span, which should be visible in Jaeger UI
         let test_span = span!(Level::TRACE, "test_span");
         let _enter = test_span.enter();
         trace!("entered test_span");
+
+        app_logger
     }
 }
 
 // -----------------------------------------------------------------------------
 
-use tracing_subscriber::fmt::time::FormatTime;
 use tracing_opentelemetry::OpenTelemetrySubscriber;
+use tracing_subscriber::fmt::time::FormatTime;
 
 struct MySystemTimeFormatter;
 

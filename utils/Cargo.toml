@@ -9,7 +9,7 @@ default = []
 default_logging = ["flexi_logger", "app_logger_has_state"]
 app_logger_has_state = []
 
-tracing_example = ["tracing_ecosystem", "opentelemetry_ecosystem", "chrono"]
+tracing_example = ["tracing_ecosystem", "opentelemetry_ecosystem", "chrono", "app_logger_has_state"]
 tracing_ecosystem = ["tracing", "tracing-subscriber", "tracing-appender", "tracing-opentelemetry"]
 opentelemetry_ecosystem = ["opentelemetry", "opentelemetry-jaeger"]
 
