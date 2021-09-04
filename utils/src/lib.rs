@@ -5,9 +5,9 @@ mod positive_integer;
 
 pub use application_runner::ApplicationRunner;
 #[cfg(feature = "default_logging")]
-pub use application_runner::DefaultAppLoggerHandle;
+pub use application_runner::DefaultAppLoggerState;
 #[cfg(feature = "app_logger_has_state")]
-pub use application_runner::HasLoggerHandle;
+pub use application_runner::AppLoggerHasState;
 pub use colored_error_messages::write_colored_error_message;
 pub use path_validators::PathBufWithFileThatMustExist;
 pub use positive_integer::PositiveInteger;
