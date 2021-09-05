@@ -33,7 +33,7 @@ struct AppError;
 
 struct App;
 
-pub struct AppLoggerState {}
+pub struct AppLoggerState;
 
 impl AppLoggerHasState for AppLoggerState {
     type State = ();
@@ -41,28 +41,6 @@ impl AppLoggerHasState for AppLoggerState {
     fn new() -> Self {
         // send opentelemetry data to Jaeger
         global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
-
-        AppLoggerState {}
-    }
-
-    fn finalize(&self) {
-        global::shutdown_tracer_provider(); // sending remaining spans
-    }
-}
-
-impl ApplicationRunner for App {
-    type AppLoggerState = AppLoggerState;
-    type CmdArgs = cmd_args::CmdArgs;
-    type Error = AppError;
-
-    fn run(&self, _cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
-        warn!("this method will raise an error");
-
-        Err(AppError)
-    }
-
-    fn configure_logging(&self) -> Self::AppLoggerState {
-        let app_logger = AppLoggerState::new();
 
         // write logging messages to .log file
         let file_subscriber = Subscriber::new()
@@ -98,7 +76,25 @@ impl ApplicationRunner for App {
         let _enter = test_span.enter();
         trace!("entered test_span");
 
-        app_logger
+        AppLoggerState
+    }
+}
+
+impl Drop for AppLoggerState {
+    fn drop(&mut self) {
+        global::shutdown_tracer_provider(); // sending remaining spans
+    }
+}
+
+impl ApplicationRunner for App {
+    type AppLoggerState = AppLoggerState;
+    type CmdArgs = cmd_args::CmdArgs;
+    type Error = AppError;
+
+    fn run(&self, _cmd_args: Self::CmdArgs) -> Result<(), Self::Error> {
+        warn!("this method will raise an error");
+
+        Err(AppError)
     }
 }
 
