@@ -13,7 +13,6 @@ pub trait AppLoggerHasState {
     type State;
 
     fn new() -> Self;
-    fn finalize(&self) {}
 }
 
 #[cfg(feature = "default_logging")]
@@ -57,36 +56,37 @@ pub trait ApplicationRunner {
     /// * Parses Clap command line arguments
     /// * Runs application, then returns OK or error status and prints possible error
     fn main(&self) -> i32 {
-        cfg_if::cfg_if! {
-            if #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))] {
-                let app_logger_state = self.configure_logging();
-            } else {
-                self.configure_logging();
+        let status;
+
+        {
+            cfg_if::cfg_if! {
+                if #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))] {
+                    let _app_logger_state = Self::AppLoggerState::new();
+                } else {
+                    self.configure_logging();
+                }
             }
+
+            let cmd_args = Self::CmdArgs::parse();
+            trace!("parsed command line arguments - {:?}", cmd_args);
+
+            // maybe with application name or with chosen subcommand
+            info!("running application...");
+
+            status = if let Err(err) = self.run(cmd_args) {
+                let error_message = &err.to_string();
+
+                self.write_app_error_message(error_message);
+
+                error!("{}", error_message);
+
+                RunStatus::Error
+            } else {
+                RunStatus::OK
+            };
+
+            info!("closing application with status {:?}", &status);
         }
-
-        let cmd_args = Self::CmdArgs::parse();
-        trace!("parsed command line arguments - {:?}", cmd_args);
-
-        // maybe with application name or with chosen subcommand
-        info!("running application...");
-
-        let status = if let Err(err) = self.run(cmd_args) {
-            let error_message = &err.to_string();
-
-            self.write_app_error_message(error_message);
-
-            error!("{}", error_message);
-
-            RunStatus::Error
-        } else {
-            RunStatus::OK
-        };
-
-        info!("closing application with status {:?}", &status);
-
-        #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))]
-        app_logger_state.finalize();
 
         std::process::exit(status as i32)
     }
@@ -118,22 +118,10 @@ pub trait ApplicationRunner {
         }
     }
 
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "default_logging")] {
-            /// Initializes logger
-            /// With feature `default_logging` it starts `flexi_logger`
-            ///
-            /// By default (when no feature is defined), it has an empty implementation, so nothing will be logged.
-            /// User can use their own logger by overriding this method.
-            fn configure_logging(&self) -> DefaultAppLoggerState {
-                DefaultAppLoggerState::new()
-            }
-        } else if #[cfg(feature = "app_logger_has_state")] {
-            fn configure_logging(&self) -> Self::AppLoggerState;
-        } else {
-            fn configure_logging(&self) {}
-        }
-    }
+    /// Initializes logger
+    ///
+    /// By default (when no feature is defined), it has an empty implementation, so nothing will be logged.
+    fn configure_logging(&self) {}
 }
 
 // -----------------------------------------------------------------------------
