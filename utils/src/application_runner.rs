@@ -8,22 +8,17 @@ enum RunStatus {
     Error = 1,
 }
 
-#[cfg(feature = "app_logger_has_state")]
-pub trait AppLoggerHasState {
-    type State;
-
+pub trait AppLoggerCreator {
     fn new() -> Self;
 }
 
 #[cfg(feature = "default_logging")]
-pub struct DefaultAppLoggerState {
+pub struct DefaultAppLoggerCreator {
     _handle: flexi_logger::LoggerHandle,
 }
 
 #[cfg(feature = "default_logging")]
-impl AppLoggerHasState for DefaultAppLoggerState {
-    type State = flexi_logger::LoggerHandle;
-
+impl AppLoggerCreator for DefaultAppLoggerCreator {
     fn new() -> Self {
         use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
 
@@ -41,15 +36,14 @@ impl AppLoggerHasState for DefaultAppLoggerState {
 
         info!("default logger initialized");
 
-        DefaultAppLoggerState { _handle }
+        DefaultAppLoggerCreator { _handle }
     }
 }
 
 pub trait ApplicationRunner {
     type Error: Display;
     type CmdArgs: IntoApp + Clap + Debug;
-    #[cfg(feature = "app_logger_has_state")]
-    type AppLoggerState: AppLoggerHasState;
+    type AppLoggerCreator: AppLoggerCreator;
 
     /// * Configures logger (default - when using `default_logging` feature or user defined -
     ///   when they override [`ApplicationRunner::configure_logging`] method in their trait implementation
@@ -59,13 +53,7 @@ pub trait ApplicationRunner {
         let status;
 
         {
-            cfg_if::cfg_if! {
-                if #[cfg(any(feature = "default_logging", feature = "app_logger_has_state"))] {
-                    let _app_logger_state = Self::AppLoggerState::new();
-                } else {
-                    self.configure_logging();
-                }
-            }
+            let _app_logger_creator = Self::AppLoggerCreator::new();
 
             let cmd_args = Self::CmdArgs::parse();
             trace!("parsed command line arguments - {:?}", cmd_args);
@@ -117,11 +105,6 @@ pub trait ApplicationRunner {
             eprintln!("{}", error_message);
         }
     }
-
-    /// Initializes logger
-    ///
-    /// By default (when no feature is defined), it has an empty implementation, so nothing will be logged.
-    fn configure_logging(&self) {}
 }
 
 // -----------------------------------------------------------------------------

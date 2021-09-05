@@ -15,7 +15,7 @@ use std::fmt::Debug;
 use thiserror::Error;
 use tracing::{error, span, trace, warn, Level};
 use tracing_subscriber::{fmt::Subscriber, prelude::*, registry::Registry, util::SubscriberInitExt, EnvFilter};
-use utils::{AppLoggerHasState, ApplicationRunner};
+use utils::{AppLoggerCreator, ApplicationRunner};
 
 // -----------------------------------------------------------------------------
 
@@ -33,11 +33,9 @@ struct AppError;
 
 struct App;
 
-pub struct AppLoggerState;
+pub struct CustomAppLoggerCreator;
 
-impl AppLoggerHasState for AppLoggerState {
-    type State = ();
-
+impl AppLoggerCreator for CustomAppLoggerCreator {
     fn new() -> Self {
         // send opentelemetry data to Jaeger
         global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
@@ -76,18 +74,18 @@ impl AppLoggerHasState for AppLoggerState {
         let _enter = test_span.enter();
         trace!("entered test_span");
 
-        AppLoggerState
+        CustomAppLoggerCreator
     }
 }
 
-impl Drop for AppLoggerState {
+impl Drop for CustomAppLoggerCreator {
     fn drop(&mut self) {
         global::shutdown_tracer_provider(); // sending remaining spans
     }
 }
 
 impl ApplicationRunner for App {
-    type AppLoggerState = AppLoggerState;
+    type AppLoggerCreator = CustomAppLoggerCreator;
     type CmdArgs = cmd_args::CmdArgs;
     type Error = AppError;
 

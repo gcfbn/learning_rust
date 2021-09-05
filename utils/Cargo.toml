@@ -6,10 +6,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
 default = []
-default_logging = ["flexi_logger", "app_logger_has_state"]
-app_logger_has_state = []
+default_logging = ["flexi_logger"]
 
-tracing_example = ["tracing_ecosystem", "opentelemetry_ecosystem", "chrono", "app_logger_has_state"]
+tracing_example = ["tracing_ecosystem", "opentelemetry_ecosystem", "chrono"]
 tracing_ecosystem = ["tracing", "tracing-subscriber", "tracing-appender", "tracing-opentelemetry"]
 opentelemetry_ecosystem = ["opentelemetry", "opentelemetry-jaeger"]
 

@@ -3,11 +3,9 @@ mod colored_error_messages;
 mod path_validators;
 mod positive_integer;
 
-pub use application_runner::ApplicationRunner;
 #[cfg(feature = "default_logging")]
-pub use application_runner::DefaultAppLoggerState;
-#[cfg(feature = "app_logger_has_state")]
-pub use application_runner::AppLoggerHasState;
+pub use application_runner::DefaultAppLoggerCreator;
+pub use application_runner::{AppLoggerCreator, ApplicationRunner};
 pub use colored_error_messages::write_colored_error_message;
 pub use path_validators::PathBufWithFileThatMustExist;
 pub use positive_integer::PositiveInteger;
