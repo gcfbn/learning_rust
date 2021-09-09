@@ -3,3 +3,4 @@
 **/benches/data
 **/*.out
 **/*.db
+**/.logs
